@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - FinSight</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .register-card {
+            max-width: 400px;
+            width: 100%;
+            padding: 2.5rem; /* Increased padding for a better feel */
+            border-radius: 1rem;
+        }
+        .form-label {
+            margin-bottom: 0.25rem; /* Reduced space above the input fields */
+        }
+        .logo-small {
+            max-height: 40px; /* Adjust size as needed */
+            width: auto;
+        }
+
+        .btn-login {
+            background-color: #3C0775; /* Deep purple */
+            border-color: #3C0775;
+            color: #fff;
+        }
+        .btn-login:hover {
+            background-color: #7454AC; /* A darker shade for hover effect */
+            border-color: #7454AC;
+        }
+        .btn-primary {
+            background-color: #B8A5D2; /* Vibrant magenta */
+            border-color: #B8A5D2;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #7454AC; /* A darker shade for hover effect */
+            border-color: #7454AC;
+        }
+
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <div class="card shadow register-card">
+            <img src="logo.png" alt="FinSight Logo" class="logo-small">
+            <h4 class="text-center mb-4">Register</h4>
+
+            <form id="registerForm">
+                <div class="mb-2">
+                    <label for="userEmail" class="form-label">Email</label>
+                    <input type="email" id="userEmail" class="form-control" required />
+                </div>
+                <div class="mb-2">
+                    <label for="newPassword" class="form-label">Password</label>
+                    <input type="password" id="newPassword" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-login w-100">Register</button>
+                <a href="index.html" class="btn btn-primary mt-2 w-100">Back to Login</a>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAl8wXLzjuHGHohU70LOoObJ7OZUhHpWDQ",
+            authDomain: "finsight-567f4.firebaseapp.com",
+            projectId: "finsight-567f4",
+            storageBucket: "finsight-567f4.firebasestorage.app",
+            messagingSenderId: "329662315678",
+            appId: "1:329662315678:web:735fbacbca2818e0674f8f",
+            measurementId: "G-3BYVY6PE64"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const registerForm = document.getElementById("registerForm");
+
+        registerForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById("userEmail").value.trim();
+            const password = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                alert("Registration successful! You can now log in.");
+                window.location.href = "index.html";
+            } catch (error) {
+                const errorCode = error.code;
+                let errorMessage = "An error occurred during registration.";
+                
+                // Customize error messages for better user experience
+                if (errorCode === 'auth/email-already-in-use') {
+                    errorMessage = "The email address is already in use.";
+                } else if (errorCode === 'auth/weak-password') {
+                    errorMessage = "The password is too weak. It should be at least 6 characters.";
+                } else if (errorCode === 'auth/invalid-email') {
+                    errorMessage = "The email address is not valid.";
+                }
+                
+                console.error(error);
+                alert(errorMessage);
+            }
+        });
+    </script>
+</body>
+</html>
