@@ -5,14 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Transaction History</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <!-- Header Menu Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <!-- Logo and Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
+                <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
+            </a>
+            
+            <!-- Mobile Toggle Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Menu Items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="input.html">
+                            <i class="fas fa-plus-circle"></i> Add Transaction
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="history.html">
+                            <i class="fas fa-list"></i> All Transactions
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Right Side Menu -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="exportTransactions()">
+                            <i class="fas fa-download"></i> Export
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container mt-4">
         <div class="header-container">
             <h2>Transaction History</h2>
-            <img src="logo.png" alt="FinSight Logo" class="logo-small" />
-            <a href="dashboard.html" class="btn btn-primary">Back to Dashboard</a>
         </div>
 
         <div class="row mb-3 g-3">
@@ -58,15 +108,11 @@
         </table>
     </div>
 
- 
-
     <script type="module">
-        // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAl8wXLzjuHGHohU70LOoObJ7OZUhHpWDQ",
             authDomain: "finsight-567f4.firebaseapp.com",
@@ -77,7 +123,6 @@
             measurementId: "G-3BYVY6PE64"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -193,10 +238,51 @@
                 }
             }
         }
-        
+
+        async function exportTransactions() {
+            if (!txns.length) {
+                alert("No transactions to export.");
+                return;
+            }
+            let csv = "Type,Category,Amount,Date,Comment\n";
+            txns.forEach((t) => {
+                const comment = t.comment ? `"${t.comment.replace(/"/g, '""')}"` : "";
+                csv += `${t.type},${t.category},${t.amount},${t.date},${comment}\n`;
+            });
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "transactions.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        const logout = async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Error signing out: ", error);
+                alert("Failed to log out. Please try again.");
+            }
+        };
+
+        window.onload = () => {
+            const logoutButton = document.getElementById("logoutButton");
+            if (logoutButton) {
+                logoutButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+        };
+
         window.renderHistory = renderHistory;
         window.deleteTxn = deleteTxn;
         window.undoDelete = undoDelete;
+        window.exportTransactions = exportTransactions;
     </script>
 </body>
 </html>
