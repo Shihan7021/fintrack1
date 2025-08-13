@@ -20,6 +20,9 @@ body {
 .logo-header {
   height: 40px;
   width: auto;
+  max-height: 40px;
+  max-width: 120px;
+  object-fit: contain;
   filter: brightness(0) invert(1); /* Make logo white */
 }
 
