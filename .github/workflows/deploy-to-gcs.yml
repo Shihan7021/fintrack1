@@ -1,0 +1,27 @@
+name: Deploy to Google Cloud Storage
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+
+      - name: Deploy to GCS
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: './' # The local directory containing your static files
+          destination: 'finsight' # The name of your GCS bucket
+          parent: false
+          # Set public access control for the uploaded files
+          predefinedAcl: 'publicRead'
