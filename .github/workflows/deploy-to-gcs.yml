@@ -20,8 +20,7 @@ jobs:
       - name: Deploy to GCS
         uses: google-github-actions/upload-cloud-storage@v2
         with:
-          path: './' # The local directory containing your static files
-          destination: 'finsight' # The name of your GCS bucket
+          path: './'
+          destination: 'finsight'
           parent: false
-          # Set public access control for the uploaded files
-          predefinedAcl: 'publicRead'
+          # Remove this line: predefinedAcl: 'publicRead'
