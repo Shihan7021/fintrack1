@@ -134,7 +134,7 @@
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
         // Your web app's Firebase configuration
@@ -186,6 +186,9 @@
                 if (user) {
                     currentUserId = user.uid;
                     const userTransactionsRef = collection(db, "users", currentUserId, "transactions");
+                    
+                    // Load cycle date and set date range
+                    loadCycleDateAndSetDateRange();
                     
                     unsubscribeFromTransactions = onSnapshot(query(userTransactionsRef), (querySnapshot) => {
                         transactions = querySnapshot.docs.map(doc => ({
