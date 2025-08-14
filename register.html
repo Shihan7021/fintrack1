@@ -138,6 +138,7 @@
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -153,6 +154,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         const registerForm = document.getElementById("registerForm");
 
@@ -162,6 +164,11 @@
             const email = document.getElementById("userEmail").value.trim();
             const password = document.getElementById("newPassword").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
+            const profession = document.getElementById("profession").value;
+            const ageRange = document.getElementById("ageRange").value;
+            const country = document.getElementById("country").value;
+            const incomeRange = document.getElementById("incomeRange").value;
+            const cycleDate = document.getElementById("cycleDate").value;
 
             if (password !== confirmPassword) {
                 alert("Passwords do not match.");
@@ -170,6 +177,19 @@
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Save additional user profile information
+                const user = userCredential.user;
+                await setDoc(doc(db, "users", user.uid), {
+                    email: email,
+                    profession: profession,
+                    ageRange: ageRange,
+                    country: country,
+                    incomeRange: incomeRange,
+                    cycleDate: cycleDate,
+                    createdAt: new Date().toISOString()
+                });
+
                 alert("Registration successful! You can now log in.");
                 window.location.href = "index.html";
             } catch (error) {
