@@ -134,7 +134,7 @@
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
         // Your web app's Firebase configuration
@@ -187,14 +187,17 @@
                     currentUserId = user.uid;
                     const userTransactionsRef = collection(db, "users", currentUserId, "transactions");
                     
-                    unsubscribeFromTransactions = onSnapshot(query(userTransactionsRef), (querySnapshot) => {
-                        transactions = querySnapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        renderDashboard();
-                    }, (error) => {
-                        console.error("Error listening to user transactions: ", error);
+                    // Load user profile to get cycle date
+                    loadUserCycleDate().then(() => {
+                        unsubscribeFromTransactions = onSnapshot(query(userTransactionsRef), (querySnapshot) => {
+                            transactions = querySnapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            }));
+                            renderDashboard();
+                        }, (error) => {
+                            console.error("Error listening to user transactions: ", error);
+                        });
                     });
                 } else {
                     currentUserId = null;
@@ -203,6 +206,48 @@
                     window.location.href = "index.html";
                 }
             });
+        }
+
+        async function loadUserCycleDate() {
+            if (!currentUserId) return;
+            
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUserId));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const cycleDate = parseInt(userData.cycleDate || 10); // Default to 10th if not set
+                    setDashboardDateRange(cycleDate);
+                }
+            } catch (error) {
+                console.error("Error loading user cycle date:", error);
+                // Set default date range if cycle date not found
+                setDashboardDateRange(10);
+            }
+        }
+
+        function setDashboardDateRange(cycleDay) {
+            const today = new Date();
+            const currentDay = today.getDate();
+            
+            let fromDate, toDate;
+            
+            if (currentDay >= cycleDay) {
+                // Current cycle started this month
+                fromDate = new Date(today.getFullYear(), today.getMonth() - 1, cycleDay);
+                toDate = new Date(today.getFullYear(), today.getMonth() + 1, cycleDay);
+            } else {
+                // Current cycle started last month
+                fromDate = new Date(today.getFullYear(), today.getMonth() - 2, cycleDay);
+                toDate = new Date(today.getFullYear(), today.getMonth(), cycleDay);
+            }
+            
+            // Format dates as YYYY-MM-DD
+            const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            document.getElementById("fromDate").value = formatDate(fromDate);
+            document.getElementById("toDate").value = formatDate(toDate);
         }
 
         function populateCategoryFilter() {
