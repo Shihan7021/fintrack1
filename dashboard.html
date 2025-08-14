@@ -227,18 +227,20 @@
 
         function setDashboardDateRange(cycleDay) {
             const today = new Date();
-            const currentDay = today.getDate();
-            
+            const y = today.getFullYear();
+            const m = today.getMonth();
+            const d = today.getDate();
+
             let fromDate, toDate;
-            
-            if (currentDay >= cycleDay) {
-                // Current cycle started this month
-                fromDate = new Date(today.getFullYear(), today.getMonth() - 1, cycleDay);
-                toDate = new Date(today.getFullYear(), today.getMonth() + 1, cycleDay);
+
+            if (d >= cycleDay) {
+                // Current cycle starts this month (e.g., today is Aug 14, cycle day is 10 -> cycle is Aug 10 to Sep 10)
+                fromDate = new Date(y, m, cycleDay);
+                toDate = new Date(y, m + 1, cycleDay);
             } else {
-                // Current cycle started last month
-                fromDate = new Date(today.getFullYear(), today.getMonth() - 2, cycleDay);
-                toDate = new Date(today.getFullYear(), today.getMonth(), cycleDay);
+                // Current cycle started last month (e.g., today is Aug 8, cycle day is 10 -> cycle is Jul 10 to Aug 10)
+                fromDate = new Date(y, m - 1, cycleDay);
+                toDate = new Date(y, m, cycleDay);
             }
             
             // Format dates as YYYY-MM-DD
