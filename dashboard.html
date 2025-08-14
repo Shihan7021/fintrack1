@@ -466,59 +466,7 @@
         window.deleteTxn = deleteTxn;
         window.undoDelete = undoDelete;
 
-        // What If Modal Functions
-        function performWhatIfSearch() {
-            const searchTerm = document.getElementById('whatIfSearch').value.toLowerCase();
-            const resultsDiv = document.getElementById('whatIfResults');
-            
-            if (!searchTerm.trim()) {
-                resultsDiv.innerHTML = '<p class="text-muted">Enter a search term...</p>';
-                return;
-            }
-
-            // Filter transactions based on search
-            const filteredTransactions = transactions.filter(t => 
-                t.category.toLowerCase().includes(searchTerm) ||
-                t.type.toLowerCase().includes(searchTerm) ||
-                t.amount.toString().includes(searchTerm) ||
-                (t.comment && t.comment.toLowerCase().includes(searchTerm))
-            );
-
-            if (filteredTransactions.length === 0) {
-                resultsDiv.innerHTML = '<p class="text-muted">No transactions found.</p>';
-                return;
-            }
-
-            let resultsHTML = '<div class="list-group">';
-            filteredTransactions.slice(0, 5).forEach(t => {
-                resultsHTML += `
-                    <div class="list-group-item bg-transparent border-0 text-white">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">${t.category}</h6>
-                            <small>Rs.${formatAmount(t.amount)}</small>
-                        </div>
-                        <p class="mb-1">${t.type} - ${t.date}</p>
-                        ${t.comment ? `<small>${t.comment}</small>` : ''}
-                    </div>
-                `;
-            });
-            resultsHTML += '</div>';
-            
-            resultsDiv.innerHTML = resultsHTML;
-        }
-
-        // Handle Enter key in search
-        document.getElementById('whatIfSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performWhatIfSearch();
-            }
-        });
-
-        // Clear results when modal is closed
-        document.getElementById('whatIfModal').addEventListener('hidden.bs.modal', function() {
-            document.getElementById('whatIfResults').innerHTML = '';
-            document.getElementById('whatIfSearch').value = '';
-        });
+        // What If functions removed - now using standalone page
     </script>
 </body>
 </html>
