@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What If Search - FinSight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Fullscreen Search Overlay */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+        }
+
+        .search-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .search-sentence {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 1rem;
+            min-width: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-select {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .search-select option {
+            background: #333;
+            color: white;
+        }
+
+        .search-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .search-btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .search-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .search-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .search-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .search-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .search-sentence {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .search-input,
+            .search-select {
+                width: 100%;
+            }
+
+            .search-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-container">
+            <button class="close-btn" onclick="closeSearch()">×</button>
+            <h2 class="search-title">What If Search</h2>
+            <form class="search-form">
+                <div class="search-sentence">
+                    <select class="search-select" id="spendSave">
+                        <option value="I Spend">I Spend</option>
+                        <option value="I Save">I Save</option>
+                    </select>
+                    <span style="color: white;">Rs.</span>
+                    <input type="number" class="search-input" placeholder="100000" id="amountInput" />
+                    <span style="color: white;">in next</span>
+                    <input type="number" class="search-input" placeholder="2" id="monthsInput" />
+                    <select class="search-select" id="timeUnit">
+                        <option value="Months">Months</option>
+                        <option value="Days">Days</option>
+                        <option value="Weeks">Weeks</option>
+                        <option value="Years">Years</option>
+                    </select>
+                </div>
+                <div class="search-actions">
+                    <button type="button" class="search-btn search-btn-primary" onclick="performSearch()">Search</button>
+                    <button type="button" class="search-btn search-btn-secondary" onclick="closeSearch()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function closeSearch() {
+            document.getElementById('searchOverlay').style.display = 'none';
+        }
+
+        function performSearch() {
+            // Implement search functionality here
+            const spendSave = document.getElementById('spendSave').value;
+            const amount = document.getElementById('amountInput').value;
+            const months = document.getElementById('monthsInput').value;
+            const timeUnit = document.getElementById('timeUnit').value;
+
+            console.log(`Search: ${spendSave} Rs. ${amount} in next ${months} ${timeUnit}`);
+            closeSearch();
+        }
+
+        // Event listener to close the overlay when clicking outside
+        window.addEventListener('click', function(event) {
+            const overlay = document.getElementById('searchOverlay');
+            if (event.target === overlay) {
+                closeSearch();
+            }
+        });
+
+        // Event listener for Esc key
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeSearch();
+            }
+        });
+    </script>
+</body>
+</html>

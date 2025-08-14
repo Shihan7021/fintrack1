@@ -121,6 +121,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- What If Search Modal -->
+    <div class="modal fade" id="whatIfModal" tabindex="-1" aria-labelledby="whatIfModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content what-if-modal-content">
+                <div class="modal-body d-flex align-items-center justify-content-center">
+                    <div class="search-container">
+                        <button type="button" class="btn-close btn-close-white position-absolute" style="top: 20px; right: 20px;" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h2 class="text-center text-white mb-4">What If Search</h2>
+                        <div class="search-sentence">
+                            <select class="form-select form-select-lg bg-transparent text-white border-0" id="spendSave">
+                                <option value="I Spend" class="text-dark">I Spend</option>
+                                <option value="I Save" class="text-dark">I Save</option>
+                            </select>
+                            <span class="text-white">Rs.</span>
+                            <input type="number" class="form-control form-control-lg bg-transparent text-white border-0" placeholder="100000" id="amountInput" />
+                            <span class="text-white">in next</span>
+                            <input type="number" class="form-control form-control-lg bg-transparent text-white border-0" placeholder="2" id="monthsInput" />
+                            <select class="form-select form-select-lg bg-transparent text-white border-0" id="timeUnit">
+                                <option value="Months" class="text-dark">Months</option>
+                                <option value="Days" class="text-dark">Days</option>
+                                <option value="Weeks" class="text-dark">Weeks</option>
+                                <option value="Years" class="text-dark">Years</option>
+                            </select>
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="button" class="btn btn-primary btn-lg me-3" onclick="performWhatIfSearch()">Search</button>
+                            <button type="button" class="btn btn-outline-light btn-lg" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         // Firebase SDKs
