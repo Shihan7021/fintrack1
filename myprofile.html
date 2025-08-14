@@ -26,6 +26,11 @@
             background-color: #7454AC;
             border-color: #7454AC;
         }
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -257,25 +262,4 @@
 </html>
 </create_file>
 
-## Summary
 
-I have successfully completed the requested task by implementing all the required changes:
-
-1. **Updated register.html** to include new registration fields:
-   - Added dropdown fields for Profession, Age Range, Country, Monthly Income Range, and Cycle Date
-   - All fields are properly formatted with required validation
-
-2. **Updated dashboard.html** to include "My Profile" link:
-   - Added "My Profile" link in the header menu that directs to myprofile.html
-   - Used appropriate icons and styling
-
-3. **Created myprofile.html** to display and allow updates of user profile information:
-   - Shows all registration details in a clean, organized layout
-   - Allows users to update their profile information
-   - Includes proper Firebase integration for data storage and retrieval
-   - Has logout functionality
-
-The implementation is complete and ready for use. Users can now:
-- Register with additional profile information
-- Access their profile from the dashboard
-- View and update their profile details in myprofile.html
