@@ -294,6 +294,34 @@
             });
         }
         
+        function getIncomeChartColors(count) {
+            const baseColor = [40, 167, 69]; // #28A745
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const opacity = 0.8 - (i * 0.1);
+                colors.push(`rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${opacity})`);
+            }
+            return colors;
+        }
+
+        function getExpenseChartColors(labels) {
+            const categoryColors = {
+                "Food": "#FF6384",
+                "Transport": "#36A2EB",
+                "Utilities": "#FFCE56",
+                "Cash Withdraw": "#4BC0C0",
+                "Health": "#9966FF",
+                "Loans": "#FF9F40",
+                "Clothing": "#C9CBCF",
+                "Household": "#E7E9ED",
+                "Savings": "#7CFFC4",
+                "Entertainment": "#FDB45C",
+                "Others": "#A9A9A9"
+            };
+            const defaultColor = "#808080"; // A default color for categories not in the map
+            return labels.map(label => categoryColors[label] || defaultColor);
+        }
+        
         function renderCharts(filteredTxns) {
             const incomeData = {};
             const expenseData = {};
@@ -319,7 +347,7 @@
                     datasets: [{
                         label: "Income",
                         data: incomeAmounts,
-                        backgroundColor: incomeLabels.map(() => "#28A745cc"),
+                        backgroundColor: getIncomeChartColors(incomeLabels.length),
                         borderColor: incomeLabels.map(() => "#ffffff"),
                         borderWidth: 1,
                     }],
@@ -340,7 +368,7 @@
                     datasets: [{
                         label: "Expense",
                         data: expenseAmounts,
-                        backgroundColor: expenseLabels.map(() => "#cc0000cc"),
+                        backgroundColor: getExpenseChartColors(expenseLabels),
                         borderColor: expenseLabels.map(() => "#ffffff"),
                         borderWidth: 1,
                     }],
