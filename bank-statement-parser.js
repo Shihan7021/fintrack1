@@ -277,7 +277,7 @@ async function confirmUpload() {
         });
 
         // Save to Firestore
-        const batch = [];
+        const promises = [];
         for (const transaction of parsedTransactions) {
             const docData = {
                 type: transaction.type,
@@ -288,7 +288,7 @@ async function confirmUpload() {
                 createdAt: serverTimestamp()
             };
             
-            batch.add(addDoc(collection(db, "users", currentUserId, "transactions"), docData));
+            promises.push(addDoc(collection(db, "users", currentUserId, "transactions"), docData));
         }
 
         await Promise.all(batch);
