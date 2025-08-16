@@ -154,38 +154,133 @@ function parseExcel(file) {
 // ==============================
 async function processTransactions(rawData) {
     const processed = [];
+    const skippedRows = [];
+
+    console.log("Processing transactions from raw data:", rawData);
 
     for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i];
         
-        const date = findColumnValue(row, ['date', 'Date', 'Transaction Date', 'Txn Date']);
-        const description = findColumnValue(row, ['description', 'Description', 'Details', 'Narration', 'Remarks', 'Payee', 'Merchant']);
-        const amount = findColumnValue(row, ['amount', 'Amount', 'Debit', 'Credit', 'Withdrawal', 'Deposit']);
-        const type = findColumnValue(row, ['type', 'Type', 'Transaction Type', 'Debit/Credit', 'Dr/Cr']);
+        // Get all values from the row, including __EMPTY fields
+        const values = Object.values(row).filter(v => v != null && v !== '');
+        
+        if (values.length === 0) continue;
 
-        if (!date || !description || !amount) continue;
+        // Handle the specific case where columns have __EMPTY headers
+        let date = null;
+        let description = null;
+        let amount = null;
+        let type = null;
 
-        let numericAmount = parseFloat(String(amount).replace(/[Rs,$\s]/g, ''));
-        if (isNaN(numericAmount)) continue;
+        // Try to extract based on position and data type
+        const rowEntries = Object.entries(row);
+        
+        // Look for date in first few columns (Excel serial dates or date strings)
+        for (let j = 0; j < Math.min(3, rowEntries.length); j++) {
+            const [key, value] = rowEntries[j];
+            if (value && (typeof value === 'number' || String(value).match(/\d{4}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]\d{4}/))) {
+                date = value;
+                break;
+            }
+        }
 
+        // Look for description (usually text after date)
+        for (let j = 1; j < Math.min(5, rowEntries.length); j++) {
+            const [key, value] = rowEntries[j];
+            if (value && typeof value === 'string' && value.length > 5 && !String(value).match(/^-?\d*\.?\d+$/)) {
+                description = value;
+                break;
+            }
+        }
+
+        // Look for amount (numeric value, possibly with currency symbols)
+        for (let j = 2; j < Math.min(6, rowEntries.length); j++) {
+            const [key, value] = rowEntries[j];
+            if (value && String(value).match(/^-?\d*\.?\d+$/)) {
+                amount = value;
+                break;
+            }
+        }
+
+        // If we couldn't find by pattern, use positional mapping
+        if (!date || !description || !amount) {
+            const allValues = Object.values(row).filter(v => v != null && v !== '');
+            
+            if (allValues.length >= 3) {
+                // Common bank statement format: Date, Description, Amount
+                date = allValues[0] || date;
+                description = allValues[1] || description;
+                amount = allValues[2] || amount;
+                
+                // Try to find the best match for each
+                for (const value of allValues) {
+                    const strValue = String(value);
+                    if (!date && strValue.match(/\d{4}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]\d{4}/)) {
+                        date = value;
+                    } else if (!amount && strValue.match(/^-?\d*\.?\d+$/)) {
+                        amount = value;
+                    } else if (!description && strValue.length > 5 && !strValue.match(/^-?\d*\.?\d+$/)) {
+                        description = value;
+                    }
+                }
+            }
+        }
+
+        console.log(`Row ${i + 1}:`, { date, description, amount, rawRow: row });
+
+        if (!date || !description || !amount) {
+            skippedRows.push({ 
+                row: i + 1, 
+                date, 
+                description, 
+                amount, 
+                reason: 'Could not identify required fields' 
+            });
+            continue;
+        }
+
+        // Clean and parse amount
+        let amountStr = String(amount).replace(/[Rs,$\s,]/g, '');
+        let numericAmount = parseFloat(amountStr);
+        
+        if (isNaN(numericAmount)) {
+            skippedRows.push({ row: i + 1, amount, reason: 'Invalid amount format' });
+            continue;
+        }
+
+        // Determine transaction type based on amount sign or explicit type
         let transactionType = 'Expense';
-        if (type && /credit|cr/i.test(type)) transactionType = 'Income';
-        else if (type && /debit|dr/i.test(type)) transactionType = 'Expense';
-        else if (numericAmount > 0) transactionType = 'Income';
+        if (numericAmount > 0) transactionType = 'Income';
+        
+        // Check if there's an explicit type column
+        for (const [key, value] of Object.entries(row)) {
+            if (value && String(value).toLowerCase().includes('credit')) {
+                transactionType = 'Income';
+                break;
+            } else if (value && String(value).toLowerCase().includes('debit')) {
+                transactionType = 'Expense';
+                break;
+            }
+        }
 
         const finalAmount = Math.abs(numericAmount);
-        const category = autoCategorize(description);
+        const category = autoCategorize(description || '');
 
         processed.push({
             date: formatDate(date),
-            description: description.trim(),
+            description: (description || '').trim(),
             amount: finalAmount.toFixed(2),
             type: transactionType,
             category: category,
-            comment: `Imported from bank statement: ${description}`
+            comment: `Imported from bank statement: ${description || 'N/A'}`
         });
     }
 
+    console.log(`Processed ${processed.length} transactions, skipped ${skippedRows.length} rows`);
+    if (skippedRows.length > 0) {
+        console.warn("Skipped rows details:", skippedRows);
+    }
+    
     return processed;
 }
 
