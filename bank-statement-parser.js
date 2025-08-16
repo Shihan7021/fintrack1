@@ -120,27 +120,45 @@ function parseExcel(file) {
 async function processTransactions(rawData) {
     const processed = [];
     
+    console.log('Processing transactions:', rawData.length, 'rows');
+    
     for (const row of rawData) {
+        console.log('Processing row:', row);
+        
         // Try to extract data from various possible column names
-        const date = findColumnValue(row, ['date', 'Date', 'DATE', 'Transaction Date', 'transaction_date']);
-        const description = findColumnValue(row, ['description', 'Description', 'DESCRIPTION', 'Description', 'Details', 'details', 'Narration']);
-        const amount = findColumnValue(row, ['amount', 'Amount', 'AMOUNT', 'Amount', 'Debit', 'Credit', 'Withdrawal', 'Deposit']);
-        const type = findColumnValue(row, ['type', 'Type', 'TYPE', 'Transaction Type', 'transaction_type']);
+        const date = findColumnValue(row, ['date', 'Date', 'DATE', 'Transaction Date', 'transaction_date', 'Txn Date', 'Value Date', 'Booking Date']);
+        const description = findColumnValue(row, ['description', 'Description', 'DESCRIPTION', 'Description', 'Details', 'details', 'Narration', 'Narrative', 'Particulars', 'Remarks', 'Memo', 'Reference', 'Description']);
+        const amount = findColumnValue(row, ['amount', 'Amount', 'AMOUNT', 'Amount', 'Debit', 'Credit', 'Withdrawal', 'Deposit', 'Debit Amount', 'Credit Amount', 'Transaction Amount', 'Amount (Rs.)', 'Amount (LKR)', 'Amount (USD)']);
+        const type = findColumnValue(row, ['type', 'Type', 'TYPE', 'Transaction Type', 'transaction_type', 'Debit/Credit']);
+        
+        console.log('Extracted values:', { date, description, amount, type });
         
         if (!date || !description || !amount) {
             console.warn('Skipping row with missing required fields:', row);
             continue;
         }
 
-        const numericAmount = parseFloat(amount);
+        let numericAmount = parseFloat(amount);
         if (isNaN(numericAmount)) {
             console.warn('Skipping row with invalid amount:', amount);
             continue;
         }
 
-        // Determine transaction type
+        // Handle negative amounts (some banks use negative for debits)
+        if (numericAmount < 0) {
+            numericAmount = Math.abs(numericAmount);
+        }
+
+        // Determine transaction type based on amount sign or type field
         let transactionType = 'Expense';
-        if (numericAmount > 0) {
+        
+        // Check if type field indicates income
+        if (type && type.toLowerCase().includes('credit')) {
+            transactionType = 'Income';
+        } else if (type && type.toLowerCase().includes('debit')) {
+            transactionType = 'Expense';
+        } else if (numericAmount > 0) {
+            // Default: positive amounts are income
             transactionType = 'Income';
         }
 
@@ -157,6 +175,7 @@ async function processTransactions(rawData) {
         });
     }
 
+    console.log('Processed transactions:', processed.length, 'valid transactions');
     return processed;
 }
 
@@ -291,6 +310,7 @@ async function confirmUpload() {
                 category: transaction.category,
                 amount: transaction.amount,
                 date: transaction.date,
+                description: transaction.description,
                 comment: transaction.comment,
                 createdAt: serverTimestamp()
             };
