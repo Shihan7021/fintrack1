@@ -122,31 +122,36 @@ async function processTransactions(rawData) {
     
     console.log('Processing transactions:', rawData.length, 'rows');
     
-    for (const row of rawData) {
-        console.log('Processing row:', row);
+    if (rawData.length === 0) {
+        console.warn('No data found in file');
+        return processed;
+    }
+    
+    // Log the first few rows to understand the structure
+    console.log('First row structure:', rawData[0]);
+    console.log('Available columns:', Object.keys(rawData[0]));
+    
+    for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        console.log(`Processing row ${i}:`, row);
         
         // Try to extract data from various possible column names
-        const date = findColumnValue(row, ['date', 'Date', 'DATE', 'Transaction Date', 'transaction_date', 'Txn Date', 'Value Date', 'Booking Date']);
-        const description = findColumnValue(row, ['description', 'Description', 'DESCRIPTION', 'Description', 'Details', 'details', 'Narration', 'Narrative', 'Particulars', 'Remarks', 'Memo', 'Reference', 'Description']);
-        const amount = findColumnValue(row, ['amount', 'Amount', 'AMOUNT', 'Amount', 'Debit', 'Credit', 'Withdrawal', 'Deposit', 'Debit Amount', 'Credit Amount', 'Transaction Amount', 'Amount (Rs.)', 'Amount (LKR)', 'Amount (USD)']);
-        const type = findColumnValue(row, ['type', 'Type', 'TYPE', 'Transaction Type', 'transaction_type', 'Debit/Credit']);
+        const date = findColumnValue(row, ['date', 'Date', 'DATE', 'Transaction Date', 'transaction_date', 'Txn Date', 'Value Date', 'Booking Date', 'Post Date', 'Posted Date']);
+        const description = findColumnValue(row, ['description', 'Description', 'DESCRIPTION', 'Details', 'details', 'Narration', 'Narrative', 'Particulars', 'Remarks', 'Memo', 'Reference', 'Payee', 'Merchant', 'Payee Name']);
+        const amount = findColumnValue(row, ['amount', 'Amount', 'AMOUNT', 'Debit', 'Credit', 'Withdrawal', 'Deposit', 'Debit Amount', 'Credit Amount', 'Transaction Amount', 'Amount (Rs.)', 'Amount (LKR)', 'Amount (USD)', 'Amount (Rs)', 'Amount (LKR)', 'Amount (USD)', 'Amount(Rs)', 'Amount(LKR)', 'Amount(USD)']);
+        const type = findColumnValue(row, ['type', 'Type', 'TYPE', 'Transaction Type', 'transaction_type', 'Debit/Credit', 'Dr/Cr']);
         
         console.log('Extracted values:', { date, description, amount, type });
         
         if (!date || !description || !amount) {
-            console.warn('Skipping row with missing required fields:', row);
+            console.warn(`Skipping row ${i} with missing required fields:`, { date, description, amount });
             continue;
         }
 
-        let numericAmount = parseFloat(amount);
+        let numericAmount = parseFloat(String(amount).replace(/[Rs,$\s]/g, ''));
         if (isNaN(numericAmount)) {
-            console.warn('Skipping row with invalid amount:', amount);
+            console.warn(`Skipping row ${i} with invalid amount:`, amount);
             continue;
-        }
-
-        // Handle negative amounts (some banks use negative for debits)
-        if (numericAmount < 0) {
-            numericAmount = Math.abs(numericAmount);
         }
 
         // Determine transaction type based on amount sign or type field
@@ -157,10 +162,17 @@ async function processTransactions(rawData) {
             transactionType = 'Income';
         } else if (type && type.toLowerCase().includes('debit')) {
             transactionType = 'Expense';
+        } else if (type && type.toLowerCase().includes('cr')) {
+            transactionType = 'Income';
+        } else if (type && type.toLowerCase().includes('dr')) {
+            transactionType = 'Expense';
         } else if (numericAmount > 0) {
             // Default: positive amounts are income
             transactionType = 'Income';
         }
+
+        // Handle negative amounts (some banks use negative for debits)
+        const finalAmount = Math.abs(numericAmount);
 
         // Auto-categorize based on description
         const category = autoCategorize(description);
@@ -168,7 +180,7 @@ async function processTransactions(rawData) {
         processed.push({
             date: formatDate(date),
             description: description.trim(),
-            amount: Math.abs(numericAmount).toFixed(2),
+            amount: finalAmount.toFixed(2),
             type: transactionType,
             category: category,
             comment: `Imported from bank statement: ${description}`
