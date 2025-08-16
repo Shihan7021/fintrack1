@@ -48,18 +48,25 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     loadingModal.show();
 
     try {
+        console.log('Starting file processing...');
         let transactions = [];
         
         if (file.name.endsWith('.csv')) {
+            console.log('Processing CSV file...');
             transactions = await parseCSV(file);
         } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+            console.log('Processing Excel file...');
             transactions = await parseExcel(file);
         } else {
             throw new Error('Unsupported file format');
         }
 
+        console.log('Raw data extracted:', transactions);
+        console.log('Number of rows:', transactions.length);
+
         // Process and classify transactions
         parsedTransactions = await processTransactions(transactions);
+        console.log('Processed transactions:', parsedTransactions);
         
         // Show preview
         displayPreview(parsedTransactions);
