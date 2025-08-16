@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Bank Statement - FinSight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header Menu Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
+                <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="input.html"><i class="fas fa-plus-circle"></i> Add Transaction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="history.html"><i class="fas fa-list"></i> All Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="bank-statement-upload.html">
+                            <i class="fas fa-upload"></i> Upload Statement
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="myprofile.html"><i class="fas fa-user"></i> Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-upload"></i> Upload Bank Statement</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="statementFile" class="form-label">Select Bank Statement File</label>
+                                <input type="file" class="form-control" id="statementFile" 
+                                       accept=".csv,.xlsx,.xls" required>
+                                <div class="form-text">Supported formats: CSV, Excel (.xlsx, .xls)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="accountType" class="form-label">Account Type</label>
+                                <select class="form-select" id="accountType" required>
+                                    <option value="">Select Account Type</option>
+                                    <option value="checking">Checking Account</option>
+                                    <option value="savings">Savings Account</option>
+                                    <option value="credit">Credit Card</option>
+                                </select>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>File Format Requirements:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>CSV files should have columns: Date, Description, Amount, Type</li>
+                                    <li>Excel files should have the same columns in the first sheet</li>
+                                    <li>Date format should be recognizable (YYYY-MM-DD, MM/DD/YYYY, etc.)</li>
+                                    <li>Amount should be numeric (positive for credits, negative for debits)</li>
+                                </ul>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Upload & Preview
+                            </button>
+                        </form>
+
+                        <!-- Preview Section -->
+                        <div id="previewSection" style="display: none;" class="mt-4">
+                            <h5>Preview Transactions</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="previewTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Type</th>
+                                            <th>Category</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="button" class="btn btn-secondary" onclick="cancelUpload()">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="confirmUpload()">
+                                    <i class="fas fa-check"></i> Confirm & Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2 mb-0">Processing your statement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script type="module" src="bank-statement-parser.js"></script>
+</body>
+</html>
