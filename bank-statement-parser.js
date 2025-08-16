@@ -98,32 +98,49 @@ function parseExcel(file) {
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
 
-                // Get raw rows (2D array)
-                const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-                console.log("Raw Excel rows:", rawRows);
-
-                if (rawRows.length < 2) {
+                // Use header: 1 to get raw data, then process headers properly
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                
+                if (rawData.length < 2) {
                     return resolve([]);
                 }
 
-                // Find header row (first non-empty row)
-                let headerRowIndex = rawRows.findIndex(row => row.some(cell => cell && cell.toString().trim() !== ""));
-                const headers = rawRows[headerRowIndex].map(h => String(h).trim());
+                // Find the first row with actual headers (skip empty rows)
+                let headerRowIndex = 0;
+                for (let i = 0; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (row && row.some(cell => cell && cell.toString().trim())) {
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
 
-                // Convert remaining rows into objects
-                const rows = rawRows.slice(headerRowIndex + 1).map(row => {
-                    let obj = {};
-                    headers.forEach((header, i) => {
-                        obj[header] = row[i];
+                const headers = rawData[headerRowIndex].map(h => h ? String(h).trim() : "");
+                
+                // Convert data rows to objects using proper headers
+                const dataRows = rawData.slice(headerRowIndex + 1);
+                const transactions = dataRows.map(row => {
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        if (header && header !== "") {
+                            obj[header] = row[index] !== undefined ? row[index] : "";
+                        }
                     });
                     return obj;
                 });
 
-                // Remove empty rows
-                const cleaned = rows.filter(r => Object.values(r).some(val => val !== "" && val != null));
-                resolve(cleaned);
+                // Filter out empty rows
+                const validTransactions = transactions.filter(row => {
+                    return Object.values(row).some(value => 
+                        value !== "" && value != null && value !== 0
+                    );
+                });
+
+                console.log("Parsed Excel transactions:", validTransactions);
+                resolve(validTransactions);
 
             } catch (error) {
+                console.error("Excel parsing error:", error);
                 reject(error);
             }
         };
