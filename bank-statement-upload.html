@@ -1,145 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Bank Statement - FinSight</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank Statement Upload</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #status { margin-top: 1rem; color: blue; }
+    table { border-collapse: collapse; margin-top: 1rem; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+  </style>
 </head>
 <body>
-    <!-- Header Menu Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
-                <img src="/logo-head.png" alt="FinSight Logo" class="logo-header">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="input.html"><i class="fas fa-plus-circle"></i> Add Transaction</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="history.html"><i class="fas fa-list"></i> All Transactions</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="bank-statement-upload.html">
-                            <i class="fas fa-upload"></i> Upload Statement
-                        </a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="myprofile.html"><i class="fas fa-user"></i> Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+  <h2>Upload Bank Statement</h2>
+  <input type="file" id="fileInput" accept=".csv,.xlsx,.xls"/>
+  <div id="status"></div>
+  <div id="preview"></div>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0"><i class="fas fa-upload"></i> Upload Bank Statement</h4>
-                    </div>
-                    <div class="card-body">
-                        <form id="uploadForm" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label for="statementFile" class="form-label">Select Bank Statement File</label>
-                                <input type="file" class="form-control" id="statementFile" 
-                                       accept=".csv,.xlsx,.xls" required>
-                                <div class="form-text">Supported formats: CSV, Excel (.xlsx, .xls)</div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="accountType" class="form-label">Account Type</label>
-                                <select class="form-select" id="accountType" required>
-                                    <option value="">Select Account Type</option>
-                                    <option value="checking">Checking Account</option>
-                                    <option value="savings">Savings Account</option>
-                                    <option value="credit">Credit Card</option>
-                                </select>
-                            </div>
+  <script>
+    document.getElementById("fileInput").addEventListener("change", handleFile, false);
 
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                <strong>File Format Requirements:</strong>
-                                <ul class="mb-0 mt-2">
-                                    <li>CSV files should have columns: Date, Description, Amount, Type</li>
-                                    <li>Excel files should have the same columns in the first sheet</li>
-                                    <li>Date format should be recognizable (YYYY-MM-DD, MM/DD/YYYY, etc.)</li>
-                                    <li>Amount should be numeric (positive for credits, negative for debits)</li>
-                                </ul>
-                            </div>
+    function handleFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-upload"></i> Upload & Preview
-                            </button>
-                        </form>
+      document.getElementById("status").textContent = "Processing...";
+      const ext = file.name.split(".").pop().toLowerCase();
 
-                        <!-- Preview Section -->
-                        <div id="previewSection" style="display: none;" class="mt-4">
-                            <h5>Preview Transactions</h5>
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="previewTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Description</th>
-                                            <th>Amount</th>
-                                            <th>Type</th>
-                                            <th>Category</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="previewTableBody">
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mt-3">
-                                <button type="button" class="btn btn-secondary" onclick="cancelUpload()">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                                <button type="button" class="btn btn-success" onclick="confirmUpload()">
-                                    <i class="fas fa-check"></i> Confirm & Save
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      if (ext === "csv") {
+        parseCSV(file).then(processTransactions).catch(showError);
+      } else if (ext === "xlsx" || ext === "xls") {
+        parseExcel(file).then(processTransactions).catch(showError);
+      } else {
+        showError("Unsupported file type");
+      }
+    }
 
-    <!-- Loading Spinner -->
-    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Processing...</span>
-                    </div>
-                    <p class="mt-2 mb-0">Processing your statement...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    // Parse CSV using PapaParse
+    function parseCSV(file) {
+      return new Promise((resolve, reject) => {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            resolve(results.data);
+          },
+          error: reject
+        });
+      });
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script type="module" src="bank-statement-parser.js"></script>
+    // Parse Excel using SheetJS
+    function parseExcel(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheet = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheet];
+
+            // Get raw rows
+            const raw = XLSX.utils.sheet_to_json(worksheet, {
+              header: 1,
+              defval: ""
+            });
+
+            console.log("Raw Excel rows:", raw);
+
+            if (raw.length === 0) {
+              reject("No data found in Excel file");
+              return;
+            }
+
+            // Detect header row (look for 'Date' or 'Txn Date')
+            let headerRowIndex = raw.findIndex(r =>
+              r.some(cell =>
+                String(cell).toLowerCase().includes("date") ||
+                String(cell).toLowerCase().includes("description") ||
+                String(cell).toLowerCase().includes("amount")
+              )
+            );
+            if (headerRowIndex === -1) headerRowIndex = 0;
+
+            const headers = raw[headerRowIndex].map(h => String(h).trim());
+            const rows = raw.slice(headerRowIndex + 1).map(row => {
+              let obj = {};
+              headers.forEach((header, i) => {
+                obj[header] = row[i];
+              });
+              return obj;
+            });
+
+            // Remove empty rows
+            const cleaned = rows.filter(r => Object.values(r).some(val => val !== "" && val != null));
+            resolve(cleaned);
+
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject("Error reading file");
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    // Process transactions
+    function processTransactions(transactions) {
+      console.log("Parsed transactions:", transactions);
+
+      if (!transactions || transactions.length === 0) {
+        showError("No transactions found.");
+        return;
+      }
+
+      // Normalize keys
+      const normalized = transactions.map(t => {
+        const date = t.Date || t["Txn Date"] || t["Transaction Date"] || "";
+        const description = t.Description || t["Narration"] || t["Details"] || "";
+        const amount = t.Amount || t["Debit"] || t["Credit"] || t["Transaction Amount"] || "";
+        const type = t.Type || (t["Debit"] ? "Expense" : "Income");
+
+        return {
+          Date: date,
+          Description: description,
+          Amount: amount,
+          Type: type
+        };
+      });
+
+      showPreview(normalized);
+      document.getElementById("status").textContent = "File processed successfully!";
+    }
+
+    // Show preview table
+    function showPreview(data) {
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "";
+
+      if (data.length === 0) return;
+
+      let html = "<table><tr><th>Date</th><th>Description</th><th>Amount</th><th>Type</th></tr>";
+      data.forEach(t => {
+        html += `<tr>
+          <td>${t.Date}</td>
+          <td>${t.Description}</td>
+          <td>${t.Amount}</td>
+          <td>${t.Type}</td>
+        </tr>`;
+      });
+      html += "</table>";
+
+      preview.innerHTML = html;
+    }
+
+    function showError(msg) {
+      document.getElementById("status").textContent = "Error: " + msg;
+      console.error(msg);
+    }
+  </script>
 </body>
 </html>

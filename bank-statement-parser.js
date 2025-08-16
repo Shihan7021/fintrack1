@@ -22,7 +22,7 @@ const auth = getAuth(app);
 let currentUserId = null;
 let parsedTransactions = [];
 
-// Initialize auth state
+// Auth state
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUserId = user.uid;
@@ -31,13 +31,11 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// File upload handler
+// Handle form submit
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const fileInput = document.getElementById('statementFile');
-    const accountType = document.getElementById('accountType').value;
-    
     if (!fileInput.files.length) {
         alert('Please select a file to upload.');
         return;
@@ -48,27 +46,21 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     loadingModal.show();
 
     try {
-        console.log('Starting file processing...');
         let transactions = [];
         
         if (file.name.endsWith('.csv')) {
-            console.log('Processing CSV file...');
             transactions = await parseCSV(file);
         } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-            console.log('Processing Excel file...');
             transactions = await parseExcel(file);
         } else {
             throw new Error('Unsupported file format');
         }
 
-        console.log('Raw data extracted:', transactions);
-        console.log('Number of rows:', transactions.length);
+        console.log("Parsed file rows:", transactions);
 
-        // Process and classify transactions
         parsedTransactions = await processTransactions(transactions);
         console.log('Processed transactions:', parsedTransactions);
-        
-        // Show preview
+
         displayPreview(parsedTransactions);
         
     } catch (error) {
@@ -79,23 +71,23 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Parse CSV file
+// ==============================
+// CSV Parser
+// ==============================
 function parseCSV(file) {
     return new Promise((resolve, reject) => {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
-            complete: (results) => {
-                resolve(results.data);
-            },
-            error: (error) => {
-                reject(error);
-            }
+            complete: (results) => resolve(results.data),
+            error: (error) => reject(error)
         });
     });
 }
 
-// Parse Excel file
+// ==============================
+// Excel Parser (fixed)
+// ==============================
 function parseExcel(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -105,8 +97,32 @@ function parseExcel(file) {
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                resolve(jsonData);
+
+                // Get raw rows (2D array)
+                const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                console.log("Raw Excel rows:", rawRows);
+
+                if (rawRows.length < 2) {
+                    return resolve([]);
+                }
+
+                // Find header row (first non-empty row)
+                let headerRowIndex = rawRows.findIndex(row => row.some(cell => cell && cell.toString().trim() !== ""));
+                const headers = rawRows[headerRowIndex].map(h => String(h).trim());
+
+                // Convert remaining rows into objects
+                const rows = rawRows.slice(headerRowIndex + 1).map(row => {
+                    let obj = {};
+                    headers.forEach((header, i) => {
+                        obj[header] = row[i];
+                    });
+                    return obj;
+                });
+
+                // Remove empty rows
+                const cleaned = rows.filter(r => Object.values(r).some(val => val !== "" && val != null));
+                resolve(cleaned);
+
             } catch (error) {
                 reject(error);
             }
@@ -116,65 +132,31 @@ function parseExcel(file) {
     });
 }
 
-// Process and classify transactions
+// ==============================
+// Process Transactions
+// ==============================
 async function processTransactions(rawData) {
     const processed = [];
-    
-    console.log('Processing transactions:', rawData.length, 'rows');
-    
-    if (rawData.length === 0) {
-        console.warn('No data found in file');
-        return processed;
-    }
-    
-    // Log the first few rows to understand the structure
-    console.log('First row structure:', rawData[0]);
-    console.log('Available columns:', Object.keys(rawData[0]));
-    
+
     for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i];
-        console.log(`Processing row ${i}:`, row);
         
-        // Try to extract data from various possible column names
-        const date = findColumnValue(row, ['date', 'Date', 'DATE', 'Transaction Date', 'transaction_date', 'Txn Date', 'Value Date', 'Booking Date', 'Post Date', 'Posted Date']);
-        const description = findColumnValue(row, ['description', 'Description', 'DESCRIPTION', 'Details', 'details', 'Narration', 'Narrative', 'Particulars', 'Remarks', 'Memo', 'Reference', 'Payee', 'Merchant', 'Payee Name']);
-        const amount = findColumnValue(row, ['amount', 'Amount', 'AMOUNT', 'Debit', 'Credit', 'Withdrawal', 'Deposit', 'Debit Amount', 'Credit Amount', 'Transaction Amount', 'Amount (Rs.)', 'Amount (LKR)', 'Amount (USD)', 'Amount (Rs)', 'Amount (LKR)', 'Amount (USD)', 'Amount(Rs)', 'Amount(LKR)', 'Amount(USD)']);
-        const type = findColumnValue(row, ['type', 'Type', 'TYPE', 'Transaction Type', 'transaction_type', 'Debit/Credit', 'Dr/Cr']);
-        
-        console.log('Extracted values:', { date, description, amount, type });
-        
-        if (!date || !description || !amount) {
-            console.warn(`Skipping row ${i} with missing required fields:`, { date, description, amount });
-            continue;
-        }
+        const date = findColumnValue(row, ['date', 'Date', 'Transaction Date', 'Txn Date']);
+        const description = findColumnValue(row, ['description', 'Description', 'Details', 'Narration', 'Remarks', 'Payee', 'Merchant']);
+        const amount = findColumnValue(row, ['amount', 'Amount', 'Debit', 'Credit', 'Withdrawal', 'Deposit']);
+        const type = findColumnValue(row, ['type', 'Type', 'Transaction Type', 'Debit/Credit', 'Dr/Cr']);
+
+        if (!date || !description || !amount) continue;
 
         let numericAmount = parseFloat(String(amount).replace(/[Rs,$\s]/g, ''));
-        if (isNaN(numericAmount)) {
-            console.warn(`Skipping row ${i} with invalid amount:`, amount);
-            continue;
-        }
+        if (isNaN(numericAmount)) continue;
 
-        // Determine transaction type based on amount sign or type field
         let transactionType = 'Expense';
-        
-        // Check if type field indicates income
-        if (type && type.toLowerCase().includes('credit')) {
-            transactionType = 'Income';
-        } else if (type && type.toLowerCase().includes('debit')) {
-            transactionType = 'Expense';
-        } else if (type && type.toLowerCase().includes('cr')) {
-            transactionType = 'Income';
-        } else if (type && type.toLowerCase().includes('dr')) {
-            transactionType = 'Expense';
-        } else if (numericAmount > 0) {
-            // Default: positive amounts are income
-            transactionType = 'Income';
-        }
+        if (type && /credit|cr/i.test(type)) transactionType = 'Income';
+        else if (type && /debit|dr/i.test(type)) transactionType = 'Expense';
+        else if (numericAmount > 0) transactionType = 'Income';
 
-        // Handle negative amounts (some banks use negative for debits)
         const finalAmount = Math.abs(numericAmount);
-
-        // Auto-categorize based on description
         const category = autoCategorize(description);
 
         processed.push({
@@ -187,75 +169,66 @@ async function processTransactions(rawData) {
         });
     }
 
-    console.log('Processed transactions:', processed.length, 'valid transactions');
     return processed;
 }
 
-// Find column value by trying multiple possible column names
+// ==============================
+// Helper Functions
+// ==============================
 function findColumnValue(row, possibleNames) {
     for (const name of possibleNames) {
-        if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
-            return row[name];
+        for (const key of Object.keys(row)) {
+            if (key.trim().toLowerCase() === name.trim().toLowerCase()) {
+                return row[key];
+            }
         }
     }
     return null;
 }
 
-// Auto-categorize transactions based on description keywords
 function autoCategorize(description) {
     const lowerDesc = description.toLowerCase();
-    
     const categories = {
-        'Salary': ['salary', 'payroll', 'wage', 'income', 'remuneration'],
-        'Food': ['food', 'restaurant', 'grocery', 'supermarket', 'cafe', 'pizza', 'burger', 'starbucks', 'mcdonald', 'kfc'],
-        'Transport': ['uber', 'grab', 'taxi', 'fuel', 'petrol', 'gas', 'bus', 'train', 'metro', 'parking'],
-        'Utilities': ['electricity', 'water', 'internet', 'phone', 'telecom', 'utility'],
-        'Health': ['pharmacy', 'medical', 'hospital', 'clinic', 'doctor', 'medicine', 'health'],
-        'Entertainment': ['netflix', 'spotify', 'movie', 'cinema', 'entertainment', 'game'],
-        'Shopping': ['amazon', 'ebay', 'shopping', 'clothing', 'fashion', 'electronics'],
-        'Cash Withdraw': ['atm', 'withdrawal', 'cash', 'wdl'],
-        'Loans': ['loan', 'mortgage', 'emi', 'interest', 'credit card'],
+        'Salary': ['salary', 'payroll', 'wage'],
+        'Food': ['food', 'restaurant', 'grocery', 'supermarket', 'cafe'],
+        'Transport': ['uber', 'fuel', 'bus', 'train', 'taxi'],
+        'Utilities': ['electricity', 'water', 'internet', 'phone'],
+        'Health': ['pharmacy', 'medical', 'hospital'],
+        'Entertainment': ['netflix', 'spotify', 'movie', 'cinema'],
+        'Shopping': ['amazon', 'shopping', 'clothing', 'electronics'],
+        'Cash Withdraw': ['atm', 'withdrawal', 'cash'],
+        'Loans': ['loan', 'mortgage', 'emi', 'interest'],
         'Others': []
     };
 
     for (const [category, keywords] of Object.entries(categories)) {
-        for (const keyword of keywords) {
-            if (lowerDesc.includes(keyword)) {
-                return category;
-            }
+        if (keywords.some(keyword => lowerDesc.includes(keyword))) {
+            return category;
         }
     }
-
     return 'Others';
 }
 
-// Format date to YYYY-MM-DD
 function formatDate(dateValue) {
     if (!dateValue) return null;
-    
     let date;
-    
-    // Handle Excel serial dates
     if (typeof dateValue === 'number') {
         date = new Date((dateValue - 25569) * 86400 * 1000);
     } else {
         date = new Date(dateValue);
     }
-    
-    if (isNaN(date.getTime())) {
-        return new Date().toISOString().split('T')[0];
-    }
-    
+    if (isNaN(date.getTime())) return new Date().toISOString().split('T')[0];
     return date.toISOString().split('T')[0];
 }
 
-// Display preview table
+// ==============================
+// Preview + Save
+// ==============================
 function displayPreview(transactions) {
     const previewSection = document.getElementById('previewSection');
     const tbody = document.getElementById('previewTableBody');
-    
     tbody.innerHTML = '';
-    
+
     transactions.forEach((transaction, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
@@ -271,31 +244,27 @@ function displayPreview(transactions) {
             </td>
         `;
     });
-    
+
     previewSection.style.display = 'block';
 }
 
-// Get category options based on transaction type
 function getCategoryOptions(type, currentCategory) {
     const incomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
     const expenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
-    
     const categories = type === 'Income' ? incomeCategories : expenseCategories;
-    
+
     return categories
         .filter(cat => cat !== currentCategory)
         .map(cat => `<option value="${cat}">${cat}</option>`)
         .join('');
 }
 
-// Cancel upload
 function cancelUpload() {
     document.getElementById('previewSection').style.display = 'none';
     document.getElementById('uploadForm').reset();
     parsedTransactions = [];
 }
 
-// Confirm and save transactions
 async function confirmUpload() {
     if (!parsedTransactions.length) {
         alert('No transactions to save');
@@ -306,7 +275,6 @@ async function confirmUpload() {
     loadingModal.show();
 
     try {
-        // Update categories from preview
         parsedTransactions.forEach((transaction, index) => {
             const categorySelect = document.getElementById(`category-${index}`);
             if (categorySelect) {
@@ -314,10 +282,8 @@ async function confirmUpload() {
             }
         });
 
-        // Save to Firestore
-        const promises = [];
-        for (const transaction of parsedTransactions) {
-            const docData = {
+        const promises = parsedTransactions.map(transaction => {
+            return addDoc(collection(db, "users", currentUserId, "transactions"), {
                 type: transaction.type,
                 category: transaction.category,
                 amount: transaction.amount,
@@ -325,16 +291,13 @@ async function confirmUpload() {
                 description: transaction.description,
                 comment: transaction.comment,
                 createdAt: serverTimestamp()
-            };
-            
-            promises.push(addDoc(collection(db, "users", currentUserId, "transactions"), docData));
-        }
+            });
+        });
 
         await Promise.all(promises);
-        
         alert(`Successfully imported ${parsedTransactions.length} transactions!`);
         window.location.href = 'dashboard.html';
-        
+
     } catch (error) {
         console.error('Error saving transactions:', error);
         alert('Error saving transactions: ' + error.message);
@@ -343,7 +306,9 @@ async function confirmUpload() {
     }
 }
 
-// Logout handler
+// ==============================
+// Logout
+// ==============================
 document.getElementById('logoutButton').addEventListener('click', async (e) => {
     e.preventDefault();
     try {
