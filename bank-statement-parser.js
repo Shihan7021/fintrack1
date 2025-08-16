@@ -298,7 +298,7 @@ async function confirmUpload() {
             promises.push(addDoc(collection(db, "users", currentUserId, "transactions"), docData));
         }
 
-        await Promise.all(batch);
+        await Promise.all(promises);
         
         alert(`Successfully imported ${parsedTransactions.length} transactions!`);
         window.location.href = 'dashboard.html';
