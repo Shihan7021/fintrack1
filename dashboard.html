@@ -131,9 +131,21 @@
     <!-- What If Search Modal removed - now using standalone page -->
 
     <!-- Floating Action Button -->
-    <a href="input.html" class="floating-action-btn" title="Add Transaction">
-        <i class="fas fa-plus"></i>
-    </a>
+    <div class="floating-action-container">
+        <div class="floating-action-menu" id="floatingMenu">
+            <a href="input.html?type=Income" class="floating-action-item floating-action-income" title="Add Income">
+                <i class="fas fa-arrow-up"></i>
+                <span class="floating-action-label">Income</span>
+            </a>
+            <a href="input.html?type=Expense" class="floating-action-item floating-action-expense" title="Add Expense">
+                <i class="fas fa-arrow-down"></i>
+                <span class="floating-action-label">Expense</span>
+            </a>
+        </div>
+        <button class="floating-action-btn" id="floatingActionBtn" title="Add Transaction">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
 
     <script type="module">
         // Firebase SDKs
