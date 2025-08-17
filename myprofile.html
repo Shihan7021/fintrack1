@@ -99,7 +99,7 @@
 
     <div class="container mt-4">
         <div class="card shadow profile-card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header text-white" style="background-color: #3c0775;">
                 <h4 class="mb-0"><i class="fas fa-user-circle"></i> My Profile</h4>
             </div>
             <div class="card-body">
@@ -179,13 +179,34 @@
                                 <option value="25">25th</option>
                                 <option value="30">30th</option>
                             </select>
+                    </div>
+                </div>
+
+                <!-- Income Categories Section -->
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-arrow-up text-success"></i> Income Categories</h5>
+                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                        <div id="incomeCategoriesList" class="row">
+                            <!-- Income categories will be populated here -->
                         </div>
                     </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Changes
-                        </button>
+                </div>
+
+                <!-- Expense Categories Section -->
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-arrow-down text-danger"></i> Expense Categories</h5>
+                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                        <div id="expenseCategoriesList" class="row">
+                            <!-- Expense categories will be populated here -->
+                        </div>
                     </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
                 </form>
             </div>
         </div>
@@ -195,7 +216,7 @@
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -216,10 +237,21 @@
         const profileForm = document.getElementById('profileForm');
         const logoutButton = document.getElementById('logoutButton');
 
+        // Category definitions
+        const incomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
+        const expenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
+
+        // Track categories with transactions
+        let categoriesWithTransactions = {
+            income: new Set(),
+            expense: new Set()
+        };
+
         // Load user profile data
         async function loadUserProfile() {
             const user = auth.currentUser;
             if (user) {
+                // Load user profile data
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
@@ -229,8 +261,76 @@
                     document.getElementById('profileCountry').value = userData.country || '';
                     document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
                     document.getElementById('profileCycleDate').value = userData.cycleDate || '';
+
+                    // Load selected categories
+                    const selectedIncome = userData.selectedIncomeCategories || incomeCategories;
+                    const selectedExpense = userData.selectedExpenseCategories || expenseCategories;
+
+                    // Check for existing transactions
+                    await checkExistingTransactions(user.uid);
+
+                    // Populate categories
+                    populateCategories('income', incomeCategories, selectedIncome);
+                    populateCategories('expense', expenseCategories, selectedExpense);
                 }
             }
+        }
+
+        // Check for existing transactions in each category
+        async function checkExistingTransactions(userId) {
+            try {
+                const transactionsRef = collection(db, "users", userId, "transactions");
+                const snapshot = await getDocs(transactionsRef);
+                
+                snapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    if (transaction.type === "Income" && transaction.category) {
+                        categoriesWithTransactions.income.add(transaction.category);
+                    } else if (transaction.type === "Expense" && transaction.category) {
+                        categoriesWithTransactions.expense.add(transaction.category);
+                    }
+                });
+            } catch (error) {
+                console.error("Error checking existing transactions:", error);
+            }
+        }
+
+        // Populate categories with checkboxes
+        function populateCategories(type, allCategories, selectedCategories) {
+            const container = document.getElementById(`${type}CategoriesList`);
+            container.innerHTML = '';
+            
+            allCategories.forEach(category => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 mb-2';
+                
+                const hasTransactions = type === 'income' 
+                    ? categoriesWithTransactions.income.has(category)
+                    : categoriesWithTransactions.expense.has(category);
+                
+                const isSelected = selectedCategories.includes(category);
+                
+                col.innerHTML = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" 
+                               id="${type}_${category}" 
+                               value="${category}"
+                               ${isSelected ? 'checked' : ''}
+                               ${hasTransactions ? 'disabled' : ''}>
+                        <label class="form-check-label" for="${type}_${category}">
+                            ${category}
+                            ${hasTransactions ? '<small class="text-muted"> (has transactions)</small>' : ''}
+                        </label>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        // Get selected categories
+        function getSelectedCategories(type) {
+            const checkboxes = document.querySelectorAll(`#${type}CategoriesList input[type="checkbox"]:checked`);
+            return Array.from(checkboxes).map(cb => cb.value);
         }
 
         // Save profile changes
@@ -239,12 +339,17 @@
             const user = auth.currentUser;
             if (user) {
                 try {
+                    const selectedIncomeCategories = getSelectedCategories('income');
+                    const selectedExpenseCategories = getSelectedCategories('expense');
+
                     await setDoc(doc(db, "users", user.uid), {
                         profession: document.getElementById('profileProfession').value,
                         ageRange: document.getElementById('profileAgeRange').value,
                         country: document.getElementById('profileCountry').value,
                         incomeRange: document.getElementById('profileIncomeRange').value,
                         cycleDate: document.getElementById('profileCycleDate').value,
+                        selectedIncomeCategories: selectedIncomeCategories,
+                        selectedExpenseCategories: selectedExpenseCategories,
                         email: user.email,
                         updatedAt: new Date().toISOString()
                     }, { merge: true });
