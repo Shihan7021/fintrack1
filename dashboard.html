@@ -165,19 +165,30 @@
         const analytics = getAnalytics(app);
 
         // Data and state variables
-        const incomeCategories = [
-            "Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"
-        ];
-        const expenseCategories = [
-            "Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing",
-            "Household", "Savings", "Entertainment", "Others"
-        ];
-
         let transactions = [];
         let deletedTxnData = null;
         let currentUserId = null;
         let incomeChart, expenseChart;
         let unsubscribeFromTransactions = null;
+        
+        // User selected categories
+        let incomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
+        let expenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing",
+            "Household", "Savings", "Entertainment", "Others"];
+
+        // Load user categories
+        async function loadUserCategories(userId) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", userId));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    incomeCategories = userData.selectedIncomeCategories || incomeCategories;
+                    expenseCategories = userData.selectedExpenseCategories || expenseCategories;
+                }
+            } catch (error) {
+                console.error("Error loading user categories:", error);
+            }
+        }
 
         // Utility functions
         function formatAmount(amount) {
