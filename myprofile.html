@@ -190,6 +190,14 @@
                             <!-- Income categories will be populated here -->
                         </div>
                     </div>
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <input type="text" id="customIncomeCategory" class="form-control" placeholder="Add custom income category">
+                            <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('income')">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Expense Categories Section -->
@@ -198,6 +206,14 @@
                     <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
                         <div id="expenseCategoriesList" class="row">
                             <!-- Expense categories will be populated here -->
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <input type="text" id="customExpenseCategory" class="form-control" placeholder="Add custom expense category">
+                            <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('expense')">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -245,6 +261,12 @@
         let categoriesWithTransactions = {
             income: new Set(),
             expense: new Set()
+        };
+
+        // Track custom categories
+        let customCategories = {
+            income: [],
+            expense: []
         };
 
         // Load user profile data
@@ -333,6 +355,64 @@
             return Array.from(checkboxes).map(cb => cb.value);
         }
 
+        // Add custom category function
+        window.addCustomCategory = function(type) {
+            const inputId = type === 'income' ? 'customIncomeCategory' : 'customExpenseCategory';
+            const input = document.getElementById(inputId);
+            const categoryName = input.value.trim();
+            
+            if (categoryName === '') {
+                alert('Please enter a category name');
+                return;
+            }
+            
+            // Check for duplicates
+            const allCategories = type === 'income' 
+                ? [...incomeCategories, ...customCategories.income]
+                : [...expenseCategories, ...customCategories.expense];
+                
+            if (allCategories.some(cat => cat.toLowerCase() === categoryName.toLowerCase())) {
+                alert('This category already exists');
+                return;
+            }
+            
+            // Add to custom categories
+            customCategories[type].push(categoryName);
+            
+            // Update display
+            const selectedCategories = getSelectedCategories(type);
+            if (!selectedCategories.includes(categoryName)) {
+                selectedCategories.push(categoryName);
+            }
+            
+            populateCategories(type, 
+                type === 'income' ? [...incomeCategories, ...customCategories.income] : [...expenseCategories, ...customCategories.expense], 
+                selectedCategories);
+            
+            // Clear input
+            input.value = '';
+        };
+
+        // Remove custom category function
+        window.removeCustomCategory = function(type, category) {
+            // Check if category has transactions
+            if (type === 'income' ? categoriesWithTransactions.income.has(category) : categoriesWithTransactions.expense.has(category)) {
+                alert('Cannot remove category with existing transactions');
+                return;
+            }
+            
+            // Remove from custom categories
+            customCategories[type] = customCategories[type].filter(cat => cat !== category);
+            
+            // Update display
+            const selectedCategories = getSelectedCategories(type);
+            const updatedSelected = selectedCategories.filter(cat => cat !== category);
+            
+            populateCategories(type, 
+                type === 'income' ? [...incomeCategories, ...customCategories.income] : [...expenseCategories, ...customCategories.expense], 
+                updatedSelected);
+        };
+
         // Save profile changes
         profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -350,6 +430,8 @@
                         cycleDate: document.getElementById('profileCycleDate').value,
                         selectedIncomeCategories: selectedIncomeCategories,
                         selectedExpenseCategories: selectedExpenseCategories,
+                        customIncomeCategories: customCategories.income,
+                        customExpenseCategories: customCategories.expense,
                         email: user.email,
                         updatedAt: new Date().toISOString()
                     }, { merge: true });
