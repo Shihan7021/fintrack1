@@ -106,6 +106,12 @@
             </thead>
             <tbody id="historyTableBody"></tbody>
         </table>
+        
+        <div class="d-flex justify-content-end mt-3">
+            <button class="btn btn-danger" onclick="deleteAllFilteredTransactions()">
+                <i class="fas fa-trash-alt"></i> Delete All
+            </button>
+        </div>
     </div>
 
     
@@ -281,10 +287,52 @@
             }
         };
 
+        async function deleteAllFilteredTransactions() {
+            if (!currentUserId) {
+                alert("You must be logged in to delete transactions.");
+                return;
+            }
+
+            // Get filtered transactions based on current filters
+            const category = document.getElementById("filterCategory").value;
+            const type = document.getElementById("filterType").value;
+            const range = document.getElementById("amountRange").value.split("-").map(x => parseFloat(x));
+            
+            const filteredTransactions = txns.filter(t => {
+                const inCategory = !category || t.category === category;
+                const inType = !type || t.type === type;
+                const amount = parseFloat(t.amount);
+                const inRange =
+                    (isNaN(range[0]) && isNaN(range[1])) ||
+                    ((!isNaN(range[0]) && amount >= range[0]) && (!isNaN(range[1]) && amount <= range[1]));
+                return inCategory && inType && inRange;
+            });
+
+            if (filteredTransactions.length === 0) {
+                alert("No transactions to delete.");
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${filteredTransactions.length} transaction(s)? This action cannot be undone.`)) {
+                try {
+                    let deletedCount = 0;
+                    for (const txn of filteredTransactions) {
+                        await deleteDoc(doc(db, "users", currentUserId, "transactions", txn.id));
+                        deletedCount++;
+                    }
+                    alert(`${deletedCount} transaction(s) deleted successfully.`);
+                } catch (e) {
+                    console.error("Error deleting transactions: ", e);
+                    alert("Failed to delete some transactions. Please try again.");
+                }
+            }
+        }
+
         window.renderHistory = renderHistory;
         window.deleteTxn = deleteTxn;
         window.undoDelete = undoDelete;
         window.exportTransactions = exportTransactions;
+        window.deleteAllFilteredTransactions = deleteAllFilteredTransactions;
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
