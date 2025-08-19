@@ -303,16 +303,20 @@
                     document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
                     document.getElementById('profileCycleDate').value = userData.cycleDate || '';
 
+                    // Load custom categories
+                    customCategories.income = userData.customIncomeCategories || [];
+                    customCategories.expense = userData.customExpenseCategories || [];
+
                     // Load selected categories
-                    const selectedIncome = userData.selectedIncomeCategories || incomeCategories;
-                    const selectedExpense = userData.selectedExpenseCategories || expenseCategories;
+                    const selectedIncome = userData.selectedIncomeCategories || [...incomeCategories, ...customCategories.income];
+                    const selectedExpense = userData.selectedExpenseCategories || [...expenseCategories, ...customCategories.expense];
 
                     // Check for existing transactions
                     await checkExistingTransactions(user.uid);
 
-                    // Populate categories
-                    populateCategories('income', incomeCategories, selectedIncome);
-                    populateCategories('expense', expenseCategories, selectedExpense);
+                    // Populate categories with both predefined and custom categories
+                    populateCategories('income', [...incomeCategories, ...customCategories.income], selectedIncome);
+                    populateCategories('expense', [...expenseCategories, ...customCategories.expense], selectedExpense);
                 }
             }
         }
@@ -350,8 +354,9 @@
                     : categoriesWithTransactions.expense.has(category);
                 
                 const isSelected = selectedCategories.includes(category);
+                const isCustom = (type === 'income' ? customCategories.income : customCategories.expense).includes(category);
                 
-                col.innerHTML = `
+                let categoryDisplay = `
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" 
                                id="${type}_${category}" 
@@ -361,9 +366,19 @@
                         <label class="form-check-label" for="${type}_${category}">
                             ${category}
                             ${hasTransactions ? '<small class="text-muted"> (has transactions)</small>' : ''}
-                        </label>
-                    </div>
-                `;
+                        </label>`;
+                
+                // Add remove button for custom categories
+                if (isCustom && !hasTransactions) {
+                    categoryDisplay += `
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                onclick="removeCustomCategory('${type}', '${category}')">
+                            <i class="fas fa-times"></i>
+                        </button>`;
+                }
+                
+                categoryDisplay += `</div>`;
+                col.innerHTML = categoryDisplay;
                 container.appendChild(col);
             });
         }
