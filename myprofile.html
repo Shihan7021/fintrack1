@@ -292,31 +292,49 @@
         async function loadUserProfile() {
             const user = auth.currentUser;
             if (user) {
-                // Load user profile data
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    document.getElementById('profileEmail').value = user.email;
-                    document.getElementById('profileProfession').value = userData.profession || '';
-                    document.getElementById('profileAgeRange').value = userData.ageRange || '';
-                    document.getElementById('profileCountry').value = userData.country || '';
-                    document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
-                    document.getElementById('profileCycleDate').value = userData.cycleDate || '';
+                try {
+                    // Load user profile data
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        document.getElementById('profileEmail').value = user.email;
+                        document.getElementById('profileProfession').value = userData.profession || '';
+                        document.getElementById('profileAgeRange').value = userData.ageRange || '';
+                        document.getElementById('profileCountry').value = userData.country || '';
+                        document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
+                        document.getElementById('profileCycleDate').value = userData.cycleDate || '';
 
-                    // Load custom categories
-                    customCategories.income = userData.customIncomeCategories || [];
-                    customCategories.expense = userData.customExpenseCategories || [];
+                        // Load custom categories with fallback to empty arrays
+                        customCategories.income = userData.customIncomeCategories || [];
+                        customCategories.expense = userData.customExpenseCategories || [];
 
-                    // Load selected categories
-                    const selectedIncome = userData.selectedIncomeCategories || [...incomeCategories, ...customCategories.income];
-                    const selectedExpense = userData.selectedExpenseCategories || [...expenseCategories, ...customCategories.expense];
+                        console.log('Loaded custom income categories:', customCategories.income);
+                        console.log('Loaded custom expense categories:', customCategories.expense);
 
-                    // Check for existing transactions
-                    await checkExistingTransactions(user.uid);
+                        // Load selected categories with proper fallbacks
+                        const selectedIncome = userData.selectedIncomeCategories || [...incomeCategories, ...customCategories.income];
+                        const selectedExpense = userData.selectedExpenseCategories || [...expenseCategories, ...customCategories.expense];
 
-                    // Populate categories with both predefined and custom categories
-                    populateCategories('income', [...incomeCategories, ...customCategories.income], selectedIncome);
-                    populateCategories('expense', [...expenseCategories, ...customCategories.expense], selectedExpense);
+                        console.log('Selected income categories:', selectedIncome);
+                        console.log('Selected expense categories:', selectedExpense);
+
+                        // Check for existing transactions
+                        await checkExistingTransactions(user.uid);
+
+                        // Populate categories with both predefined and custom categories
+                        populateCategories('income', [...incomeCategories, ...customCategories.income], selectedIncome);
+                        populateCategories('expense', [...expenseCategories, ...customCategories.expense], selectedExpense);
+                    } else {
+                        // If no user document exists, create default setup
+                        console.log('No user document found, setting up defaults');
+                        populateCategories('income', incomeCategories, incomeCategories);
+                        populateCategories('expense', expenseCategories, expenseCategories);
+                    }
+                } catch (error) {
+                    console.error('Error loading user profile:', error);
+                    // Fallback to default categories if there's an error
+                    populateCategories('income', incomeCategories, incomeCategories);
+                    populateCategories('expense', expenseCategories, expenseCategories);
                 }
             }
         }
@@ -342,8 +360,22 @@
 
         // Populate categories with checkboxes
         function populateCategories(type, allCategories, selectedCategories) {
+            console.log(`Populating ${type} categories:`, allCategories);
+            console.log(`Selected ${type} categories:`, selectedCategories);
+            
             const container = document.getElementById(`${type}CategoriesList`);
+            if (!container) {
+                console.error(`Container for ${type}CategoriesList not found`);
+                return;
+            }
+            
             container.innerHTML = '';
+            
+            // Ensure we have categories to display
+            if (!allCategories || allCategories.length === 0) {
+                console.warn(`No categories found for ${type}`);
+                return;
+            }
             
             allCategories.forEach(category => {
                 const col = document.createElement('div');
@@ -356,16 +388,20 @@
                 const isSelected = selectedCategories.includes(category);
                 const isCustom = (type === 'income' ? customCategories.income : customCategories.expense).includes(category);
                 
+                // Create unique ID for each checkbox
+                const checkboxId = `${type}_${category.replace(/\s+/g, '_')}`;
+                
                 let categoryDisplay = `
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" 
-                               id="${type}_${category}" 
+                               id="${checkboxId}" 
                                value="${category}"
                                ${isSelected ? 'checked' : ''}
                                ${hasTransactions ? 'disabled' : ''}>
-                        <label class="form-check-label" for="${type}_${category}">
+                        <label class="form-check-label" for="${checkboxId}">
                             ${category}
                             ${hasTransactions ? '<small class="text-muted"> (has transactions)</small>' : ''}
+                            ${isCustom ? '<small class="text-info"> (custom)</small>' : ''}
                         </label>`;
                 
                 // Add remove button for custom categories
@@ -381,6 +417,8 @@
                 col.innerHTML = categoryDisplay;
                 container.appendChild(col);
             });
+            
+            console.log(`Successfully populated ${allCategories.length} ${type} categories`);
         }
 
         // Get selected categories
@@ -391,6 +429,8 @@
 
         // Add custom category function
         window.addCustomCategory = function(type) {
+            console.log(`Adding custom ${type} category`);
+            
             const inputId = type === 'income' ? 'customIncomeCategory' : 'customExpenseCategory';
             const input = document.getElementById(inputId);
             const categoryName = input.value.trim();
@@ -412,6 +452,7 @@
             
             // Add to custom categories
             customCategories[type].push(categoryName);
+            console.log(`Added ${categoryName} to ${type} categories:`, customCategories[type]);
             
             // Update display
             const selectedCategories = getSelectedCategories(type);
@@ -419,12 +460,16 @@
                 selectedCategories.push(categoryName);
             }
             
-            populateCategories(type, 
-                type === 'income' ? [...incomeCategories, ...customCategories.income] : [...expenseCategories, ...customCategories.expense], 
-                selectedCategories);
+            const updatedAllCategories = type === 'income' 
+                ? [...incomeCategories, ...customCategories.income] 
+                : [...expenseCategories, ...customCategories.expense];
+            
+            populateCategories(type, updatedAllCategories, selectedCategories);
             
             // Clear input
             input.value = '';
+            
+            console.log(`Successfully added and displayed ${categoryName} for ${type}`);
         };
 
         // Remove custom category function
