@@ -3,94 +3,338 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - FinSight</title>
+    <title>FinSight - Financial Management Made Simple</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css" />
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .pricing-card {
+            transition: transform 0.3s ease;
+        }
+        .pricing-card:hover {
+            transform: translateY(-5px);
+        }
+        .testimonial-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
-<body class="login-theme">
-    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
-        <div class="card login-card">
-            <img src="logo.png" alt="FinSight Logo" class="logo-image">
-
-            <h4 class="text-center mb-4">Login</h4>
-            <form id="loginForm">
-                <div class="mb-2">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" class="form-control" required />
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <img src="logo.png" alt="FinSight" height="40" class="me-2">
+                FinSight
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                </ul>
+                <div class="d-flex">
+                    <a href="login.html" class="btn btn-outline-light me-2">Login</a>
+                    <a href="register.html" class="btn btn-warning">Register</a>
                 </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" class="form-control" required />
-                </div>
-                <button type="submit" class="btn btn-login w-100">Login</button>
-            </form>
-
-            <hr class="my-3" />
-
-            <div class="d-flex justify-content-between gap-2">
-                <a href="register.html" class="btn btn-register flex-fill">Register</a>
-                <a href="change-password.html" class="btn btn-reset-password flex-fill">Reset Password</a>
             </div>
-            
         </div>
-    </div>
+    </nav>
 
-    <script type="module">
-        // Import Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100 pt-5">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Take Control of Your Finances</h1>
+                    <p class="lead mb-4">FinSight helps you track expenses, manage budgets, and achieve your financial goals with powerful insights and easy-to-use tools.</p>
+                    <div class="d-flex gap-3">
+                        <a href="register.html" class="btn btn-warning btn-lg">Get Started Free</a>
+                        <a href="#features" class="btn btn-outline-light btn-lg">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://via.placeholder.com/600x400/ffffff/007bff?text=FinSight+Dashboard" alt="FinSight Dashboard" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAl8wXLzjuHGHohU70LOoObJ7OZUhHpWDQ",
-            authDomain: "finsight-567f4.firebaseapp.com",
-            projectId: "finsight-567f4",
-            storageBucket: "finsight-567f4.firebasestorage.app",
-            messagingSenderId: "329662315678",
-            appId: "1:329662315678:web:735fbacbca2818e0674f8f",
-            measurementId: "G-3BYVY6PE64"
-        };
+    <!-- Features Section -->
+    <section id="features" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Powerful Features</h2>
+                <p class="lead">Everything you need to manage your finances effectively</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line feature-icon text-primary"></i>
+                            <h5 class="card-title">Expense Tracking</h5>
+                            <p class="card-text">Track all your expenses in one place with automatic categorization and detailed insights.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-bullseye feature-icon text-success"></i>
+                            <h5 class="card-title">Budget Planning</h5>
+                            <p class="card-text">Set and monitor budgets for different categories with smart alerts and recommendations.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-piggy-bank feature-icon text-warning"></i>
+                            <h5 class="card-title">Savings Goals</h5>
+                            <p class="card-text">Create and track savings goals with visual progress indicators and achievement celebrations.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-mobile-alt feature-icon text-info"></i>
+                            <h5 class="card-title">Mobile Access</h5>
+                            <p class="card-text">Access your financial data anywhere with our responsive web app that works on all devices.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shield-alt feature-icon text-danger"></i>
+                            <h5 class="card-title">Bank Security</h5>
+                            <p class="card-text">Your data is encrypted and secured with bank-level security protocols and regular backups.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-pie feature-icon text-secondary"></i>
+                            <h5 class="card-title">Smart Reports</h5>
+                            <p class="card-text">Get detailed financial reports and insights to make informed decisions about your money.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Choose Your Plan</h2>
+                <p class="lead">Start free and scale as you grow</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-4">
+                    <div class="card h-100 pricing-card">
+                        <div class="card-header bg-light text-center">
+                            <h4 class="card-title mb-0">Free</h4>
+                            <div class="display-4 fw-bold text-primary">$0<span class="fs-6 text-muted">/month</span></div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Track up to 100 transactions</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Basic expense categories</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Simple budget tracking</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Mobile access</li>
+                                <li><i class="fas fa-times text-muted me-2"></i>Advanced reports</li>
+                                <li><i class="fas fa-times text-muted me-2"></i>Bank sync</li>
+                            </ul>
+                            <a href="register.html" class="btn btn-outline-primary w-100">Get Started</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 pricing-card shadow-lg">
+                        <div class="card-header bg-primary text-white text-center">
+                            <span class="badge bg-warning text-dark mb-2">Most Popular</span>
+                            <h4 class="card-title mb-0">Pro</h4>
+                            <div class="display-4 fw-bold">$9<span class="fs-6 opacity-75">/month</span></div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Unlimited transactions</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Advanced categories & tags</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Detailed budget planning</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Bank account sync</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Advanced reports & insights</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Priority support</li>
+                            </ul>
+                            <a href="register.html" class="btn btn-primary w-100">Start Free Trial</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 pricing-card">
+                        <div class="card-header bg-light text-center">
+                            <h4 class="card-title mb-0">Business</h4>
+                            <div class="display-4 fw-bold text-primary">$19<span class="fs-6 text-muted">/month</span></div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Everything in Pro</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Multiple users</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Team collaboration</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Custom integrations</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Advanced analytics</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Dedicated support</li>
+                            </ul>
+                            <a href="register.html" class="btn btn-outline-primary w-100">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // Redirect already logged-in users to the dashboard
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.location.href = "dashboard.html";
-            }
-        });
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">What Our Users Say</h2>
+                <p class="lead">Join thousands of satisfied users who have transformed their finances</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/50x50/007bff/ffffff?text=JD" alt="John Doe" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="mb-0">John Doe</h6>
+                                <small class="text-muted">Small Business Owner</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">"FinSight has completely changed how I manage my business finances. The expense tracking and budget features are incredibly intuitive and have saved me hours of work each month."</p>
+                        <div class="text-warning mt-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/50x50/28a745/ffffff?text=SM" alt="Sarah Miller" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="mb-0">Sarah Miller</h6>
+                                <small class="text-muted">Marketing Manager</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">"The savings goals feature helped me save for my dream vacation! I love how easy it is to set goals and track progress. The mobile app is fantastic too."</p>
+                        <div class="text-warning mt-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/50x50/dc3545/ffffff?text=AL" alt="Alex Lee" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="mb-0">Alex Lee</h6>
+                                <small class="text-muted">Freelance Designer</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">"As a freelancer, managing irregular income was always challenging. FinSight's smart reports and budget planning features have given me complete control over my finances."</p>
+                        <div class="text-warning mt-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        const loginForm = document.getElementById("loginForm");
+    <!-- About Section -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="display-5 fw-bold mb-4">About FinSight</h2>
+                    <p class="lead mb-4">FinSight was created with a simple mission: to make financial management accessible to everyone, regardless of their financial background or technical expertise.</p>
+                    <p>Our platform combines powerful analytics with an intuitive interface to help you understand your spending patterns, create realistic budgets, and achieve your financial goals faster.</p>
+                    <p>Whether you're saving for a house, planning for retirement, or just trying to get a better handle on your monthly expenses, FinSight provides the tools and insights you need to succeed.</p>
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <h4 class="text-primary">10,000+</h4>
+                            <p class="text-muted">Active Users</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-primary">$2M+</h4>
+                            <p class="text-muted">Tracked Expenses</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://via.placeholder.com/600x400/007bff/ffffff?text=About+FinSight" alt="About FinSight" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </section>
 
-        loginForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h5>FinSight</h5>
+                    <p>Your trusted partner for financial management and budgeting.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h6>Product</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#features" class="text-light text-decoration-none">Features</a></li>
+                        <li><a href="#pricing" class="text-light text-decoration-none">Pricing</a></li>
+                        <li><a href="#testimonials" class="text-light text-decoration-none">Testimonials</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h6>Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light text-decoration-none">Help Center</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Contact Us</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h6>Connect</h6>
+                    <p>Ready to take control of your finances?</p>
+                    <a href="register.html" class="btn btn-primary">Get Started Now</a>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2024 FinSight. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "dashboard.html";
-            } catch (error) {
-                const errorCode = error.code;
-                let errorMessage = "Invalid login credentials. Please try again.";
-
-                if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
-                    errorMessage = "Invalid email or password.";
-                } else if (errorCode === 'auth/invalid-email') {
-                    errorMessage = "The email address is not valid.";
-                }
-
-                console.error(error);
-                alert(errorMessage);
-            }
-        });
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
