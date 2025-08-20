@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Registration - FinTrack</title>
+    <link rel="stylesheet" href="register-enhanced.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="registration-container">
+        <div class="registration-card">
+            <div class="registration-header">
+                <h2><i class="fas fa-user-plus"></i> Create Your Account</h2>
+                <p>Join thousands of users managing their finances with FinTrack</p>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <div class="progress-line">
+                        <div class="progress-line-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Personal Info</div>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Account Setup</div>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Preferences</div>
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Review</div>
+                    </div>
+                </div>
+            </div>
+
+            <form class="registration-form" id="registrationForm" novalidate>
+                <!-- Step 1: Personal Information -->
+                <div class="form-step active" data-step="1">
+                    <h3>Personal Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">First Name *</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">Last Name *</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="+1 (555) 123-4567">
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+                        <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">Next Step</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Account Setup -->
+                <div class="form-step" data-step="2">
+                    <h3>Account Setup</h3>
+                    
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username *</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password *</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="password-strength" id="passwordStrength"></div>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password *</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="securityQuestion" class="form-label">Security Question *</label>
+                        <select class="form-control" id="securityQuestion" name="securityQuestion" required>
+                            <option value="">Select a security question</option>
+                            <option value="pet">What was your first pet's name?</option>
+                            <option value="school">What elementary school did you attend?</option>
+                            <option value="city">In what city were you born?</option>
+                            <option value="mother">What is your mother's maiden name?</option>
+                            <option value="book">What is your favorite book?</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="securityAnswer" class="form-label">Security Answer *</label>
+                        <input type="text" class="form-control" id="securityAnswer" name="securityAnswer" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">Next Step</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Preferences -->
+                <div class="form-step" data-step="3">
+                    <h3>Financial Preferences</h3>
+                    
+                    <div class="form-group">
+                        <label for="currency" class="form-label">Preferred Currency *</label>
+                        <select class="form-control" id="currency" name="currency" required>
+                            <option value="">Select currency</option>
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                            <option value="JPY">Japanese Yen (JPY)</option>
+                            <option value="CAD">Canadian Dollar (CAD)</option>
+                            <option value="AUD">Australian Dollar (AUD)</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Income Categories</label>
+                        <div class="categories-container">
+                            <div class="category-section">
+                                <div class="category-title">Employment</div>
+                                <div class="category-list">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="salary">
+                                        <span class="form-check-label">Salary</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="bonus">
+                                        <span class="form-check-label">Bonus</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="commission">
+                                        <span class="form-check-label">Commission</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="category-section">
+                                <div class="category-title">Investments</div>
+                                <div class="category-list">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="dividends">
+                                        <span class="form-check-label">Dividends</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="interest">
+                                        <span class="form-check-label">Interest</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="capital-gains">
+                                        <span class="form-check-label">Capital Gains</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="category-section">
+                                <div class="category-title">Other</div>
+                                <div class="category-list">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="freelance">
+                                        <span class="form-check-label">Freelance</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="rental">
+                                        <span class="form-check-label">Rental Income</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="gifts">
+                                        <span class="form-check-label">Gifts</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Expense Categories</label>
+                        <div class="categories-container">
+                            <div class="category-section">
+                                <div class="category-title">Housing</div>
+                                <div class="category-list">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="rent">
+                                        <span class="form-check-label">Rent/Mortgage</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="utilities">
+                                        <span class="form-check-label">Utilities</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="insurance">
+                                        <span class="form-check-label">Insurance</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="category-section">
+                                <div class="category-title">Transportation</div>
+                                <div class="category-list">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="gas">
+                                        <span class="form-check-label">Gas</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="maintenance">
+                                        <span class="form-check-label">Maintenance</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="public-transport">
+                                        <span class="form-check-label">Public Transport</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="category-section">
+                                <div class="category-title">Lifestyle</div>
+                                <div class="category-list">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="groceries">
+                                        <span class="form-check-label">Groceries</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="dining">
+                                        <span class="form-check-label">Dining Out</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="entertainment">
+                                        <span class="form-check-label">Entertainment</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notifications</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="emailNotifications" name="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">Email notifications for important updates</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="budgetAlerts" name="budgetAlerts" checked>
+                            <label class="form-check-label" for="budgetAlerts">Budget limit alerts</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="monthlyReports" name="monthlyReports">
+                            <label class="form-check-label" for="monthlyReports">Monthly financial reports</label>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">Next Step</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review -->
+                <div class="form-step" data-step="4">
+                    <h3>Review Your Information</h3>
+                    
+                    <div class="review-section">
+                        <h4>Personal Information</h4>
+                        <div id="reviewPersonalInfo"></div>
+                    </div>
+
+                    <div class="review-section">
+                        <h4>Account Details</h4>
+                        <div id="reviewAccountDetails"></div>
+                    </div>
+
+                    <div class="review-section">
+                        <h4>Preferences</h4>
+                        <div id="reviewPreferences"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                            </label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-check"></i> Create Account
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="register-enhanced.js"></script>
+</body>
+</html>
