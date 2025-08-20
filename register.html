@@ -100,7 +100,7 @@
 
         <form id="registerForm">
             <!-- Step 1: Account Information -->
-<div class="register-section d-flex flex-column align-items-center" id="step1">
+            <div class="register-section d-flex flex-column align-items-center" id="step1">
                 <h4 class="text-primary mb-3">Step 1: Account Information</h4>
                 <div class="row justify-content-center w-100">
                     <div class="col-md-8 mb-3">
@@ -258,9 +258,9 @@
                             <option value="No">No</option>
                         </select>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-3" id="childrenCountContainer" style="display: none;">
                         <label for="childrenCount" class="form-label">Number of Children</label>
-                        <select id="childrenCount" class="form-select" required>
+                        <select id="childrenCount" class="form-select">
                             <option value="">Select Number</option>
                             <option value="0">0</option>
                             <option value="1">1</option>
@@ -272,6 +272,15 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-md-6 mb-3" id="houseTypeContainer" style="display: none;">
+                        <label for="houseType" class="form-label">House Type</label>
+                        <select id="houseType" class="form-select">
+                            <option value="">Select House Type</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="House">House</option>
+                        </select>
+                    </div>
                     <div class="col-md-6 mb-3">
                         <label for="cycleDate" class="form-label">Cycle Date</label>
                         <select id="cycleDate" class="form-select" required>
@@ -284,6 +293,32 @@
                             <option value="25">25th</option>
                             <option value="30">30th</option>
                         </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <input type="tel" id="phoneNumber" class="form-control" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" id="address" class="form-control" required />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" id="city" class="form-control" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="postalCode" class="form-label">Postal Code</label>
+                        <input type="text" id="postalCode" class="form-control" required />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="emergencyContact" class="form-label">Emergency Contact</label>
+                        <input type="tel" id="emergencyContact" class="form-control" required />
                     </div>
                 </div>
                 <div class="d-flex justify-content-between">
@@ -456,6 +491,12 @@
             return true;
         }
 
+        // Initialize categories
+        function initializeCategories() {
+            populateCategories('income', incomeCategories, []);
+            populateCategories('expense', expenseCategories, []);
+        }
+
         // Populate categories with checkboxes
         function populateCategories(type, allCategories, selectedCategories) {
             const container = document.getElementById(`${type}CategoriesList`);
@@ -482,114 +523,131 @@
             });
         }
 
+        // Add custom category
+        window.addCustomCategory = function(type) {
+            const input = document.getElementById(`custom${type.charAt(0).toUpperCase() + type.slice(1)}Category`);
+            const value = input.value.trim();
+            
+            if (value && !customCategories[type].includes(value)) {
+                customCategories[type].push(value);
+                
+                const container = document.getElementById(`${type}CategoriesList`);
+                const col = document.createElement('div');
+                col.className = 'col-md-6 mb-2';
+                
+                col.innerHTML = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" 
+                               id="${type}_${value}" 
+                               value="${value}" 
+                               checked>
+                        <label class="form-check-label" for="${type}_${value}">
+                            ${value}
+                        </label>
+                    </div>
+                `;
+                container.appendChild(col);
+                
+                input.value = '';
+            }
+        };
+
         // Get selected categories
         function getSelectedCategories(type) {
             const checkboxes = document.querySelectorAll(`#${type}CategoriesList input[type="checkbox"]:checked`);
             return Array.from(checkboxes).map(cb => cb.value);
         }
 
-        // Add custom category function
-        window.addCustomCategory = function(type) {
-            const inputId = type === 'income' ? 'customIncomeCategory' : 'customExpenseCategory';
-            const input = document.getElementById(inputId);
-            const categoryName = input.value.trim();
-            
-            if (categoryName === '') {
-                alert('Please enter a category name');
-                return;
-            }
-            
-            // Check for duplicates
-            const allCategories = type === 'income' 
-                ? [...incomeCategories, ...customCategories.income]
-                : [...expenseCategories, ...customCategories.expense];
-                
-            if (allCategories.some(cat => cat.toLowerCase() === categoryName.toLowerCase())) {
-                alert('This category already exists');
-                return;
-            }
-            
-            // Add to custom categories
-            customCategories[type].push(categoryName);
-            
-            // Update display
-            const selectedCategories = getSelectedCategories(type);
-            if (!selectedCategories.includes(categoryName)) {
-                selectedCategories.push(categoryName);
-            }
-            
-            populateCategories(type, 
-                type === 'income' ? [...incomeCategories, ...customCategories.income] : [...expenseCategories, ...customCategories.expense], 
-                selectedCategories);
-            
-            // Clear input
-            input.value = '';
-        };
-
-        // Initialize categories on page load
-        function initializeCategories() {
-            // Initially select all predefined categories
-            populateCategories('income', [...incomeCategories, ...customCategories.income], [...incomeCategories, ...customCategories.income]);
-            populateCategories('expense', [...expenseCategories, ...customCategories.expense], [...expenseCategories, ...customCategories.expense]);
-        }
-
-        registerForm.addEventListener("submit", async function (e) {
+        // Handle form submission
+        registerForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-
-            const email = document.getElementById("userEmail").value.trim();
-            const password = document.getElementById("newPassword").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-            const profession = document.getElementById("profession").value;
-            const ageRange = document.getElementById("ageRange").value;
-            const country = document.getElementById("country").value;
-            const incomeRange = document.getElementById("incomeRange").value;
-            const cycleDate = document.getElementById("cycleDate").value;
-
-            if (password !== confirmPassword) {
-                alert("Passwords do not match.");
-                return;
-            }
-
+            
             try {
+                const email = document.getElementById("userEmail").value.trim();
+                const password = document.getElementById("newPassword").value;
+                
+                // Create user
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
                 
                 // Get selected categories
                 const selectedIncomeCategories = getSelectedCategories('income');
                 const selectedExpenseCategories = getSelectedCategories('expense');
                 
-                // Save additional user profile information with categories
-                const user = userCredential.user;
-                await setDoc(doc(db, "users", user.uid), {
+                // Prepare user data
+                const userData = {
                     email: email,
-                    profession: profession,
-                    ageRange: ageRange,
-                    country: country,
-                    incomeRange: incomeRange,
-                    cycleDate: cycleDate,
-                    selectedIncomeCategories: selectedIncomeCategories,
-                    selectedExpenseCategories: selectedExpenseCategories,
-                    customIncomeCategories: customCategories.income,
-                    customExpenseCategories: customCategories.expense,
-                    createdAt: new Date().toISOString()
-                });
-
-                alert("Registration successful! You can now log in.");
-                window.location.href = "index.html";
+                    firstName: document.getElementById("firstName").value.trim(),
+                    lastName: document.getElementById("lastName").value.trim(),
+                    profession: document.getElementById("profession").value,
+                    ageRange: document.getElementById("ageRange").value,
+                    country: document.getElementById("country").value,
+                    incomeRange: document.getElementById("incomeRange").value,
+                    interests: document.getElementById("interests").value,
+                    maritalStatus: document.getElementById("maritalStatus").value,
+                    vehicleOwned: document.getElementById("vehicleOwned").value,
+                    vehicleFuelType: document.getElementById("vehicleFuelType").value || null,
+                    liveWithParents: document.getElementById("liveWithParents").value,
+                    childrenCount: document.getElementById("childrenCount").value || null,
+                    houseType: document.getElementById("houseType").value || null,
+                    cycleDate: document.getElementById("cycleDate").value,
+                    phoneNumber: document.getElementById("phoneNumber").value.trim(),
+                    address: document.getElementById("address").value.trim(),
+                    city: document.getElementById("city").value.trim(),
+                    postalCode: document.getElementById("postalCode").value.trim(),
+                    emergencyContact: document.getElementById("emergencyContact").value.trim(),
+                    incomeCategories: [...selectedIncomeCategories, ...customCategories.income],
+                    expenseCategories: [...selectedExpenseCategories, ...customCategories.expense],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Save user data to Firestore
+                await setDoc(doc(db, "users", user.uid), userData);
+                
+                alert("Registration successful! Welcome to FinSight!");
+                window.location.href = "dashboard.html";
+                
             } catch (error) {
-                const errorCode = error.code;
-                let errorMessage = "An error occurred during registration.";
-                
-                // Customize error messages for better user experience
-                if (errorCode === 'auth/email-already-in-use') {
-                    errorMessage = "The email address is already in use.";
-                } else if (errorCode === 'auth/weak-password') {
-                    errorMessage = "The password is too weak. It should be at least 6 characters.";
-                } else if (errorCode === 'auth/invalid-email') {
-                    errorMessage = "The email address is not valid.";
-                }
-                
-                console.error(error);
-                alert(errorMessage);
+                console.error("Registration error:", error);
+                alert("Registration failed: " + error.message);
+            }
+        });
+
+        // Add event listeners for conditional fields
+        document.getElementById("maritalStatus").addEventListener("change", function() {
+            const maritalStatus = this.value;
+            const childrenCountContainer = document.getElementById("childrenCountContainer");
+            
+            if (maritalStatus === "Married") {
+                childrenCountContainer.style.display = "block";
+            } else {
+                childrenCountContainer.style.display = "none";
+                document.getElementById("childrenCount").value = "";
+            }
+        });
+
+        document.getElementById("liveWithParents").addEventListener("change", function() {
+            const liveWithParents = this.value;
+            const houseTypeContainer = document.getElementById("houseTypeContainer");
+            
+            if (liveWithParents === "No") {
+                houseTypeContainer.style.display = "block";
+            } else {
+                houseTypeContainer.style.display = "none";
+                document.getElementById("houseType").value = "";
+            }
+        });
+
+        document.getElementById("vehicleOwned").addEventListener("change", function() {
+            const vehicleOwned = this.value;
+            const vehicleFuelContainer = document.getElementById("vehicleFuelContainer");
+            
+            if (vehicleOwned === "Yes") {
+                vehicleFuelContainer.style.display = "block";
+            } else {
+                vehicleFuelContainer.style.display = "none";
+                document.getElementById("vehicleFuelType").value = "";
             }
         });
     </script>
