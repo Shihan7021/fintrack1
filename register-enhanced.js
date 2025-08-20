@@ -1,126 +1,121 @@
 // Enhanced Registration Form JavaScript
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyCJkY6U1sZ8aT5cU8p5p6p7q8r9s0t1u2v3w4",
+    authDomain: "finsight-2024.firebaseapp.com",
+    projectId: "finsight-2024",
+    storageBucket: "finsight-2024.appspot.com",
+    messagingSenderId: "123456789012",
+    appId: "1:123456789012:web:abcdef1234567890"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Global variables
 let currentStep = 1;
-const totalSteps = 4;
-const formData = new FormData();
+const totalSteps = 3;
+let formData = {
+    account: {},
+    personal: {},
+    categories: {
+        income: [],
+        expense: []
+    }
+};
+
+// Predefined categories
+const predefinedCategories = {
+    income: [
+        'Salary', 'Freelance', 'Business', 'Investment', 'Rental', 
+        'Bonus', 'Gift', 'Refund', 'Other Income'
+    ],
+    expense: [
+        'Food & Dining', 'Transportation', 'Shopping', 'Entertainment', 
+        'Bills & Utilities', 'Healthcare', 'Education', 'Travel', 
+        'Insurance', 'Savings', 'Debt Payment', 'Other Expense'
+    ]
+};
 
 // Initialize the form
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     setupEventListeners();
-    setupPasswordStrength();
+    loadCategories();
 });
 
+// Form initialization
 function initializeForm() {
-    // Set minimum date for date of birth (18 years ago)
-    const today = new Date();
-    const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-    document.getElementById('dateOfBirth').max = maxDate.toISOString().split('T')[0];
+    // Add fade-in animation to sections
+    const sections = document.querySelectorAll('.register-section');
+    sections.forEach(section => {
+        section.classList.add('fade-in');
+    });
     
-    // Initialize form validation
-    validateCurrentStep();
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 }
 
+// Event listeners
 function setupEventListeners() {
+    // Password visibility toggles
+    document.getElementById('togglePassword').addEventListener('click', () => togglePasswordVisibility('newPassword'));
+    document.getElementById('toggleConfirmPassword').addEventListener('click', () => togglePasswordVisibility('confirmPassword'));
+    
+    // Password strength checker
+    document.getElementById('newPassword').addEventListener('input', checkPasswordStrength);
+    
+    // Email confirmation
+    document.getElementById('confirmEmail').addEventListener('input', validateEmailMatch);
+    document.getElementById('userEmail').addEventListener('input', validateEmailMatch);
+    
+    // Form validation
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', handleSubmit);
+    
     // Real-time validation
-    const inputs = document.querySelectorAll('.form-control');
+    const inputs = form.querySelectorAll('input, select');
     inputs.forEach(input => {
         input.addEventListener('blur', validateField);
         input.addEventListener('input', clearFieldError);
     });
-
-    // Form submission
-    document.getElementById('registrationForm').addEventListener('submit', handleSubmit);
-
-    // Enter key handling
-    document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && e.target.type !== 'submit') {
-            e.preventDefault();
-            if (currentStep < totalSteps) {
-                nextStep();
-            }
-        }
-    });
 }
 
-function setupPasswordStrength() {
-    const passwordInput = document.getElementById('password');
-    const strengthIndicator = document.getElementById('passwordStrength');
-    
-    passwordInput.addEventListener('input', function() {
-        const password = this.value;
-        const strength = calculatePasswordStrength(password);
-        updatePasswordStrengthIndicator(strength);
-    });
-}
-
-function calculatePasswordStrength(password) {
-    let score = 0;
-    
-    // Length check
-    if (password.length >= 8) score += 1;
-    if (password.length >= 12) score += 1;
-    
-    // Character variety checks
-    if (/[a-z]/.test(password)) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/[0-9]/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
-    
-    return score;
-}
-
-function updatePasswordStrengthIndicator(strength) {
-    const indicator = document.getElementById('passwordStrength');
-    let strengthText = '';
-    let strengthClass = '';
-    
-    if (strength <= 2) {
-        strengthText = 'Weak';
-        strengthClass = 'weak';
-    } else if (strength <= 4) {
-        strengthText = 'Medium';
-        strengthClass = 'medium';
-    } else {
-        strengthText = 'Strong';
-        strengthClass = 'strong';
-    }
-    
-    indicator.textContent = `Password strength: ${strengthText}`;
-    indicator.className = `password-strength ${strengthClass}`;
-}
-
-function nextStep() {
-    if (validateCurrentStep()) {
-        if (currentStep < totalSteps) {
-            document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
-            currentStep++;
-            document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
-            updateProgress();
-            
-            if (currentStep === 4) {
-                populateReviewSection();
-            }
-        }
+// Navigation functions
+function nextStep(step) {
+    if (validateStep(step)) {
+        document.getElementById(`step${step}`).style.display = 'none';
+        currentStep = step + 1;
+        document.getElementById(`step${currentStep}`).style.display = 'block';
+        updateProgressBar();
+        saveStepData(step);
+        scrollToTop();
     }
 }
 
-function prevStep() {
-    if (currentStep > 1) {
-        document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
-        currentStep--;
-        document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
-        updateProgress();
-    }
+function previousStep(step) {
+    document.getElementById(`step${step}`).style.display = 'none';
+    currentStep = step - 1;
+    document.getElementById(`step${currentStep}`).style.display = 'block';
+    updateProgressBar();
+    scrollToTop();
 }
 
-function updateProgress() {
-    const progressFill = document.getElementById('progressFill');
-    const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-    progressFill.style.width = `${progressPercentage}%`;
+function updateProgressBar() {
+    const progressPercent = (currentStep / totalSteps) * 100;
+    document.getElementById('progressBar').style.width = `${progressPercent}%`;
     
     // Update step indicators
-    document.querySelectorAll('.progress-step').forEach((step, index) => {
+    document.querySelectorAll('.step').forEach((step, index) => {
         if (index + 1 <= currentStep) {
             step.classList.add('active');
         } else {
@@ -129,13 +124,19 @@ function updateProgress() {
     });
 }
 
-function validateCurrentStep() {
-    const currentStepElement = document.querySelector(`[data-step="${currentStep}"]`);
-    const inputs = currentStepElement.querySelectorAll('[required]');
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Validation functions
+function validateStep(step) {
+    const stepElement = document.getElementById(`step${step}`);
+    const inputs = stepElement.querySelectorAll('input[required], select[required]');
     let isValid = true;
     
     inputs.forEach(input => {
-        if (!validateField(input)) {
+        if (!input.checkValidity()) {
+            input.classList.add('is-invalid');
             isValid = false;
         }
     });
@@ -143,267 +144,264 @@ function validateCurrentStep() {
     return isValid;
 }
 
-function validateField(input) {
-    if (!input) {
-        input = event.target;
-    }
-    
-    const value = input.value.trim();
-    const fieldName = input.name;
-    let isValid = true;
-    let errorMessage = '';
-    
-    // Clear previous error
-    clearFieldError(input);
-    
-    // Required field validation
-    if (input.hasAttribute('required') && !value) {
-        errorMessage = `${input.previousElementSibling.textContent.replace('*', '').trim()} is required`;
-        isValid = false;
-    }
-    
-    // Email validation
-    if (fieldName === 'email' && value) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-            errorMessage = 'Please enter a valid email address';
-            isValid = false;
-        }
-    }
-    
-    // Phone validation
-    if (fieldName === 'phone' && value) {
-        const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
-        if (!phoneRegex.test(value)) {
-            errorMessage = 'Please enter a valid phone number';
-            isValid = false;
-        }
-    }
-    
-    // Password validation
-    if (fieldName === 'password' && value) {
-        if (value.length < 8) {
-            errorMessage = 'Password must be at least 8 characters long';
-            isValid = false;
-        }
-    }
-    
-    // Password confirmation
-    if (fieldName === 'confirmPassword' && value) {
-        const password = document.getElementById('password').value;
-        if (value !== password) {
-            errorMessage = 'Passwords do not match';
-            isValid = false;
-        }
-    }
-    
-    // Username validation
-    if (fieldName === 'username' && value) {
-        if (value.length < 3) {
-            errorMessage = 'Username must be at least 3 characters long';
-            isValid = false;
-        } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-            errorMessage = 'Username can only contain letters, numbers, and underscores';
-            isValid = false;
-        }
-    }
-    
-    // Date of birth validation
-    if (fieldName === 'dateOfBirth' && value) {
-        const dob = new Date(value);
-        const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-        
-        if (age < 18 || (age === 18 && monthDiff < 0)) {
-            errorMessage = 'You must be at least 18 years old';
-            isValid = false;
-        }
-    }
-    
-    if (!isValid) {
-        showFieldError(input, errorMessage);
-    }
-    
-    return isValid;
-}
-
-function showFieldError(input, message) {
-    input.classList.add('is-invalid');
-    const feedback = input.parentNode.querySelector('.invalid-feedback');
-    if (feedback) {
-        feedback.textContent = message;
+function validateField(event) {
+    const field = event.target;
+    if (!field.checkValidity()) {
+        field.classList.add('is-invalid');
+    } else {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
     }
 }
 
-function clearFieldError(input) {
-    if (!input) {
-        input = event.target;
-    }
-    input.classList.remove('is-invalid');
-    const feedback = input.parentNode.querySelector('.invalid-feedback');
-    if (feedback) {
-        feedback.textContent = '';
+function clearFieldError(event) {
+    const field = event.target;
+    field.classList.remove('is-invalid');
+    field.classList.remove('is-valid');
+}
+
+// Password visibility toggle
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
     }
 }
 
-function populateReviewSection() {
-    // Personal Information
-    const personalInfo = `
-        <div class="review-item">
-            <strong>Name:</strong> ${document.getElementById('firstName').value} ${document.getElementById('lastName').value}
-        </div>
-        <div class="review-item">
-            <strong>Email:</strong> ${document.getElementById('email').value}
-        </div>
-        <div class="review-item">
-            <strong>Phone:</strong> ${document.getElementById('phone').value || 'Not provided'}
-        </div>
-        <div class="review-item">
-            <strong>Date of Birth:</strong> ${document.getElementById('dateOfBirth').value}
-        </div>
-    `;
-    document.getElementById('reviewPersonalInfo').innerHTML = personalInfo;
+// Password strength checker
+function checkPasswordStrength() {
+    const password = document.getElementById('newPassword').value;
+    const strengthBar = document.getElementById('passwordStrength');
+    const strengthText = document.getElementById('passwordStrengthText');
     
-    // Account Details
-    const accountDetails = `
-        <div class="review-item">
-            <strong>Username:</strong> ${document.getElementById('username').value}
-        </div>
-        <div class="review-item">
-            <strong>Security Question:</strong> ${document.getElementById('securityQuestion').selectedOptions[0].text}
-        </div>
-    `;
-    document.getElementById('reviewAccountDetails').innerHTML = accountDetails;
+    let strength = 0;
     
-    // Preferences
-    const currency = document.getElementById('currency').value;
-    const emailNotifications = document.getElementById('emailNotifications').checked;
-    const budgetAlerts = document.getElementById('budgetAlerts').checked;
-    const monthlyReports = document.getElementById('monthlyReports').checked;
+    if (password.length >= 8) strength += 1;
+    if (/[a-z]/.test(password)) strength += 1;
+    if (/[A-Z]/.test(password)) strength += 1;
+    if (/[0-9]/.test(password)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
     
-    const preferences = `
-        <div class="review-item">
-            <strong>Currency:</strong> ${currency}
-        </div>
-        <div class="review-item">
-            <strong>Notifications:</strong>
-            <ul>
-                ${emailNotifications ? '<li>Email notifications</li>' : ''}
-                ${budgetAlerts ? '<li>Budget alerts</li>' : ''}
-                ${monthlyReports ? '<li>Monthly reports</li>' : ''}
-            </ul>
-        </div>
-    `;
-    document.getElementById('reviewPreferences').innerHTML = preferences;
+    let strengthClass = '';
+    let strengthMessage = '';
+    
+    switch (strength) {
+        case 0:
+        case 1:
+            strengthClass = 'weak';
+            strengthMessage = 'Weak';
+            break;
+        case 2:
+        case 3:
+            strengthClass = 'medium';
+            strengthMessage = 'Medium';
+            break;
+        case 4:
+        case 5:
+            strengthClass = 'strong';
+            strengthMessage = 'Strong';
+            break;
+    }
+    
+    strengthBar.className = `strength-bar-fill ${strengthClass}`;
+    strengthText.textContent = strengthMessage;
 }
 
-async function handleSubmit(e) {
-    e.preventDefault();
+// Email validation
+function validateEmailMatch() {
+    const email = document.getElementById('userEmail').value;
+    const confirmEmail = document.getElementById('confirmEmail').value;
+    const confirmEmailField = document.getElementById('confirmEmail');
     
-    if (!validateCurrentStep()) {
-        return;
+    if (confirmEmail && email !== confirmEmail) {
+        confirmEmailField.setCustomValidity('Email addresses do not match');
+        confirmEmailField.classList.add('is-invalid');
+    } else {
+        confirmEmailField.setCustomValidity('');
+        confirmEmailField.classList.remove('is-invalid');
     }
+}
+
+// Category management
+function loadCategories() {
+    const incomeContainer = document.getElementById('incomeCategories');
+    const expenseContainer = document.getElementById('expenseCategories');
     
-    if (!document.getElementById('terms').checked) {
-        alert('Please agree to the Terms of Service and Privacy Policy');
-        return;
-    }
-    
-    // Show loading
-    showLoading();
-    
-    // Collect all form data
-    const form = document.getElementById('registrationForm');
-    const formData = new FormData(form);
-    
-    // Convert FormData to object
-    const data = {};
-    formData.forEach((value, key) => {
-        if (key === 'incomeCategories' || key === 'expenseCategories') {
-            if (!data[key]) data[key] = [];
-            data[key].push(value);
-        } else {
-            data[key] = value;
-        }
+    // Load income categories
+    predefinedCategories.income.forEach(category => {
+        const categoryDiv = createCategoryElement(category, 'income');
+        incomeContainer.appendChild(categoryDiv);
     });
+    
+    // Load expense categories
+    predefinedCategories.expense.forEach(category => {
+        const categoryDiv = createCategoryElement(category, 'expense');
+        expenseContainer.appendChild(categoryDiv);
+    });
+}
+
+function createCategoryElement(categoryName, type) {
+    const div = document.createElement('div');
+    div.className = 'category-item';
+    div.innerHTML = `
+        <input type="checkbox" id="${type}_${categoryName}" name="${type}Categories" value="${categoryName}">
+        <label for="${type}_${categoryName}">${categoryName}</label>
+    `;
+    return div;
+}
+
+// Data saving functions
+function saveStepData(step) {
+    switch (step) {
+        case 1:
+            formData.account = {
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('newPassword').value,
+                username: document.getElementById('username').value
+            };
+            break;
+        case 2:
+            formData.personal = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value,
+                country: document.getElementById('country').value,
+                currency: document.getElementById('currency').value
+            };
+            break;
+        case 3:
+            formData.categories = {
+                income: getSelectedCategories('income'),
+                expense: getSelectedCategories('expense')
+            };
+            break;
+    }
+}
+
+function getSelectedCategories(type) {
+    const checkboxes = document.querySelectorAll(`input[name="${type}Categories"]:checked`);
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Form submission
+async function handleSubmit(event) {
+    event.preventDefault();
+    
+    if (!validateStep(3)) {
+        return;
+    }
+    
+    saveStepData(3);
     
     try {
-        // Simulate API call
-        await simulateRegistration(data);
+        showLoading(true);
         
-        // Success
+        // Create user account
+        const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            formData.account.email,
+            formData.account.password
+        );
+        
+        const user = userCredential.user;
+        
+        // Save user data to Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+            account: formData.account,
+            personal: formData.personal,
+            categories: formData.categories,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        });
+        
+        // Show success message
         showSuccessMessage();
         
-        // Redirect after delay
+        // Redirect after 3 seconds
         setTimeout(() => {
             window.location.href = 'dashboard.html';
         }, 3000);
         
     } catch (error) {
+        console.error('Registration error:', error);
         showErrorMessage(error.message);
     } finally {
-        hideLoading();
+        showLoading(false);
     }
 }
 
-function simulateRegistration(data) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Simulate 90% success rate
-            if (Math.random() > 0.1) {
-                resolve(data);
-            } else {
-                reject(new Error('Registration failed. Please try again.'));
-            }
-        }, 2000);
-    });
-}
-
-function showLoading() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
-}
-
-function hideLoading() {
-    document.getElementById('loadingOverlay').style.display = 'none';
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-check"></i> Create Account';
+// UI helper functions
+function showLoading(show) {
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingSpinner = submitBtn.querySelector('.spinner-border');
+    
+    if (show) {
+        submitBtn.disabled = true;
+        loadingSpinner.style.display = 'inline-block';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating Account...';
+    } else {
+        submitBtn.disabled = false;
+        loadingSpinner.style.display = 'none';
+        submitBtn.innerHTML = 'Complete Registration';
+    }
 }
 
 function showSuccessMessage() {
-    const successDiv = document.createElement('div');
-    successDiv.className = 'alert alert-success';
-    successDiv.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <strong>Success!</strong> Your account has been created. Redirecting to dashboard...
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        <strong>Success!</strong> Your account has been created successfully. Redirecting to dashboard...
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    document.querySelector('.registration-card').appendChild(successDiv);
+    
+    document.querySelector('.register-header').after(alertDiv);
 }
 
 function showErrorMessage(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'alert alert-danger';
-    errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <strong>Error:</strong> ${message}
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        <strong>Error!</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    document.querySelector('.registration-card').appendChild(errorDiv);
     
-    setTimeout(() => {
-        errorDiv.remove();
-    }, 5000);
+    document.querySelector('.register-header').after(alertDiv);
 }
 
 // Utility functions
-function formatPhoneNumber(input) {
-    const value = input.value.replace(/\D/g, '');
-    const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-    input.value = formatted;
+function formatPhoneNumber(value) {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+        return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
 }
 
-// Add phone formatting
+// Initialize phone number formatting
 document.getElementById('phone').addEventListener('input', function(e) {
-    formatPhoneNumber(this);
+    e.target.value = formatPhoneNumber(e.target.value);
 });
+
+// Export functions for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        validateStep,
+        checkPasswordStrength,
+        validateEmailMatch,
+        formatPhoneNumber
+    };
+}

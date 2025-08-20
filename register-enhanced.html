@@ -1,335 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Registration - FinTrack</title>
-    <link rel="stylesheet" href="register-enhanced.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - FinSight Enhanced</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="register-enhanced.css" />
 </head>
 <body>
-    <div class="registration-container">
-        <div class="registration-card">
-            <div class="registration-header">
-                <h2><i class="fas fa-user-plus"></i> Create Your Account</h2>
-                <p>Join thousands of users managing their finances with FinTrack</p>
-            </div>
+    <div class="container-fluid mt-4">
+        <!-- Progress Header -->
+        <div class="register-header">
+            <h1 class="mb-0"><i class="fas fa-user-plus"></i> Register</h1>
+            <p class="mb-0 mt-2">Create your FinSight account in 3 simple steps</p>
+        </div>
 
-            <div class="progress-container">
-                <div class="progress-steps">
-                    <div class="progress-line">
-                        <div class="progress-line-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-step active" data-step="1">
-                        <div class="step-number">1</div>
-                        <div class="step-label">Personal Info</div>
-                    </div>
-                    <div class="progress-step" data-step="2">
-                        <div class="step-number">2</div>
-                        <div class="step-label">Account Setup</div>
-                    </div>
-                    <div class="progress-step" data-step="3">
-                        <div class="step-number">3</div>
-                        <div class="step-label">Preferences</div>
-                    </div>
-                    <div class="progress-step" data-step="4">
-                        <div class="step-number">4</div>
-                        <div class="step-label">Review</div>
-                    </div>
+        <!-- Enhanced Progress Bar -->
+        <div class="progress-container">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 33%" id="progressBar"></div>
+            </div>
+            <div class="step-indicators">
+                <div class="step active" data-step="1">
+                    <span>1</span>
+                    <small>Account</small>
+                </div>
+                <div class="step" data-step="2">
+                    <span>2</span>
+                    <small>Personal</small>
+                </div>
+                <div class="step" data-step="3">
+                    <span>3</span>
+                    <small>Categories</small>
                 </div>
             </div>
+        </div>
 
-            <form class="registration-form" id="registrationForm" novalidate>
-                <!-- Step 1: Personal Information -->
-                <div class="form-step active" data-step="1">
-                    <h3>Personal Information</h3>
+        <!-- Enhanced Form -->
+        <form id="registerForm" class="needs-validation" novalidate>
+            <!-- Step 1: Account Information -->
+            <div class="register-section" id="step1">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-user-circle"></i> Step 1: Account Information
+                    <span class="badge bg-secondary ms-2">Required</span>
+                </h4>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="userEmail" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" id="userEmail" class="form-control" required 
+                                   placeholder="your.email@example.com" 
+                                   pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" />
+                            <div class="invalid-feedback">
+                                Please provide a valid email address.
+                            </div>
+                        </div>
+                        <div class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
                     
-                    <div class="form-group">
-                        <label for="firstName" class="form-label">First Name *</label>
-                        <input type="text" class="form-control" id="firstName" name="firstName" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="lastName" class="form-label">Last Name *</label>
-                        <input type="text" class="form-control" id="lastName" name="lastName" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email Address *</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="+1 (555) 123-4567">
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="dateOfBirth" class="form-label">Date of Birth *</label>
-                        <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">Next Step</button>
+                    <div class="col-md-6 mb-3">
+                        <label for="confirmEmail" class="form-label">Confirm Email <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-check"></i></span>
+                            <input type="email" id="confirmEmail" class="form-control" required 
+                                   placeholder="Confirm your email" />
+                            <div class="invalid-feedback">
+                                Email addresses must match.
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Step 2: Account Setup -->
-                <div class="form-step" data-step="2">
-                    <h3>Account Setup</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="newPassword" class="form-label">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="newPassword" class="form-control" required 
+                                   placeholder="Create a strong password" 
+                                   minlength="8" 
+                                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&]).{8,}" />
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="invalid-feedback">
+                                Password must be at least 8 characters with uppercase, lowercase, number and special character.
+                            </div>
+                        </div>
+                        <div class="password-strength mt-2">
+                            <div class="strength-bar">
+                                <div class="strength-bar-fill" id="passwordStrengthBar"></div>
+                            </div>
+                            <small class="text-muted" id="passwordStrengthText">Password strength</small>
+                        </div>
+                    </div>
                     
-                    <div class="form-group">
-                        <label for="username" class="form-label">Username *</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                        <div class="invalid-feedback"></div>
+                    <div class="col-md-6 mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="confirmPassword" class="form-control" required 
+                                   placeholder="Confirm your password" />
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="invalid-feedback">
+                                Passwords must match.
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password *</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                        <div class="password-strength" id="passwordStrength"></div>
-                        <div class="invalid-feedback"></div>
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary next-btn" onclick="nextStep(1)">
+                        Next Step <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Personal Information -->
+            <div class="register-section" id="step2" style="display: none;">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-user"></i> Step 2: Personal Information
+                    <span class="badge bg-info ms-2">Profile Setup</span>
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" id="firstName" class="form-control" required 
+                               placeholder="Enter your first name" 
+                               pattern="[A-Za-z\s]{2,}" />
+                        <div class="invalid-feedback">
+                            Please provide a valid first name.
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="confirmPassword" class="form-label">Confirm Password *</label>
-                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-                        <div class="invalid-feedback"></div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" id="lastName" class="form-control" required 
+                               placeholder="Enter your last name" 
+                               pattern="[A-Za-z\s]{2,}" />
+                        <div class="invalid-feedback">
+                            Please provide a valid last name.
+                        </div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="securityQuestion" class="form-label">Security Question *</label>
-                        <select class="form-control" id="securityQuestion" name="securityQuestion" required>
-                            <option value="">Select a security question</option>
-                            <option value="pet">What was your first pet's name?</option>
-                            <option value="school">What elementary school did you attend?</option>
-                            <option value="city">In what city were you born?</option>
-                            <option value="mother">What is your mother's maiden name?</option>
-                            <option value="book">What is your favorite book?</option>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="profession" class="form-label">Profession <span class="text-danger">*</span></label>
+                        <select id="profession" class="form-select" required>
+                            <option value="">Select your profession</option>
+                            <option value="Student">Student</option>
+                            <option value="Employed">Employed</option>
+                            <option value="Self-Employed">Self-Employed</option>
+                            <option value="Business Owner">Business Owner</option>
+                            <option value="Freelancer">Freelancer</option>
+                            <option value="Retired">Retired</option>
+                            <option value="Unemployed">Unemployed</option>
+                            <option value="Other">Other</option>
                         </select>
-                        <div class="invalid-feedback"></div>
+                        <div class="invalid-feedback">
+                            Please select your profession.
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="securityAnswer" class="form-label">Security Answer *</label>
-                        <input type="text" class="form-control" id="securityAnswer" name="securityAnswer" required>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">Next Step</button>
-                    </div>
-                </div>
-
-                <!-- Step 3: Preferences -->
-                <div class="form-step" data-step="3">
-                    <h3>Financial Preferences</h3>
                     
-                    <div class="form-group">
-                        <label for="currency" class="form-label">Preferred Currency *</label>
-                        <select class="form-control" id="currency" name="currency" required>
-                            <option value="">Select currency</option>
-                            <option value="USD">US Dollar (USD)</option>
-                            <option value="EUR">Euro (EUR)</option>
-                            <option value="GBP">British Pound (GBP)</option>
-                            <option value="JPY">Japanese Yen (JPY)</option>
-                            <option value="CAD">Canadian Dollar (CAD)</option>
-                            <option value="AUD">Australian Dollar (AUD)</option>
+                    <div class="col-md-6 mb-3">
+                        <label for="ageRange" class="form-label">Age Range <span class="text-danger">*</span></label>
+                        <select id="ageRange" class="form-select" required>
+                            <option value="">Select age range</option>
+                            <option value="18-25">18-25</option>
+                            <option value="26-35">26-35</option>
+                            <option value="36-45">36-45</option>
+                            <option value="46-55">46-55</option>
+                            <option value="56-65">56-65</option>
+                            <option value="65+">65+</option>
                         </select>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Income Categories</label>
-                        <div class="categories-container">
-                            <div class="category-section">
-                                <div class="category-title">Employment</div>
-                                <div class="category-list">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="salary">
-                                        <span class="form-check-label">Salary</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="bonus">
-                                        <span class="form-check-label">Bonus</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="commission">
-                                        <span class="form-check-label">Commission</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="category-section">
-                                <div class="category-title">Investments</div>
-                                <div class="category-list">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="dividends">
-                                        <span class="form-check-label">Dividends</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="interest">
-                                        <span class="form-check-label">Interest</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="capital-gains">
-                                        <span class="form-check-label">Capital Gains</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="category-section">
-                                <div class="category-title">Other</div>
-                                <div class="category-list">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="freelance">
-                                        <span class="form-check-label">Freelance</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="rental">
-                                        <span class="form-check-label">Rental Income</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="incomeCategories" value="gifts">
-                                        <span class="form-check-label">Gifts</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Expense Categories</label>
-                        <div class="categories-container">
-                            <div class="category-section">
-                                <div class="category-title">Housing</div>
-                                <div class="category-list">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="rent">
-                                        <span class="form-check-label">Rent/Mortgage</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="utilities">
-                                        <span class="form-check-label">Utilities</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="insurance">
-                                        <span class="form-check-label">Insurance</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="category-section">
-                                <div class="category-title">Transportation</div>
-                                <div class="category-list">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="gas">
-                                        <span class="form-check-label">Gas</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="maintenance">
-                                        <span class="form-check-label">Maintenance</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="public-transport">
-                                        <span class="form-check-label">Public Transport</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="category-section">
-                                <div class="category-title">Lifestyle</div>
-                                <div class="category-list">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="groceries">
-                                        <span class="form-check-label">Groceries</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="dining">
-                                        <span class="form-check-label">Dining Out</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="expenseCategories" value="entertainment">
-                                        <span class="form-check-label">Entertainment</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Notifications</label>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="emailNotifications" name="emailNotifications" checked>
-                            <label class="form-check-label" for="emailNotifications">Email notifications for important updates</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="budgetAlerts" name="budgetAlerts" checked>
-                            <label class="form-check-label" for="budgetAlerts">Budget limit alerts</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="monthlyReports" name="monthlyReports">
-                            <label class="form-check-label" for="monthlyReports">Monthly financial reports</label>
-                        </div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">Next Step</button>
                     </div>
                 </div>
 
-                <!-- Step 4: Review -->
-                <div class="form-step" data-step="4">
-                    <h3>Review Your Information</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
+                        <select id="country" class="form-select" required>
+                            <option value="">Select country</option>
+                            <option value="Sri Lanka">Sri Lanka</option>
+                            <option value="India">India</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Germany">Germany</option>
+                            <option value="France">France</option>
+                            <option value="Japan">Japan</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
                     
-                    <div class="review-section">
-                        <h4>Personal Information</h4>
-                        <div id="reviewPersonalInfo"></div>
-                    </div>
-
-                    <div class="review-section">
-                        <h4>Account Details</h4>
-                        <div id="reviewAccountDetails"></div>
-                    </div>
-
-                    <div class="review-section">
-                        <h4>Preferences</h4>
-                        <div id="reviewPreferences"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
-                            <label class="form-check-label" for="terms">
-                                I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
-                            </label>
-                            <div class="invalid-feedback"></div>
-                        </div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
-                        <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="fas fa-check"></i> Create Account
-                        </button>
+                    <div class="col-md-6 mb-3">
+                        <label for="incomeRange" class="form-label">Monthly Income Range <span class="text-danger">*</span></label>
+                        <select id="incomeRange" class="form-select" required>
+                            <option value="">Select income range</option>
+                            <option value="0-50000">Rs. 0 - 50,000</option>
+                            <option value="50001-100000">Rs. 50,001 - 100,000</option>
+                            <option value="100001-200000">Rs. 100,001 - 200,000</option>
+                            <option value="200001-500000">Rs. 200,001 - 500,000</option>
+                            <option value="500001-1000000">Rs. 500,001 - 1,000,000</option>
+                            <option value="1000000+">Rs. 1,000,000+</option>
+                        </select>
                     </div>
                 </div>
-            </form>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="tel" id="phoneNumber" class="form-control" 
+                                   placeholder="+94 7XX XXX XXX" 
+                                   pattern="[\+]?[0-9]{10,15}" />
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="cycleDate" class="form-label">Cycle Date <span class="text-danger">*</span></label>
+                        <select id="cycleDate" class="form-select" required>
+                            <option value="">Select cycle date</option>
+                            <option value="1">1st</option>
+                            <option value="5">5th</option>
+                            <option value="10">10th</option>
+                            <option value="15">15th</option>
+                            <option value="20">20th</option>
+                            <option value="25">25th</option>
+                            <option value="30">30th</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary prev-btn" onclick="previousStep(2)">
+                        <i class="fas fa-arrow-left me-1"></i> Previous
+                    </button>
+                    <button type="button" class="btn btn-primary next-btn" onclick="nextStep(2)">
+                        Next Step <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Categories -->
+            <div class="register-section" id="step3" style="display: none;">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-tags"></i> Step 3: Categories
+                    <span class="badge bg-success ms-2">Customize</span>
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-success mb-3">
+                            <i class="fas fa-arrow-up"></i> Income Categories
+                        </h5>
+                        <div class="category-container">
+                            <div id="incomeCategoriesList" class="row">
+                                <!-- Dynamic content -->
+                            </div>
+                            <div class="mt-3">
+                                <div class="input-group">
+                                    <input type="text" id="customIncomeCategory" class="form-control" 
+                                           placeholder="Add custom income category">
+                                    <button class="btn btn-outline-success" type="button" 
+                                            onclick="addCustomCategory('income')">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5 class="text-danger mb-3">
+                            <i class="fas fa-arrow-down"></i> Expense Categories
+                        </h5>
+                        <div class="category-container">
+                            <div id="expenseCategoriesList" class="row">
+                                <!-- Dynamic content -->
+                            </div>
+                            <div class="mt-3">
+                                <div class="input-group">
+                                    <input type="text" id="customExpenseCategory" class="form-control" 
+                                           placeholder="Add custom expense category">
+                                    <button class="btn btn-outline-danger" type="button" 
+                                            onclick="addCustomCategory('expense')">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Tip:</strong> You can always add or modify categories later in your dashboard settings.
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-primary prev-btn" onclick="previousStep(3)">
+                        <i class="fas fa-arrow-left me-1"></i> Previous
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-user-plus me-1"></i> Complete Registration
+                        <span class="spinner-border spinner-border-sm ms-1 d-none" id="submitSpinner"></span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>By registering, you agree to our terms of service and privacy policy.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Agree</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
-
-    <script src="register-enhanced.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="register-enhanced.js"></script>
 </body>
 </html>
