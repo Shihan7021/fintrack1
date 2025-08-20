@@ -1,257 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Profile - FinSight</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - FinInsight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <style>
-        .form-label {
-            font-weight: 600;
-        }
-        .btn-primary {
-            background-color: #3C0775;
-            border-color: #3C0775;
-        }
-        .btn-primary:hover {
-            background-color: #7454AC;
-            border-color: #7454AC;
-        }
-        .form-control[readonly] {
-            background-color: #f8f9fa;
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
         .profile-section {
-            background-color: #ffffff;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-radius: 0.5rem;
-        }
-        .profile-header {
-            background-color: #3c0775;
-            color: white;
-            padding: 1rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
             margin-bottom: 2rem;
-            border-radius: 0.5rem;
-        }
-        @media (max-width: 768px) {
-            .profile-section {
-                padding: 1rem;
-            }
-            .profile-header {
-                padding: 0.3rem;
-            }
+            transition: all 0.3s ease;
         }
         
+        .profile-section:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .category-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            border-color: #007bff;
+        }
+        
+        .category-checkbox {
+            margin-right: 0.5rem;
+            transform: scale(1.2);
+        }
+        
+        .custom-category-input {
+            border: 2px dashed #dee2e6;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-category-input:focus {
+            border-color: #007bff;
+            background: white;
+        }
+        
+        .delete-btn {
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .delete-btn:hover {
+            opacity: 1;
+            color: #dc3545;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .btn-group-custom {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .category-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            margin: 0.125rem;
+        }
+        
+        .category-tag.custom {
+            background: #007bff;
+            color: white;
+        }
+        
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #003d7a);
+            transform: translateY(-1px);
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #dee2e6;
+            background: #f8f9fa;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .progress-step {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            text-align: center;
+            line-height: 30px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active {
+            background: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <!-- Header Menu Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container-fluid">
-            <!-- Logo and Brand -->
-            <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
-                <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
-                
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fas fa-chart-line me-2"></i>FinInsight
             </a>
-            
-            <!-- Mobile Toggle Button -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
-            <!-- Menu Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="dashboard.html">
-                            <i class="fas fa-home"></i> Home
-                        </a>
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="input.html">
-                            <i class="fas fa-plus-circle"></i> Add Transaction
-                        </a>
+                        <a class="nav-link" href="input.html">Add Transaction</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="history.html">
-                            <i class="fas fa-list"></i> All Transactions
-                        </a>
-                    </li>
-                    <li class="nav-item" style="display: none;">
-                        <a class="nav-link" href="what-if-search.html">
-                            <i class="fas fa-search"></i> What If
-                        </a>
-                    </li>
-                </ul>
-                
-                <!-- Right Side Menu -->
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="exportTransactions()">
-                            <i class="fas fa-download"></i> Export
-                        </a>
+                        <a class="nav-link" href="history.html">History</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="logoutButton">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
+                        <a class="nav-link active" href="myprofile.html">Profile</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid mt-4">
-        <div class="profile-header">
-            <h1 class="mb-0"><i class="fas fa-user-circle"></i> My Profile</h1>
-            <p class="mb-0 mt-2">Manage your personal information and preferences</p>
+    <div class="container mt-4">
+        <h1 class="mb-4 text-center">My Profile</h1>
+        
+        <!-- Success/Error Messages -->
+        <div id="successMessage" class="success-message">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="successText">Profile updated successfully!</span>
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span id="errorText">An error occurred. Please try again.</span>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                <form id="profileForm">
-                    <!-- Basic Information Section -->
-                    <div class="profile-section">
-                        <h4 class="text-primary mb-3">Basic Information</h4>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="profileEmail" class="form-label">Email</label>
-                                <input type="email" id="profileEmail" class="form-control" readonly />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="profileProfession" class="form-label">Profession</label>
-                                <select id="profileProfession" class="form-select">
-                                    <option value="">Select Profession</option>
-                                    <option value="Student">Student</option>
-                                    <option value="Employed">Employed</option>
-                                    <option value="Self-Employed">Self-Employed</option>
-                                    <option value="Business Owner">Business Owner</option>
-                                    <option value="Freelancer">Freelancer</option>
-                                    <option value="Retired">Retired</option>
-                                    <option value="Unemployed">Unemployed</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="profileAgeRange" class="form-label">Age Range</label>
-                                <select id="profileAgeRange" class="form-select">
-                                    <option value="">Select Age Range</option>
-                                    <option value="18-25">18-25</option>
-                                    <option value="26-35">26-35</option>
-                                    <option value="36-45">36-45</option>
-                                    <option value="46-55">46-55</option>
-                                    <option value="56-65">56-65</option>
-                                    <option value="65+">65+</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="profileCountry" class="form-label">Country</label>
-                                <select id="profileCountry" class="form-select">
-                                    <option value="">Select Country</option>
-                                    <option value="Sri Lanka">Sri Lanka</option>
-                                    <option value="India">India</option>
-                                    <option value="United States">United States</option>
-                                    <option value="United Kingdom">United Kingdom</option>
+        <!-- Profile Information -->
+        <div class="profile-section fade-in">
+            <h3><i class="fas fa-user-circle me-2"></i>Profile Information</h3>
+            <form id="profileForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="profileEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="profileEmail" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="profileProfession" class="form-label">Profession</label>
+                        <select class="form-select" id="profileProfession">
+                            <option value="">Select Profession</option>
+                            <option value="Student">Student</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Business Owner">Business Owner</option>
+                            <option value="Freelancer">Freelancer</option>
+                            <option value="Retired">Retired</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="profileAgeRange" class="form-label">Age Range</label>
+                        <select class="form-select" id="profileAgeRange">
+                            <option value="">Select Age Range</option>
+                            <option value="18-25">18-25</option>
+                            <option value="26-35">26-35</option>
+                            <option value="36-45">36-45</option>
+                            <option value="46-55">46-55</option>
+                            <option value="56+">56+</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="profileCountry" class="form-label">Country</label>
+                        <select class="form-select" id="profileCountry">
+                            <option value="">Select Country</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
                             <option value="Canada">Canada</option>
                             <option value="Australia">Australia</option>
                             <option value="Germany">Germany</option>
                             <option value="France">France</option>
                             <option value="Japan">Japan</option>
+                            <option value="India">India</option>
+                            <option value="Brazil">Brazil</option>
                             <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="profileIncomeRange" class="form-label">Monthly Income Range</label>
-                                <select id="profileIncomeRange" class="form-select">
-                                    <option value="">Select Income Range</option>
-                                    <option value="0-50000">Rs. 0 - 50,000</option>
-                                    <option value="50001-100000">Rs. 50,001 - 100,000</option>
-                                    <option value="100001-200000">Rs. 100,001 - 200,000</option>
-                                    <option value="200001-500000">Rs. 200,001 - 500,000</option>
-                                    <option value="500001-1000000">Rs. 500,001 - 1,000,000</option>
-                                    <option value="1000000+">Rs. 1,000,000+</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="profileCycleDate" class="form-label">Cycle Date</label>
-                                <select id="profileCycleDate" class="form-select">
-                                    <option value="">Select Cycle Date</option>
-                                    <option value="1">1st</option>
-                                    <option value="5">5th</option>
-                                    <option value="10">10th</option>
-                                    <option value="15">15th</option>
-                                    <option value="20">20th</option>
-                                    <option value="25">25th</option>
-                                    <option value="30">30th</option>
-                                </select>
-                        </div>
+                        </select>
                     </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="profileIncomeRange" class="form-label">Monthly Income Range</label>
+                        <select class="form-select" id="profileIncomeRange">
+                            <option value="">Select Income Range</option>
+                            <option value="0-1000">$0 - $1,000</option>
+                            <option value="1001-3000">$1,001 - $3,000</option>
+                            <option value="3001-5000">$3,001 - $5,000</option>
+                            <option value="5001-10000">$5,001 - $10,000</option>
+                            <option value="10001+">$10,001+</option>
+                        </select>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="profileCycleDate" class="form-label">Monthly Cycle Date</label>
+                        <select class="form-select" id="profileCycleDate">
+                            <option value="">Select Cycle Date</option>
+                            <option value="1">1st</option>
+                            <option value="5">5th</option>
+                            <option value="10">10th</option>
+                            <option value="15">15th</option>
+                            <option value="20">20th</option>
+                            <option value="25">25th</option>
+                            <option value="30">30th</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Profile
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" id="logoutButton">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </button>
+                </div>
+            </form>
+        </div>
 
-                    <!-- Income Categories Section -->
-                    <div class="profile-section">
-                        <h4 class="text-primary mb-3"><i class="fas fa-arrow-up text-success"></i> Income Categories</h4>
-                        <p class="text-muted mb-3">Select the income categories you want to track</p>
-                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                            <div id="incomeCategoriesList" class="row">
-                                <!-- Income categories will be populated here -->
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <div class="input-group">
-                                <input type="text" id="customIncomeCategory" class="form-control" placeholder="Add custom income category">
-                                <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('income')">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
-                            </div>
+        <!-- Category Management -->
+        <div class="profile-section fade-in">
+            <h3><i class="fas fa-tags me-2"></i>Category Management</h3>
+            <p class="text-muted">Select categories you want to use for tracking your transactions. Categories with existing transactions cannot be removed.</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-arrow-up text-success me-2"></i>Income Categories</h5>
+                    <div id="incomeCategoriesList" class="mt-3"></div>
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control custom-category-input" id="newIncomeCategory" placeholder="Add custom income category">
+                            <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('income')">
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
                     </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="fas fa-arrow-down text-danger me-2"></i>Expense Categories</h5>
+                    <div id="expenseCategoriesList" class="mt-3"></div>
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control custom-category-input" id="newExpenseCategory" placeholder="Add custom expense category">
+                            <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('expense')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <button type="button" class="btn btn-success" onclick="saveCategories()">
+                    <i class="fas fa-save me-2"></i>Save Categories
+                </button>
+            </div>
+        </div>
 
-                    <!-- Expense Categories Section -->
-                    <div class="profile-section">
-                        <h4 class="text-primary mb-3"><i class="fas fa-arrow-down text-danger"></i> Expense Categories</h4>
-                        <p class="text-muted mb-3">Select the expense categories you want to track</p>
-                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                            <div id="expenseCategoriesList" class="row">
-                                <!-- Expense categories will be populated here -->
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <div class="input-group">
-                                <input type="text" id="customExpenseCategory" class="form-control" placeholder="Add custom expense category">
-                                <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('expense')">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-section">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save"></i> Save Changes
-                        </button>
-                    </div>
-                </form>
+        <!-- Account Management -->
+        <div class="profile-section fade-in">
+            <h3><i class="fas fa-cog me-2"></i>Account Management</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Change Password</h5>
+                    <p class="text-muted">Update your account password</p>
+                    <button class="btn btn-outline-primary" onclick="window.location.href='change-password.html'">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <h5>Delete Account</h5>
+                    <p class="text-muted">Permanently delete your account and all data</p>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="fas fa-trash-alt me-2"></i>Delete Account
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Delete Account Modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAccountModalLabel">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>Delete Account
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="progress-step active">1</div>
+                    <div class="progress-step">2</div>
+                    <div class="progress-step">3</div>
+                    
+                    <div id="deleteStep1">
+                        <h6>Step 1: Confirm Your Identity</h6>
+                        <p>This action will permanently delete your account and all associated data including:</p>
+                        <ul>
+                            <li>All transactions</li>
+                            <li>Profile information</li>
+                            <li>Custom categories</li>
+                            <li>Account settings</li>
+                        </ul>
+                        <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete">
+                            <label class="form-check-label" for="confirmDelete">
+                                I understand that this action is permanent and cannot be reversed
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="deleteStep2" style="display: none;">
+                        <h6>Step 2: Enter Your Password</h6>
+                        <p>Please enter your password to confirm account deletion:</p>
+                        <div class="mb-3">
+                            <label for="deletePassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="deletePassword" required>
+                        </div>
+                    </div>
+                    
+                    <div id="deleteStep3" style="display: none;">
+                        <h6>Step 3: Final Confirmation</h6>
+                        <p>Type <strong>DELETE</strong> to confirm permanent account deletion:</p>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="finalConfirm" placeholder="Type DELETE">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="deleteNextBtn" onclick="nextDeleteStep()">Next</button>
+                    <button type="button" class="btn btn-danger" id="deleteConfirmBtn" onclick="deleteAccount()" style="display: none;">
+                        <i class="fas fa-trash-alt me-2"></i>Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner text-center" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your profile...</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -269,8 +459,9 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const profileForm = document.getElementById('profileForm');
-        const logoutButton = document.getElementById('logoutButton');
+        // Global variables
+        let currentUser = null;
+        let deleteStep = 1;
 
         // Category definitions
         const incomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
@@ -288,58 +479,87 @@
             expense: []
         };
 
-        // Load user profile data
-        async function loadUserProfile() {
-            const user = auth.currentUser;
-            if (user) {
-                try {
-                    // Load user profile data
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        document.getElementById('profileEmail').value = user.email;
-                        document.getElementById('profileProfession').value = userData.profession || '';
-                        document.getElementById('profileAgeRange').value = userData.ageRange || '';
-                        document.getElementById('profileCountry').value = userData.country || '';
-                        document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
-                        document.getElementById('profileCycleDate').value = userData.cycleDate || '';
-
-                        // Load custom categories with fallback to empty arrays
-                        customCategories.income = userData.customIncomeCategories || [];
-                        customCategories.expense = userData.customExpenseCategories || [];
-
-                        console.log('Loaded custom income categories:', customCategories.income);
-                        console.log('Loaded custom expense categories:', customCategories.expense);
-
-                        // Load selected categories with proper fallbacks
-                        const selectedIncome = userData.selectedIncomeCategories || [...incomeCategories, ...customCategories.income];
-                        const selectedExpense = userData.selectedExpenseCategories || [...expenseCategories, ...customCategories.expense];
-
-                        console.log('Selected income categories:', selectedIncome);
-                        console.log('Selected expense categories:', selectedExpense);
-
-                        // Check for existing transactions
-                        await checkExistingTransactions(user.uid);
-
-                        // Populate categories with both predefined and custom categories
-                        populateCategories('income', [...incomeCategories, ...customCategories.income], selectedIncome);
-                        populateCategories('expense', [...expenseCategories, ...customCategories.expense], selectedExpense);
-                    } else {
-                        // If no user document exists, create default setup
-                        console.log('No user document found, setting up defaults');
-                        populateCategories('income', incomeCategories, incomeCategories);
-                        populateCategories('expense', expenseCategories, expenseCategories);
-                    }
-                } catch (error) {
-                    console.error('Error loading user profile:', error);
-                    // Fallback to default categories if there's an error
-                    populateCategories('income', incomeCategories, incomeCategories);
-                    populateCategories('expense', expenseCategories, expenseCategories);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showLoading(true);
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserProfile();
+                } else {
+                    window.location.href = 'login.html';
                 }
+            });
+
+            // Form submission
+            document.getElementById('profileForm').addEventListener('submit', saveProfile);
+            
+            // Logout button
+            document.getElementById('logoutButton').addEventListener('click', logout);
+        });
+
+        // Show/hide loading spinner
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            const content = document.querySelector('.container');
+            
+            if (show) {
+                spinner.style.display = 'block';
+                content.style.opacity = '0.5';
+            } else {
+                spinner.style.display = 'none';
+                content.style.opacity = '1';
             }
         }
 
-        // Check for existing transactions in each category
+        // Load user profile data
+        async function loadUserProfile() {
+            if (!currentUser) return;
+
+            try {
+                // Load user profile data
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    // Populate form fields
+                    document.getElementById('profileEmail').value = currentUser.email || '';
+                    document.getElementById('profileProfession').value = userData.profession || '';
+                    document.getElementById('profileAgeRange').value = userData.ageRange || '';
+                    document.getElementById('profileCountry').value = userData.country || '';
+                    document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
+                    document.getElementById('profileCycleDate').value = userData.cycleDate || '';
+
+                    // Load custom categories
+                    customCategories.income = userData.customIncomeCategories || [];
+                    customCategories.expense = userData.customExpenseCategories || [];
+
+                    // Check for existing transactions
+                    await checkExistingTransactions(currentUser.uid);
+
+                    // Load selected categories
+                    const selectedIncome = userData.selectedIncomeCategories || [...incomeCategories, ...customCategories.income];
+                    const selectedExpense = userData.selectedExpenseCategories || [...expenseCategories, ...customCategories.expense];
+
+                    // Populate categories
+                    populateCategories('income', [...incomeCategories, ...customCategories.income], selectedIncome);
+                    populateCategories('expense', [...expenseCategories, ...customCategories.expense], selectedExpense);
+                } else {
+                    // Default setup for new users
+                    populateCategories('income', incomeCategories, incomeCategories);
+                    populateCategories('expense', expenseCategories, expenseCategories);
+                }
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showMessage('error', 'Failed to load profile. Please refresh the page.');
+                showLoading(false);
+            }
+        }
+
+        // Check for existing transactions
         async function checkExistingTransactions(userId) {
             try {
                 const transactionsRef = collection(db, "users", userId, "transactions");
@@ -354,196 +574,318 @@
                     }
                 });
             } catch (error) {
-                console.error("Error checking existing transactions:", error);
+                console.error("Error checking transactions:", error);
             }
         }
 
         // Populate categories with checkboxes
         function populateCategories(type, allCategories, selectedCategories) {
-            console.log(`Populating ${type} categories:`, allCategories);
-            console.log(`Selected ${type} categories:`, selectedCategories);
-            
             const container = document.getElementById(`${type}CategoriesList`);
-            if (!container) {
-                console.error(`Container for ${type}CategoriesList not found`);
-                return;
-            }
-            
             container.innerHTML = '';
-            
-            // Ensure we have categories to display
-            if (!allCategories || allCategories.length === 0) {
-                console.warn(`No categories found for ${type}`);
-                return;
-            }
-            
+
             allCategories.forEach(category => {
-                const col = document.createElement('div');
-                col.className = 'col-md-6 mb-2';
-                
                 const hasTransactions = type === 'income' 
                     ? categoriesWithTransactions.income.has(category)
                     : categoriesWithTransactions.expense.has(category);
                 
                 const isSelected = selectedCategories.includes(category);
                 const isCustom = (type === 'income' ? customCategories.income : customCategories.expense).includes(category);
-                
-                // Create unique ID for each checkbox
-                const checkboxId = `${type}_${category.replace(/\s+/g, '_')}`;
-                
-                let categoryDisplay = `
+
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                div.innerHTML = `
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" 
-                               id="${checkboxId}" 
-                               value="${category}"
+                        <input class="form-check-input category-checkbox" type="checkbox" 
+                               id="${type}_${category}" 
+                               value="${category}" 
                                ${isSelected ? 'checked' : ''}
                                ${hasTransactions ? 'disabled' : ''}>
-                        <label class="form-check-label" for="${checkboxId}">
+                        <label class="form-check-label ${hasTransactions ? 'text-muted' : ''}" for="${type}_${category}">
                             ${category}
-                            ${hasTransactions ? '<small class="text-muted"> (has transactions)</small>' : ''}
-                            ${isCustom ? '<small class="text-info"> (custom)</small>' : ''}
-                        </label>`;
-                
-                // Add remove button for custom categories
-                if (isCustom && !hasTransactions) {
-                    categoryDisplay += `
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
-                                onclick="removeCustomCategory('${type}', '${category}')">
+                            ${hasTransactions ? '<small class="text-muted">(has transactions)</small>' : ''}
+                            ${isCustom ? '<span class="badge bg-primary ms-2">Custom</span>' : ''}
+                        </label>
+                        ${isCustom ? `<button type="button" class="btn btn-sm btn-link text-danger delete-btn float-end" onclick="removeCustomCategory('${type}', '${category}')">
                             <i class="fas fa-times"></i>
-                        </button>`;
-                }
-                
-                categoryDisplay += `</div>`;
-                col.innerHTML = categoryDisplay;
-                container.appendChild(col);
+                        </button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
             });
-            
-            console.log(`Successfully populated ${allCategories.length} ${type} categories`);
         }
 
-        // Get selected categories
-        function getSelectedCategories(type) {
-            const checkboxes = document.querySelectorAll(`#${type}CategoriesList input[type="checkbox"]:checked`);
-            return Array.from(checkboxes).map(cb => cb.value);
-        }
-
-        // Add custom category function
+        // Add custom category
         window.addCustomCategory = function(type) {
-            console.log(`Adding custom ${type} category`);
+            const input = document.getElementById(`new${type.charAt(0).toUpperCase() + type.slice(1)}Category`);
+            const category = input.value.trim();
             
-            const inputId = type === 'income' ? 'customIncomeCategory' : 'customExpenseCategory';
-            const input = document.getElementById(inputId);
-            const categoryName = input.value.trim();
-            
-            if (categoryName === '') {
-                alert('Please enter a category name');
+            if (!category) {
+                showMessage('error', 'Please enter a category name');
                 return;
             }
             
-            // Check for duplicates
+            if (category.length < 2) {
+                showMessage('error', 'Category name must be at least 2 characters');
+                return;
+            }
+            
             const allCategories = type === 'income' 
                 ? [...incomeCategories, ...customCategories.income]
                 : [...expenseCategories, ...customCategories.expense];
                 
-            if (allCategories.some(cat => cat.toLowerCase() === categoryName.toLowerCase())) {
-                alert('This category already exists');
+            if (allCategories.includes(category)) {
+                showMessage('error', 'This category already exists');
                 return;
             }
             
-            // Add to custom categories
-            customCategories[type].push(categoryName);
-            console.log(`Added ${categoryName} to ${type} categories:`, customCategories[type]);
-            
-            // Update display
-            const selectedCategories = getSelectedCategories(type);
-            if (!selectedCategories.includes(categoryName)) {
-                selectedCategories.push(categoryName);
+            if (type === 'income') {
+                customCategories.income.push(category);
+            } else {
+                customCategories.expense.push(category);
             }
             
-            const updatedAllCategories = type === 'income' 
-                ? [...incomeCategories, ...customCategories.income] 
-                : [...expenseCategories, ...customCategories.expense];
-            
-            populateCategories(type, updatedAllCategories, selectedCategories);
-            
-            // Clear input
-            input.value = '';
-            
-            console.log(`Successfully added and displayed ${categoryName} for ${type}`);
-        };
-
-        // Remove custom category function
-        window.removeCustomCategory = function(type, category) {
-            // Check if category has transactions
-            if (type === 'income' ? categoriesWithTransactions.income.has(category) : categoriesWithTransactions.expense.has(category)) {
-                alert('Cannot remove category with existing transactions');
-                return;
-            }
-            
-            // Remove from custom categories
-            customCategories[type] = customCategories[type].filter(cat => cat !== category);
-            
-            // Update display
-            const selectedCategories = getSelectedCategories(type);
-            const updatedSelected = selectedCategories.filter(cat => cat !== category);
+            // Refresh category lists
+            const selectedCategories = Array.from(document.querySelectorAll(`#${type}CategoriesList input[type="checkbox"]:checked`))
+                .map(cb => cb.value);
+            selectedCategories.push(category);
             
             populateCategories(type, 
-                type === 'income' ? [...incomeCategories, ...customCategories.income] : [...expenseCategories, ...customCategories.expense], 
-                updatedSelected);
+                type === 'income' 
+                    ? [...incomeCategories, ...customCategories.income]
+                    : [...expenseCategories, ...customCategories.expense], 
+                selectedCategories);
+            
+            input.value = '';
+            showMessage('success', `Custom ${type} category added: ${category}`);
         };
 
-        // Save profile changes
-        profileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = auth.currentUser;
-            if (user) {
-                try {
-                    const selectedIncomeCategories = getSelectedCategories('income');
-                    const selectedExpenseCategories = getSelectedCategories('expense');
-
-                    await setDoc(doc(db, "users", user.uid), {
-                        profession: document.getElementById('profileProfession').value,
-                        ageRange: document.getElementById('profileAgeRange').value,
-                        country: document.getElementById('profileCountry').value,
-                        incomeRange: document.getElementById('profileIncomeRange').value,
-                        cycleDate: document.getElementById('profileCycleDate').value,
-                        selectedIncomeCategories: selectedIncomeCategories,
-                        selectedExpenseCategories: selectedExpenseCategories,
-                        customIncomeCategories: customCategories.income,
-                        customExpenseCategories: customCategories.expense,
-                        email: user.email,
-                        updatedAt: new Date().toISOString()
-                    }, { merge: true });
-                    alert('Profile updated successfully!');
-                } catch (error) {
-                    console.error('Error updating profile:', error);
-                    alert('Error updating profile. Please try again.');
-                }
+        // Remove custom category
+        window.removeCustomCategory = function(type, category) {
+            const hasTransactions = type === 'income' 
+                ? categoriesWithTransactions.income.has(category)
+                : categoriesWithTransactions.expense.has(category);
+                
+            if (hasTransactions) {
+                showMessage('error', 'Cannot remove category with existing transactions');
+                return;
             }
-        });
-
-        // Export transactions function
-        window.exportTransactions = function() {
-            alert('Export functionality is available on the dashboard page.');
+            
+            if (confirm(`Are you sure you want to remove the custom category "${category}"?`)) {
+                if (type === 'income') {
+                    customCategories.income = customCategories.income.filter(c => c !== category);
+                } else {
+                    customCategories.expense = customCategories.expense.filter(c => c !== category);
+                }
+                
+                // Refresh category lists
+                const selectedCategories = Array.from(document.querySelectorAll(`#${type}CategoriesList input[type="checkbox"]:checked`))
+                    .map(cb => cb.value)
+                    .filter(c => c !== category);
+                
+                populateCategories(type, 
+                    type === 'income' 
+                        ? [...incomeCategories, ...customCategories.income]
+                        : [...expenseCategories, ...customCategories.expense], 
+                    selectedCategories);
+                
+                showMessage('success', `Custom ${type} category removed: ${category}`);
+            }
         };
 
-        // Logout functionality
-        logoutButton.addEventListener('click', async () => {
+        // Save profile
+        async function saveProfile(e) {
+            e.preventDefault();
+            
+            if (!currentUser) return;
+            
+            const saveBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                const profileData = {
+                    profession: document.getElementById('profileProfession').value,
+                    ageRange: document.getElementById('profileAgeRange').value,
+                    country: document.getElementById('profileCountry').value,
+                    incomeRange: document.getElementById('profileIncomeRange').value,
+                    cycleDate: document.getElementById('profileCycleDate').value,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                await setDoc(doc(db, "users", currentUser.uid), profileData, { merge: true });
+                
+                showMessage('success', 'Profile updated successfully!');
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                showMessage('error', 'Failed to save profile. Please try again.');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Save categories
+        window.saveCategories = async function() {
+            if (!currentUser) return;
+            
+            const saveBtn = document.querySelector('button[onclick="saveCategories()"]');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                const selectedIncome = Array.from(document.querySelectorAll('#incomeCategoriesList input[type="checkbox"]:checked'))
+                    .map(cb => cb.value);
+                const selectedExpense = Array.from(document.querySelectorAll('#expenseCategoriesList input[type="checkbox"]:checked'))
+                    .map(cb => cb.value);
+                
+                const categoryData = {
+                    selectedIncomeCategories: selectedIncome,
+                    selectedExpenseCategories: selectedExpense,
+                    customIncomeCategories: customCategories.income,
+                    customExpenseCategories: customCategories.expense,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                await setDoc(doc(db, "users", currentUser.uid), categoryData, { merge: true });
+                
+                showMessage('success', 'Categories saved successfully!');
+            } catch (error) {
+                console.error('Error saving categories:', error);
+                showMessage('error', 'Failed to save categories. Please try again.');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        };
+
+        // Logout
+        async function logout() {
             try {
                 await signOut(auth);
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             } catch (error) {
-                console.error('Error signing out:', error);
+                console.error('Error logging out:', error);
+                showMessage('error', 'Failed to logout. Please try again.');
             }
-        });
+        }
 
-        // Load profile on page load
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loadUserProfile();
-            } else {
-                window.location.href = 'index.html';
+        // Delete account steps
+        window.nextDeleteStep = function() {
+            const modal = document.getElementById('deleteAccountModal');
+            const steps = [document.getElementById('deleteStep1'), document.getElementById('deleteStep2'), document.getElementById('deleteStep3')];
+            const nextBtn = document.getElementById('deleteNextBtn');
+            const confirmBtn = document.getElementById('deleteConfirmBtn');
+            
+            if (deleteStep === 1) {
+                if (!document.getElementById('confirmDelete').checked) {
+                    showMessage('error', 'Please confirm you understand the consequences');
+                    return;
+                }
+                steps[0].style.display = 'none';
+                steps[1].style.display = 'block';
+                deleteStep = 2;
+            } else if (deleteStep === 2) {
+                if (!document.getElementById('deletePassword').value) {
+                    showMessage('error', 'Please enter your password');
+                    return;
+                }
+                steps[1].style.display = 'none';
+                steps[2].style.display = 'block';
+                nextBtn.style.display = 'none';
+                confirmBtn.style.display = 'block';
+                deleteStep = 3;
             }
+        };
+
+        // Delete account
+        window.deleteAccount = async function() {
+            const finalConfirm = document.getElementById('finalConfirm').value;
+            if (finalConfirm !== 'DELETE') {
+                showMessage('error', 'Please type DELETE to confirm');
+                return;
+            }
+            
+            const password = document.getElementById('deletePassword').value;
+            if (!password) {
+                showMessage('error', 'Please enter your password');
+                return;
+            }
+            
+            try {
+                // Re-authenticate user
+                const credential = EmailAuthProvider.credential(currentUser.email, password);
+                await reauthenticateWithCredential(currentUser, credential);
+                
+                // Delete all user data
+                await deleteUserData(currentUser.uid);
+                
+                // Delete user account
+                await deleteUser(currentUser);
+                
+                // Close modal and redirect
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal'));
+                modal.hide();
+                
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showMessage('error', 'Failed to delete account: ' + error.message);
+            }
+        };
+
+        // Delete all user data
+        async function deleteUserData(userId) {
+            try {
+                // Delete transactions
+                const transactionsRef = collection(db, "users", userId, "transactions");
+                const transactionsSnapshot = await getDocs(transactionsRef);
+                const deletePromises = [];
+                
+                transactionsSnapshot.forEach(doc => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
+                
+                // Delete user document
+                deletePromises.push(deleteDoc(doc(db, "users", userId)));
+                
+                await Promise.all(deletePromises);
+            } catch (error) {
+                console.error('Error deleting user data:', error);
+                throw error;
+            }
+        }
+
+        // Show message
+        function showMessage(type, message) {
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            if (type === 'success') {
+                successDiv.style.display = 'block';
+                document.getElementById('successText').textContent = message;
+                errorDiv.style.display = 'none';
+                setTimeout(() => successDiv.style.display = 'none', 5000);
+            } else {
+                errorDiv.style.display = 'block';
+                document.getElementById('errorText').textContent = message;
+                successDiv.style.display = 'none';
+                setTimeout(() => errorDiv.style.display = 'none', 5000);
+            }
+        }
+
+        // Reset delete modal when closed
+        document.getElementById('deleteAccountModal').addEventListener('hidden.bs.modal', function() {
+            deleteStep = 1;
+            document.getElementById('deleteStep1').style.display = 'block';
+            document.getElementById('deleteStep2').style.display = 'none';
+            document.getElementById('deleteStep3').style.display = 'none';
+            document.getElementById('deleteNextBtn').style.display = 'block';
+            document.getElementById('deleteConfirmBtn').style.display = 'none';
+            document.getElementById('confirmDelete').checked = false;
+            document.getElementById('deletePassword').value = '';
+            document.getElementById('finalConfirm').value = '';
         });
     </script>
 </body>
