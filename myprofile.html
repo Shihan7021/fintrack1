@@ -242,7 +242,56 @@
                             <i class="fas fa-save"></i> Save Changes
                         </button>
                     </div>
+
+                    <!-- Danger Zone Section -->
+                    <div class="profile-section border-danger">
+                        <h4 class="text-danger mb-3"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h4>
+                        <p class="text-muted mb-3">
+                            <strong>Warning:</strong> Deleting your account is permanent and cannot be undone. 
+                            All your transactions, settings, and profile data will be permanently removed.
+                        </p>
+                        <button type="button" class="btn btn-danger btn-lg" id="deleteAccountBtn">
+                            <i class="fas fa-trash-alt"></i> Delete Account
+                        </button>
+                    </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteAccountModalLabel">
+                        <i class="fas fa-exclamation-triangle"></i> Delete Account
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" role="alert">
+                        <strong>This action cannot be undone!</strong>
+                    </div>
+                    <p>You are about to permanently delete your account and all associated data including:</p>
+                    <ul>
+                        <li>All your transaction records</li>
+                        <li>Profile information and settings</li>
+                        <li>Custom categories</li>
+                        <li>All other account data</li>
+                    </ul>
+                    <p class="mt-3">To confirm deletion, please type <strong>DELETE</strong> in the box below:</p>
+                    <input type="text" class="form-control" id="deleteConfirmationInput" placeholder="Type DELETE to confirm">
+                    <div id="deleteConfirmationError" class="text-danger mt-2" style="display: none;">
+                        Please type "DELETE" exactly as shown to confirm.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                        <i class="fas fa-trash-alt"></i> Delete My Account
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -250,8 +299,8 @@
     <script type="module">
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -537,6 +586,112 @@
             }
         });
 
+        // Delete Account Functionality
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const deleteAccountModal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+        const deleteConfirmationInput = document.getElementById('deleteConfirmationInput');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteConfirmationError = document.getElementById('deleteConfirmationError');
+
+        // Show delete account modal
+        deleteAccountBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                deleteAccountModal.show();
+            }
+        });
+
+        // Enable/disable confirm button based on input
+        deleteConfirmationInput.addEventListener('input', (e) => {
+            const inputValue = e.target.value.trim();
+            if (inputValue === 'DELETE') {
+                confirmDeleteBtn.disabled = false;
+                deleteConfirmationError.style.display = 'none';
+            } else {
+                confirmDeleteBtn.disabled = true;
+                if (inputValue.length > 0) {
+                    deleteConfirmationError.style.display = 'block';
+                } else {
+                    deleteConfirmationError.style.display = 'none';
+                }
+            }
+        });
+
+        // Delete account function
+        async function deleteAccount() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('No user is currently logged in.');
+                return;
+            }
+
+            try {
+                // Show loading state
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+                const userId = user.uid;
+                const batch = writeBatch(db);
+
+                // Step 1: Delete all transactions
+                console.log('Deleting user transactions...');
+                const transactionsRef = collection(db, "users", userId, "transactions");
+                const transactionsSnapshot = await getDocs(transactionsRef);
+                
+                transactionsSnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+
+                // Step 2: Delete user document
+                console.log('Deleting user document...');
+                const userDocRef = doc(db, "users", userId);
+                batch.delete(userDocRef);
+
+                // Commit all Firestore deletions
+                await batch.commit();
+                console.log('Firestore data deleted successfully');
+
+                // Step 3: Delete Firebase Auth user
+                console.log('Deleting Firebase Auth user...');
+                await deleteUser(user);
+                console.log('User account deleted successfully');
+
+                // Step 4: Redirect to home page
+                alert('Your account has been successfully deleted.');
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                
+                // Reset button state
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete My Account';
+
+                // Handle specific error cases
+                if (error.code === 'auth/requires-recent-login') {
+                    alert('For security reasons, please log out and log back in, then try deleting your account again.');
+                    try {
+                        await signOut(auth);
+                        window.location.href = 'index.html';
+                    } catch (signOutError) {
+                        console.error('Error signing out:', signOutError);
+                    }
+                } else {
+                    alert('An error occurred while deleting your account. Some data may have been deleted. Please contact support if you continue to have issues.');
+                }
+            }
+        }
+
+        // Confirm delete button click handler
+        confirmDeleteBtn.addEventListener('click', deleteAccount);
+
+        // Reset modal when closed
+        document.getElementById('deleteAccountModal').addEventListener('hidden.bs.modal', () => {
+            deleteConfirmationInput.value = '';
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete My Account';
+            deleteConfirmationError.style.display = 'none';
+        });
+
         // Load profile on page load
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -546,5 +701,8 @@
             }
         });
     </script>
+    
+    <!-- Bootstrap JavaScript for Modal functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
