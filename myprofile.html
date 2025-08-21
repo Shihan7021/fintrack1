@@ -86,6 +86,9 @@
                             <a class="nav-link active" id="v-pills-profile-tab" data-bs-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true">
                                 <i class="fas fa-user me-2"></i>Personal Information
                             </a>
+                            <a class="nav-link" id="v-pills-financial-tab" data-bs-toggle="pill" href="#v-pills-financial" role="tab" aria-controls="v-pills-financial" aria-selected="false">
+                                <i class="fas fa-dollar-sign me-2"></i>Financial Information
+                            </a>
                             <a class="nav-link" id="v-pills-categories-tab" data-bs-toggle="pill" href="#v-pills-categories" role="tab" aria-controls="v-pills-categories" aria-selected="false">
                                 <i class="fas fa-th-list me-2"></i>Categories
                             </a>
@@ -245,6 +248,54 @@
                         </div>
                     </div>
 
+                    <!-- Financial Information Pane -->
+                    <div class="tab-pane fade" id="v-pills-financial" role="tabpanel" aria-labelledby="v-pills-financial-tab">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title mb-4">Financial Information</h4>
+                                <form id="financialForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="savingMode" class="form-label">Saving Mode</label>
+                                            <select id="savingMode" class="form-select">
+                                                <option value="">Select Saving Mode</option>
+                                                <option value="Simple">Simple</option>
+                                                <option value="Moderate">Moderate</option>
+                                                <option value="Aggressive">Aggressive</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="minSavingsTarget" class="form-label">Monthly Minimum Savings Target</label>
+                                            <input type="number" id="minSavingsTarget" class="form-control" min="0">
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <!-- Recurring Income -->
+                                    <h5 class="mt-4">Recurring Monthly Income</h5>
+                                    <div id="recurringIncomeList" class="mb-3"></div>
+                                    <div class="row g-3 align-items-center mb-3">
+                                        <div class="col-md-3"><input type="text" id="recurringIncomeCategory" class="form-control" placeholder="Category"></div>
+                                        <div class="col-md-3"><input type="number" id="recurringIncomeAmount" class="form-control" placeholder="Amount"></div>
+                                        <div class="col-md-2"><input type="number" id="recurringIncomeInstances" class="form-control" placeholder="Instances"></div>
+                                        <div class="col-md-2"><select id="recurringIncomeFrequency" class="form-select"><option value="Monthly">Monthly</option></select></div>
+                                        <div class="col-md-2"><button type="button" class="btn btn-success w-100" onclick="addRecurringItem('income')">Add</button></div>
+                                    </div>
+                                    <!-- Recurring Expense -->
+                                    <h5 class="mt-4">Recurring Monthly Expense</h5>
+                                    <div id="recurringExpenseList" class="mb-3"></div>
+                                    <div class="row g-3 align-items-center mb-3">
+                                        <div class="col-md-3"><input type="text" id="recurringExpenseCategory" class="form-control" placeholder="Category"></div>
+                                        <div class="col-md-3"><input type="number" id="recurringExpenseAmount" class="form-control" placeholder="Amount"></div>
+                                        <div class="col-md-2"><input type="number" id="recurringExpenseInstances" class="form-control" placeholder="Instances"></div>
+                                        <div class="col-md-2"><select id="recurringExpenseFrequency" class="form-select"><option value="Monthly">Monthly</option></select></div>
+                                        <div class="col-md-2"><button type="button" class="btn btn-success w-100" onclick="addRecurringItem('expense')">Add</button></div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-2"></i>Save Financial Info</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Categories Pane -->
                     <div class="tab-pane fade" id="v-pills-categories" role="tabpanel" aria-labelledby="v-pills-categories-tab">
                         <div class="card">
@@ -361,6 +412,7 @@
         const db = getFirestore(app);
 
         const profileForm = document.getElementById('profileForm');
+        const financialForm = document.getElementById('financialForm');
         const logoutButton = document.getElementById('logoutButton');
 
         // Category definitions
@@ -379,6 +431,9 @@
             expense: []
         };
 
+        let recurringIncomes = [];
+        let recurringExpenses = [];
+
         // Load user profile data
         async function loadUserProfile() {
             const user = auth.currentUser;
@@ -387,6 +442,7 @@
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
                         const userData = userDoc.data();
+                        // Personal Info
                         document.getElementById('profileEmail').value = user.email;
                         document.getElementById('profileProfession').value = userData.profession || '';
                         document.getElementById('profileAgeRange').value = userData.ageRange || '';
@@ -407,6 +463,14 @@
                             fuelTypeContainer.style.display = 'none';
                         }
 
+                        // Financial Info
+                        document.getElementById('savingMode').value = userData.savingMode || '';
+                        document.getElementById('minSavingsTarget').value = userData.minSavingsTarget || '';
+                        recurringIncomes = userData.recurringIncomes || [];
+                        recurringExpenses = userData.recurringExpenses || [];
+                        renderRecurringItems();
+
+                        // Categories
                         customCategories.income = userData.customIncomeCategories || [];
                         customCategories.expense = userData.customExpenseCategories || [];
 
@@ -542,9 +606,6 @@
             const user = auth.currentUser;
             if (user) {
                 try {
-                    const selectedIncomeCategories = getSelectedCategories('income');
-                    const selectedExpenseCategories = getSelectedCategories('expense');
-
                     await setDoc(doc(db, "users", user.uid), {
                         profession: document.getElementById('profileProfession').value,
                         ageRange: document.getElementById('profileAgeRange').value,
@@ -557,10 +618,6 @@
                         vehicleOwned: document.getElementById('profileVehicleOwned').value,
                         fuelType: document.getElementById('profileFuelType').value,
                         interests: document.getElementById('profileInterests').value,
-                        selectedIncomeCategories: selectedIncomeCategories,
-                        selectedExpenseCategories: selectedExpenseCategories,
-                        customIncomeCategories: customCategories.income,
-                        customExpenseCategories: customCategories.expense,
                         email: user.email,
                         updatedAt: new Date().toISOString()
                     }, { merge: true });
@@ -571,6 +628,84 @@
                 }
             }
         });
+
+        financialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if(user) {
+                try {
+                    await setDoc(doc(db, "users", user.uid), {
+                        savingMode: document.getElementById('savingMode').value,
+                        minSavingsTarget: document.getElementById('minSavingsTarget').value,
+                        recurringIncomes: recurringIncomes,
+                        recurringExpenses: recurringExpenses,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    alert('Financial information updated successfully!');
+                } catch (error) {
+                    console.error('Error updating financial information:', error);
+                    alert('Error updating financial information. Please try again.');
+                }
+            }
+        });
+
+        function renderRecurringItems() {
+            const incomeList = document.getElementById('recurringIncomeList');
+            const expenseList = document.getElementById('recurringExpenseList');
+            incomeList.innerHTML = '';
+            expenseList.innerHTML = '';
+
+            recurringIncomes.forEach((item, index) => {
+                incomeList.innerHTML += `
+                    <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2">
+                        <div><strong>${item.category}</strong>: ${item.amount} (${item.frequency}, ${item.instances} times)</div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecurringItem('income', ${index})"><i class="fas fa-trash"></i></button>
+                    </div>`;
+            });
+
+            recurringExpenses.forEach((item, index) => {
+                expenseList.innerHTML += `
+                    <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2">
+                        <div><strong>${item.category}</strong>: ${item.amount} (${item.frequency}, ${item.instances} times)</div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecurringItem('expense', ${index})"><i class="fas fa-trash"></i></button>
+                    </div>`;
+            });
+        }
+
+        window.addRecurringItem = function(type) {
+            const category = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Category`).value.trim();
+            const amount = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Amount`).value;
+            const instances = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Instances`).value;
+            const frequency = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Frequency`).value;
+
+            if (!category || !amount || !instances) {
+                alert('Please fill in all fields for the recurring item.');
+                return;
+            }
+
+            const newItem = { category, amount, instances, frequency, type };
+
+            if (type === 'income') {
+                recurringIncomes.push(newItem);
+            } else {
+                recurringExpenses.push(newItem);
+            }
+
+            renderRecurringItems();
+            // Clear inputs
+            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Category`).value = '';
+            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Amount`).value = '';
+            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Instances`).value = '';
+        }
+
+        window.deleteRecurringItem = function(type, index) {
+            if (type === 'income') {
+                recurringIncomes.splice(index, 1);
+            } else {
+                recurringExpenses.splice(index, 1);
+            }
+            renderRecurringItems();
+        }
 
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         changePasswordBtn.addEventListener('click', async () => {
