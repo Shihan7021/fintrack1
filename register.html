@@ -202,6 +202,58 @@
                             <option value="30">30th</option>
                         </select>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="civilStatus" class="form-label">Civil Status</label>
+                        <select id="civilStatus" class="form-select">
+                            <option value="">Select Civil Status</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="children" class="form-label">Number of Children</label>
+                        <input type="number" id="children" class="form-control" min="0">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="livingType" class="form-label">Living Type</label>
+                        <select id="livingType" class="form-select">
+                            <option value="">Select Living Type</option>
+                            <option value="Rented">Rented</option>
+                            <option value="Owned">Owned</option>
+                            <option value="Leased">Leased</option>
+                            <option value="With Parents">With Parents</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="vehicleOwned" class="form-label">Vehicle Owned</label>
+                        <select id="vehicleOwned" class="form-select">
+                            <option value="">Select an option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3" id="fuelTypeContainer" style="display: none;">
+                        <label for="fuelType" class="form-label">Fuel Type</label>
+                        <select id="fuelType" class="form-select">
+                            <option value="">Select Fuel Type</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="interests" class="form-label">Interests</label>
+                        <textarea id="interests" class="form-control" rows="3" placeholder="e.g., Reading, Traveling, Sports"></textarea>
+                    </div>
                 </div>
                 <div class="d-flex justify-content-between">
                     <button type="button" class="btn btn-outline-primary" onclick="previousStep(2)">
@@ -450,6 +502,15 @@
             populateCategories('expense', [...expenseCategories, ...customCategories.expense], [...expenseCategories, ...customCategories.expense]);
         }
 
+        document.getElementById('vehicleOwned').addEventListener('change', function () {
+            const fuelTypeContainer = document.getElementById('fuelTypeContainer');
+            if (this.value === 'Yes') {
+                fuelTypeContainer.style.display = 'block';
+            } else {
+                fuelTypeContainer.style.display = 'none';
+            }
+        });
+
         registerForm.addEventListener("submit", async function (e) {
             e.preventDefault();
 
@@ -461,6 +522,12 @@
             const country = document.getElementById("country").value;
             const incomeRange = document.getElementById("incomeRange").value;
             const cycleDate = document.getElementById("cycleDate").value;
+            const civilStatus = document.getElementById("civilStatus").value;
+            const children = document.getElementById("children").value;
+            const livingType = document.getElementById("livingType").value;
+            const vehicleOwned = document.getElementById("vehicleOwned").value;
+            const fuelType = document.getElementById("fuelType").value;
+            const interests = document.getElementById("interests").value;
 
             if (password !== confirmPassword) {
                 alert("Passwords do not match.");
@@ -483,6 +550,12 @@
                     country: country,
                     incomeRange: incomeRange,
                     cycleDate: cycleDate,
+                    civilStatus: civilStatus,
+                    children: children,
+                    livingType: livingType,
+                    vehicleOwned: vehicleOwned,
+                    fuelType: fuelType,
+                    interests: interests,
                     selectedIncomeCategories: selectedIncomeCategories,
                     selectedExpenseCategories: selectedExpenseCategories,
                     customIncomeCategories: customCategories.income,
