@@ -279,7 +279,7 @@
     <script type="module">
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Firebase configuration
@@ -590,7 +590,24 @@
                     window.location.href = "index.html"; // Redirect to home page
                 } catch (error) {
                     console.error("Error deleting account:", error);
-                    alert("An error occurred while deleting your account. Please try again.");
+                    if (error.code === 'auth/requires-recent-login') {
+                        const password = prompt("Please re-enter your password to confirm account deletion.");
+                        if (password) {
+                            const credential = EmailAuthProvider.credential(user.email, password);
+                            try {
+                                await reauthenticateWithCredential(user, credential);
+                                // Retry deletion
+                                await deleteAccount();
+                            } catch (reauthError) {
+                                console.error("Re-authentication failed:", reauthError);
+                                alert("Incorrect password. Account deletion failed.");
+                            }
+                        } else {
+                            alert("Password not provided. Account deletion cancelled.");
+                        }
+                    } else {
+                        alert("An error occurred while deleting your account. Please try again.");
+                    }
                 }
             }
         }
