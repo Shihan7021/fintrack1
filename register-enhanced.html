@@ -320,5 +320,35 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="register-enhanced.js"></script>
+    <script>
+        // Add this script tag
+        function nextStep(currentStep) {
+            const nextStep = currentStep + 1;
+            document.getElementById(`step${currentStep}`).style.display = 'none';
+            document.getElementById(`step${nextStep}`).style.display = 'block';
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${(nextStep / 3) * 100}%`;
+            
+            // Update step indicators
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.step[data-step="${nextStep}"]`).classList.add('active');
+        }
+
+        function previousStep(currentStep) {
+            const prevStep = currentStep - 1;
+            document.getElementById(`step${currentStep}`).style.display = 'none';
+            document.getElementById(`step${prevStep}`).style.display = 'block';
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${(prevStep / 3) * 100}%`;
+            
+            // Update step indicators
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.step[data-step="${prevStep}"]`).classList.add('active');
+        }
+    </script>
 </body>
 </html>
