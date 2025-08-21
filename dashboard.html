@@ -80,6 +80,12 @@
     <!-- Main Content Container -->
     <div class="container mt-4">
 
+        <div id="completeProfileBanner" class="alert alert-info alert-dismissible fade show" role="alert" style="display: none;">
+            <strong>Complete Your Profile!</strong> You can add more details to your profile for a better experience.
+            <a href="myprofile.html" class="alert-link">Go to Profile</a>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <form class="row g-3 mb-4">
             <div class="col-md-3">
                 <label for="fromDate" class="form-label">From</label>
@@ -197,6 +203,42 @@
                 maximumFractionDigits: 2,
             });
         }
+
+        async function checkUserProfileCompleteness() {
+            if (!currentUserId) return;
+
+            if (sessionStorage.getItem('profileBannerDismissed')) {
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUserId));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const additionalFields = ['civilStatus', 'children', 'livingType', 'vehicleOwned', 'interests'];
+                    let isProfileIncomplete = false;
+
+                    for (const field of additionalFields) {
+                        if (!userData[field]) {
+                            isProfileIncomplete = true;
+                            break;
+                        }
+                    }
+
+                    if (isProfileIncomplete) {
+                        const banner = document.getElementById('completeProfileBanner');
+                        banner.style.display = 'block';
+
+                        const closeButton = banner.querySelector('.btn-close');
+                        closeButton.addEventListener('click', () => {
+                            sessionStorage.setItem('profileBannerDismissed', 'true');
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking user profile completeness:", error);
+            }
+        }
         
         function setupRealtimeListener() {
             onAuthStateChanged(auth, (user) => {
@@ -206,6 +248,7 @@
 
                 if (user) {
                     currentUserId = user.uid;
+                    checkUserProfileCompleteness();
                     const userTransactionsRef = collection(db, "users", currentUserId, "transactions");
                     
                     // Load user profile to get cycle date
