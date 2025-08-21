@@ -161,12 +161,12 @@
                                     <option value="India">India</option>
                                     <option value="United States">United States</option>
                                     <option value="United Kingdom">United Kingdom</option>
-                            <option value="Canada">Canada</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Germany">Germany</option>
-                            <option value="France">France</option>
-                            <option value="Japan">Japan</option>
-                            <option value="Other">Other</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="France">France</option>
+                                    <option value="Japan">Japan</option>
+                                    <option value="Other">Other</option>
                                 </select>
                             </div>
                         </div>
@@ -195,8 +195,62 @@
                                     <option value="25">25th</option>
                                     <option value="30">30th</option>
                                 </select>
+                            </div>
                         </div>
-                    </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="profileCivilStatus" class="form-label">Civil Status</label>
+                                <select id="profileCivilStatus" class="form-select">
+                                    <option value="">Select Civil Status</option>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Divorced">Divorced</option>
+                                    <option value="Widowed">Widowed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="profileChildren" class="form-label">Number of Children</label>
+                                <input type="number" id="profileChildren" class="form-control" min="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="profileLivingType" class="form-label">Living Type</label>
+                                <select id="profileLivingType" class="form-select">
+                                    <option value="">Select Living Type</option>
+                                    <option value="Rented">Rented</option>
+                                    <option value="Owned">Owned</option>
+                                    <option value="Leased">Leased</option>
+                                    <option value="With Parents">With Parents</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="profileVehicleOwned" class="form-label">Vehicle Owned</label>
+                                <select id="profileVehicleOwned" class="form-select">
+                                    <option value="">Select an option</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3" id="profileFuelTypeContainer" style="display: none;">
+                                <label for="profileFuelType" class="form-label">Fuel Type</label>
+                                <select id="profileFuelType" class="form-select">
+                                    <option value="">Select Fuel Type</option>
+                                    <option value="Petrol">Petrol</option>
+                                    <option value="Diesel">Diesel</option>
+                                    <option value="Electric">Electric</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="profileInterests" class="form-label">Interests</label>
+                                <textarea id="profileInterests" class="form-control" rows="3" placeholder="e.g., Reading, Traveling, Sports"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Income Categories Section -->
@@ -242,20 +296,41 @@
                             <i class="fas fa-save"></i> Save Changes
                         </button>
                     </div>
-                    
-                    <!-- Replace the existing profile-section div with this updated version -->
-<div class="profile-section">
-
-    <button type="button" class="btn btn-danger btn-lg" id="deleteAccountBtn">
-        <i class="fas fa-user-times"></i> Delete Account
-    </button>
-</div>
                 </form>
+
+                <!-- Change Password Section -->
+                <div class="profile-section">
+                    <h4 class="text-primary mb-3">Change Password</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <input type="password" id="currentPassword" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <input type="password" id="newPassword" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" id="confirmNewPassword" class="form-control">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="changePasswordBtn">Change Password</button>
+                </div>
+
+                <!-- Delete Account Section -->
+                <div class="profile-section">
+                    <button type="button" class="btn btn-danger btn-lg" id="deleteAccountBtn">
+                        <i class="fas fa-user-times"></i> Delete Account
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Add this modal for confirmation at the end of the body, just before the closing </body> tag -->
+    <!-- Delete Account Modal -->
     <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -273,13 +348,14 @@
             </div>
         </div>
     </div>
-     <!-- Bootstrap JS -->
+
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Firebase configuration
@@ -332,6 +408,20 @@
                         document.getElementById('profileCountry').value = userData.country || '';
                         document.getElementById('profileIncomeRange').value = userData.incomeRange || '';
                         document.getElementById('profileCycleDate').value = userData.cycleDate || '';
+                        document.getElementById('profileCivilStatus').value = userData.civilStatus || '';
+                        document.getElementById('profileChildren').value = userData.children || '';
+                        document.getElementById('profileLivingType').value = userData.livingType || '';
+                        document.getElementById('profileVehicleOwned').value = userData.vehicleOwned || '';
+                        document.getElementById('profileFuelType').value = userData.fuelType || '';
+                        document.getElementById('profileInterests').value = userData.interests || '';
+
+                        // Show/hide fuel type container
+                        const fuelTypeContainer = document.getElementById('profileFuelTypeContainer');
+                        if (userData.vehicleOwned === 'Yes') {
+                            fuelTypeContainer.style.display = 'block';
+                        } else {
+                            fuelTypeContainer.style.display = 'none';
+                        }
 
                         // Load custom categories with fallback to empty arrays
                         customCategories.income = userData.customIncomeCategories || [];
@@ -536,6 +626,12 @@
                         country: document.getElementById('profileCountry').value,
                         incomeRange: document.getElementById('profileIncomeRange').value,
                         cycleDate: document.getElementById('profileCycleDate').value,
+                        civilStatus: document.getElementById('profileCivilStatus').value,
+                        children: document.getElementById('profileChildren').value,
+                        livingType: document.getElementById('profileLivingType').value,
+                        vehicleOwned: document.getElementById('profileVehicleOwned').value,
+                        fuelType: document.getElementById('profileFuelType').value,
+                        interests: document.getElementById('profileInterests').value,
                         selectedIncomeCategories: selectedIncomeCategories,
                         selectedExpenseCategories: selectedExpenseCategories,
                         customIncomeCategories: customCategories.income,
@@ -547,6 +643,52 @@
                 } catch (error) {
                     console.error('Error updating profile:', error);
                     alert('Error updating profile. Please try again.');
+                }
+            }
+        });
+
+        // Change password functionality
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        changePasswordBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                alert('Please fill in all password fields.');
+                return;
+            }
+
+            if (newPassword !== confirmNewPassword) {
+                alert('New passwords do not match.');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert('New password must be at least 6 characters long.');
+                return;
+            }
+
+            if (user) {
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                try {
+                    await reauthenticateWithCredential(user, credential);
+                    await updatePassword(user, newPassword);
+                    alert('Password updated successfully!');
+                    // Clear password fields
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } catch (error) {
+                    console.error('Error changing password:', error);
+                    if (error.code === 'auth/wrong-password') {
+                        alert('Incorrect current password.');
+                    } else if (error.code === 'auth/requires-recent-login') {
+                        alert('This operation is sensitive and requires recent authentication. Please log in again before retrying this request.');
+                    } else {
+                        alert('An error occurred while changing your password. Please try again.');
+                    }
                 }
             }
         });
@@ -618,6 +760,15 @@
                 loadUserProfile();
             } else {
                 window.location.href = 'index.html';
+            }
+        });
+
+        document.getElementById('profileVehicleOwned').addEventListener('change', function () {
+            const fuelTypeContainer = document.getElementById('profileFuelTypeContainer');
+            if (this.value === 'Yes') {
+                fuelTypeContainer.style.display = 'block';
+            } else {
+                fuelTypeContainer.style.display = 'none';
             }
         });
 
