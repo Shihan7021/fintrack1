@@ -406,3 +406,36 @@ if (typeof module !== 'undefined' && module.exports) {
         formatPhoneNumber
     };
 }
+
+// Enhanced registration handler
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('newPassword').value;
+    
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Save additional user data to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            profession: document.getElementById('profession').value,
+            ageRange: document.getElementById('ageRange').value,
+            country: document.getElementById('country').value,
+            incomeRange: document.getElementById('incomeRange').value,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            cycleDate: document.getElementById('cycleDate').value,
+            // Add other fields as needed
+        });
+
+        alert('Registration successful!');
+        // Redirect to dashboard or login page
+        window.location.href = 'dashboard.html';
+    } catch (error) {
+        console.error('Error during registration:', error);
+        alert('Registration failed: ' + error.message);
+    }
+});
