@@ -5,12 +5,13 @@ import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10
 
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCJkY6U1sZ8aT5cU8p5p6p7q8r9s0t1u2v3w4",
-    authDomain: "finsight-2024.firebaseapp.com",
-    projectId: "finsight-2024",
-    storageBucket: "finsight-2024.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef1234567890"
+            apiKey: "AIzaSyAl8wXLzjuHGHohU70LOoObJ7OZUhHpWDQ",
+            authDomain: "finsight-567f4.firebaseapp.com",
+            projectId: "finsight-567f4",
+            storageBucket: "finsight-567f4.firebasestorage.app",
+            messagingSenderId: "329662315678",
+            appId: "1:329662315678:web:735fbacbca2818e0674f8f",
+            measurementId: "G-3BYVY6PE64"
 };
 
 // Initialize Firebase
