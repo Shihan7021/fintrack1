@@ -322,18 +322,44 @@
     <script type="module" src="register-enhanced.js"></script>
     <script>
         // Add this script tag
+        function validateStep(stepNumber) {
+            const step = document.getElementById(`step${stepNumber}`);
+            const requiredFields = step.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+            let firstInvalidField = null;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                    if (!firstInvalidField) firstInvalidField = field;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                firstInvalidField.focus();
+                alert('Please fill in all required fields before proceeding.');
+            }
+
+            return isValid;
+        }
+
         function nextStep(currentStep) {
-            const nextStep = currentStep + 1;
-            document.getElementById(`step${currentStep}`).style.display = 'none';
-            document.getElementById(`step${nextStep}`).style.display = 'block';
-            
-            // Update progress bar
-            const progressBar = document.getElementById('progressBar');
-            progressBar.style.width = `${(nextStep / 3) * 100}%`;
-            
-            // Update step indicators
-            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.step[data-step="${nextStep}"]`).classList.add('active');
+            if (validateStep(currentStep)) {
+                const nextStep = currentStep + 1;
+                document.getElementById(`step${currentStep}`).style.display = 'none';
+                document.getElementById(`step${nextStep}`).style.display = 'block';
+                
+                // Update progress bar
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = `${(nextStep / 3) * 100}%`;
+                
+                // Update step indicators
+                document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+                document.querySelector(`.step[data-step="${nextStep}"]`).classList.add('active');
+            }
         }
 
         function previousStep(currentStep) {
@@ -349,6 +375,13 @@
             document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
             document.querySelector(`.step[data-step="${prevStep}"]`).classList.add('active');
         }
+
+        // Add event listeners to remove 'is-invalid' class when user starts typing
+        document.querySelectorAll('input[required], select[required]').forEach(field => {
+            field.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+            });
+        });
     </script>
 </body>
 </html>
