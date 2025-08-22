@@ -335,6 +335,7 @@
                                     <input type="text" id="customExpenseCategory" class="form-control" placeholder="Add custom expense category">
                                     <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('expense')"><i class="fas fa-plus"></i> Add</button>
                                 </div>
+                                <button type="button" class="btn btn-primary mt-4" id="saveCategoriesBtn"><i class="fas fa-save me-2"></i>Save Categories</button>
                             </div>
                         </div>
                     </div>
@@ -648,6 +649,29 @@
                 } catch (error) {
                     console.error('Error updating financial information:', error);
                     alert('Error updating financial information. Please try again.');
+                }
+            }
+        });
+
+        document.getElementById('saveCategoriesBtn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    const selectedIncome = getSelectedCategories('income');
+                    const selectedExpense = getSelectedCategories('expense');
+
+                    await setDoc(doc(db, "users", user.uid), {
+                        customIncomeCategories: customCategories.income,
+                        customExpenseCategories: customCategories.expense,
+                        selectedIncomeCategories: selectedIncome,
+                        selectedExpenseCategories: selectedExpense,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    alert('Categories updated successfully!');
+                } catch (error) {
+                    console.error('Error updating categories:', error);
+                    alert('Error updating categories. Please try again.');
                 }
             }
         });
