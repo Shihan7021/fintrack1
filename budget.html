@@ -268,10 +268,12 @@
                 const relevantExpenses = allExpenses.filter(expense => {
                     const expenseDate = new Date(expense.date);
                     const budgetFromDate = new Date(budget.fromDate);
-                    const budgetToDate = new Date(budget.toDate);
+                    const budgetToDateObj = new Date(budget.toDate);
+                    budgetToDateObj.setDate(budgetToDateObj.getDate() + 1); // Go to the next day
+                    
                     return expense.category === budget.category &&
                            expenseDate >= budgetFromDate &&
-                           expenseDate <= budgetToDate;
+                           expenseDate < budgetToDateObj; // Strictly less than the start of the next day
                 });
 
                 // Calculate the total amount spent
