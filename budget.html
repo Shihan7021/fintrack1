@@ -120,6 +120,14 @@
                                             <!-- Categories will be populated from Firestore -->
                                         </select>
                                     </div>
+                                    <div class="mb-3">
+                                        <label for="budgetFromDate" class="form-label">From Date</label>
+                                        <input type="date" class="form-control" id="budgetFromDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="budgetToDate" class="form-label">To Date</label>
+                                        <input type="date" class="form-control" id="budgetToDate" required>
+                                    </div>
                                     <button type="submit" class="btn btn-primary">Create Budget</button>
                                 </form>
                             </div>
@@ -148,11 +156,51 @@
         </div>
     </div>
 
+    <!-- Edit Budget Modal -->
+    <div class="modal fade" id="editBudgetModal" tabindex="-1" aria-labelledby="editBudgetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBudgetModalLabel">Edit Budget</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editBudgetForm">
+                        <input type="hidden" id="editBudgetId">
+                        <div class="mb-3">
+                            <label for="editBudgetName" class="form-label">Budget Name</label>
+                            <input type="text" class="form-control" id="editBudgetName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBudgetAmount" class="form-label">Budget Amount</label>
+                            <input type="number" class="form-control" id="editBudgetAmount" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBudgetCategory" class="form-label">Category</label>
+                            <select class="form-select" id="editBudgetCategory" required>
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBudgetFromDate" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="editBudgetFromDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBudgetToDate" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="editBudgetToDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { auth, db } from "./firebase-config.js";
 
         onAuthStateChanged(auth, (user) => {
@@ -192,6 +240,7 @@
             budgetList.innerHTML = ''; // Clear list
             budgetSnapshot.forEach(doc => {
                 const budget = doc.data();
+                const budgetId = doc.id; // Get the document ID for editing/deleting
                 const budgetEl = document.createElement('div');
                 budgetEl.classList.add('card', 'mb-3');
                 budgetEl.innerHTML = `
@@ -199,6 +248,9 @@
                         <h5 class="card-title">${budget.name}</h5>
                         <p class="card-text">Amount: ${budget.amount}</p>
                         <p class="card-text">Category: ${budget.category}</p>
+                        <p class="card-text">Period: ${budget.fromDate} to ${budget.toDate}</p>
+                        <button class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editBudgetModal" data-budget-id="${budgetId}">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteBudget('${budgetId}')">Delete</button>
                     </div>
                 `;
                 budgetList.appendChild(budgetEl);
@@ -213,13 +265,17 @@
                 const budgetName = document.getElementById('budgetName').value;
                 const budgetAmount = document.getElementById('budgetAmount').value;
                 const budgetCategory = document.getElementById('budgetCategory').value;
+                const budgetFromDate = document.getElementById('budgetFromDate').value;
+                const budgetToDate = document.getElementById('budgetToDate').value;
 
-                if (budgetName && budgetAmount && budgetCategory) {
+                if (budgetName && budgetAmount && budgetCategory && budgetFromDate && budgetToDate) {
                     try {
                         await addDoc(collection(db, "users", user.uid, "budgets"), {
                             name: budgetName,
                             amount: Number(budgetAmount),
                             category: budgetCategory,
+                            fromDate: budgetFromDate,
+                            toDate: budgetToDate,
                             createdAt: new Date().toISOString()
                         });
                         alert('Budget created successfully!');
@@ -234,6 +290,118 @@
                 }
             }
         });
+
+        // Function to populate the edit modal when opened
+        document.getElementById('editBudgetModal').addEventListener('show.bs.modal', async (event) => {
+            const button = event.relatedTarget; // Button that triggered the modal
+            const budgetId = button.getAttribute('data-budget-id'); // Extract info from data-* attributes
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert("You must be logged in to edit budgets.");
+                return;
+            }
+
+            try {
+                const budgetDocRef = doc(db, "users", user.uid, "budgets", budgetId);
+                const budgetDoc = await getDoc(budgetDocRef);
+
+                if (budgetDoc.exists()) {
+                    const budgetData = budgetDoc.data();
+                    document.getElementById('editBudgetId').value = budgetId;
+                    document.getElementById('editBudgetName').value = budgetData.name;
+                    document.getElementById('editBudgetAmount').value = budgetData.amount;
+                    document.getElementById('editBudgetFromDate').value = budgetData.fromDate;
+                    document.getElementById('editBudgetToDate').value = budgetData.toDate;
+
+                    // Populate categories for edit modal
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const expenseCategories = userData.selectedExpenseCategories || [];
+                        const customExpenseCategories = userData.customExpenseCategories || [];
+                        const allExpenseCategories = [...new Set([...expenseCategories, ...customExpenseCategories])];
+                        
+                        const editBudgetCategorySelect = document.getElementById('editBudgetCategory');
+                        editBudgetCategorySelect.innerHTML = ''; // Clear previous options
+                        allExpenseCategories.forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = category;
+                            option.textContent = category;
+                            if (category === budgetData.category) {
+                                option.selected = true;
+                            }
+                            editBudgetCategorySelect.appendChild(option);
+                        });
+                    }
+                } else {
+                    alert("Budget not found.");
+                }
+            } catch (error) {
+                console.error("Error loading budget for edit:", error);
+                alert("Error loading budget for edit. Please try again.");
+            }
+        });
+
+        // Event listener for saving changes from the edit modal
+        const editBudgetForm = document.getElementById('editBudgetForm');
+        editBudgetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) {
+                alert("You must be logged in to save changes.");
+                return;
+            }
+
+            const budgetId = document.getElementById('editBudgetId').value;
+            const budgetName = document.getElementById('editBudgetName').value;
+            const budgetAmount = document.getElementById('editBudgetAmount').value;
+            const budgetCategory = document.getElementById('editBudgetCategory').value;
+            const budgetFromDate = document.getElementById('editBudgetFromDate').value;
+            const budgetToDate = document.getElementById('editBudgetToDate').value;
+
+            if (budgetName && budgetAmount && budgetCategory && budgetFromDate && budgetToDate) {
+                try {
+                    const budgetDocRef = doc(db, "users", user.uid, "budgets", budgetId);
+                    await setDoc(budgetDocRef, {
+                        name: budgetName,
+                        amount: Number(budgetAmount),
+                        category: budgetCategory,
+                        fromDate: budgetFromDate,
+                        toDate: budgetToDate,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    alert('Budget updated successfully!');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editBudgetModal'));
+                    modal.hide();
+                    loadBudgetData(user); // Refresh budget list
+                } catch (error) {
+                    console.error("Error updating budget:", error);
+                    alert('Error updating budget. Please try again.');
+                }
+            }
+        });
+
+        window.deleteBudget = async function(budgetId) {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("You must be logged in to delete budgets.");
+                return;
+            }
+
+            if (confirm("Are you sure you want to delete this budget? This action cannot be undone.")) {
+                try {
+                    const budgetDocRef = doc(db, "users", user.uid, "budgets", budgetId);
+                    await deleteDoc(budgetDocRef);
+                    alert('Budget deleted successfully!');
+                    loadBudgetData(user); // Refresh budget list
+                } catch (error) {
+                    console.error("Error deleting budget:", error);
+                    alert('Error deleting budget. Please try again.');
+                }
+            }
+        };
 
         const logoutButton = document.getElementById('logoutButton');
         logoutButton.addEventListener('click', async () => {
