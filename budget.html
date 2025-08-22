@@ -213,6 +213,14 @@
             }
         });
 
+        // Add formatAmount function
+        function formatAmount(amount) {
+            return parseFloat(amount).toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        }
+
         async function loadBudgetData(user) {
             // Load categories for budget creation
             const userDocRef = doc(db, "users", user.uid);
