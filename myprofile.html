@@ -269,30 +269,8 @@
                                             <input type="number" id="minSavingsTarget" class="form-control" min="0">
                                         </div>
                                     </div>
-                                    <hr>
-                                    <!-- Recurring Income -->
-                                    <h5 class="mt-4">Recurring Monthly Income</h5>
-                                    <div class="row g-3 align-items-center mb-3">
-                                        <div class="col-md-3"><select id="recurringIncomeCategory" class="form-select"><option value="">Select Category</option></select></div>
-                                        <div class="col-md-3"><input type="number" id="recurringIncomeAmount" class="form-control" placeholder="Amount"></div>
-                                        <div class="col-md-2"><input type="number" id="recurringIncomeInstances" class="form-control" placeholder="Instances"></div>
-                                        <div class="col-md-2"><select id="recurringIncomeFrequency" class="form-select"><option value="Monthly">Monthly</option></select></div>
-                                        <div class="col-md-2"><button type="button" class="btn btn-success w-100" id="addRecurringIncomeBtn">Add</button></div>
-                                    </div>
-                                    <!-- Recurring Expense -->
-                                    <h5 class="mt-4">Recurring Monthly Expense</h5>
-                                    <div class="row g-3 align-items-center mb-3">
-                                        <div class="col-md-3"><select id="recurringExpenseCategory" class="form-select"><option value="">Select Category</option></select></div>
-                                        <div class="col-md-3"><input type="number" id="recurringExpenseAmount" class="form-control" placeholder="Amount"></div>
-                                        <div class="col-md-2"><input type="number" id="recurringExpenseInstances" class="form-control" placeholder="Instances"></div>
-                                        <div class="col-md-2"><select id="recurringExpenseFrequency" class="form-select"><option value="Monthly">Monthly</option></select></div>
-                                        <div class="col-md-2"><button type="button" class="btn btn-success w-100" id="addRecurringExpenseBtn">Add</button></div>
-                                    </div>
                                     <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-2"></i>Save Financial Info</button>
                                 </form>
-                                <hr>
-                                <div id="recurringIncomeList" class="mb-3"></div>
-                                <div id="recurringExpenseList" class="mb-3"></div>
                             </div>
                         </div>
                     </div>
@@ -432,10 +410,6 @@
             expense: []
         };
 
-        let recurringIncomes = [];
-        let recurringExpenses = [];
-        let editingRecurringItem = { type: null, index: -1 };
-
         // Load user profile data
         async function loadUserProfile() {
             const user = auth.currentUser;
@@ -468,9 +442,6 @@
                         // Financial Info
                         document.getElementById('savingMode').value = userData.savingMode || '';
                         document.getElementById('minSavingsTarget').value = userData.minSavingsTarget || '';
-                        recurringIncomes = userData.recurringIncomes || [];
-                        recurringExpenses = userData.recurringExpenses || [];
-                        renderRecurringItems();
 
                         // Categories
                         customCategories.income = userData.customIncomeCategories || [];
@@ -483,7 +454,6 @@
 
                         populateCategories('income', [...incomeCategories, ...customCategories.income], selectedIncome);
                         populateCategories('expense', [...expenseCategories, ...customCategories.expense], selectedExpense);
-                        populateRecurringCategoryDropdowns();
                     } else {
                         console.log('No user document found, setting up defaults');
                         populateCategories('income', incomeCategories, incomeCategories);
@@ -551,23 +521,6 @@
             });
         }
 
-        function populateRecurringCategoryDropdowns() {
-            const incomeDropdown = document.getElementById('recurringIncomeCategory');
-            const expenseDropdown = document.getElementById('recurringExpenseCategory');
-            const allIncomeCategories = [...incomeCategories, ...customCategories.income];
-            const allExpenseCategories = [...expenseCategories, ...customCategories.expense];
-
-            incomeDropdown.innerHTML = '<option value="">Select Category</option>';
-            allIncomeCategories.forEach(cat => {
-                incomeDropdown.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-
-            expenseDropdown.innerHTML = '<option value="">Select Category</option>';
-            allExpenseCategories.forEach(cat => {
-                expenseDropdown.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-        }
-
         function getSelectedCategories(type) {
             const checkboxes = document.querySelectorAll(`#${type}CategoriesList input[type="checkbox"]:checked`);
             return Array.from(checkboxes).map(cb => cb.value);
@@ -603,7 +556,6 @@
                 : [...expenseCategories, ...customCategories.expense];
             
             populateCategories(type, updatedAllCategories, selectedCategories);
-            populateRecurringCategoryDropdowns();
             input.value = '';
         };
 
@@ -620,7 +572,6 @@
             populateCategories(type, 
                 type === 'income' ? [...incomeCategories, ...customCategories.income] : [...expenseCategories, ...customCategories.expense], 
                 updatedSelected);
-            populateRecurringCategoryDropdowns();
         };
 
         profileForm.addEventListener('submit', async (e) => {
@@ -659,8 +610,6 @@
                     await setDoc(doc(db, "users", user.uid), {
                         savingMode: document.getElementById('savingMode').value,
                         minSavingsTarget: document.getElementById('minSavingsTarget').value,
-                        recurringIncomes: recurringIncomes,
-                        recurringExpenses: recurringExpenses,
                         updatedAt: new Date().toISOString()
                     }, { merge: true });
                     alert('Financial information updated successfully!');
@@ -670,103 +619,6 @@
                 }
             }
         });
-
-        function renderRecurringItems() {
-            const incomeList = document.getElementById('recurringIncomeList');
-            const expenseList = document.getElementById('recurringExpenseList');
-            incomeList.innerHTML = '<h6>Recurring Incomes</h6>';
-            expenseList.innerHTML = '<h6>Recurring Expenses</h6>';
-
-            recurringIncomes.forEach((item, index) => {
-                incomeList.innerHTML += `
-                    <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2">
-                        <div><strong>${item.category}</strong>: ${item.amount} (${item.frequency}, ${item.instances} times)</div>
-                        <div>
-                            <button type="button" class="btn btn-sm btn-primary me-2" onclick="editRecurringItem('income', ${index})"><i class="fas fa-edit"></i></button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecurringItem('income', ${index})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
-            });
-
-            recurringExpenses.forEach((item, index) => {
-                expenseList.innerHTML += `
-                    <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2">
-                        <div><strong>${item.category}</strong>: ${item.amount} (${item.frequency}, ${item.instances} times)</div>
-                        <div>
-                            <button type="button" class="btn btn-sm btn-primary me-2" onclick="editRecurringItem('expense', ${index})"><i class="fas fa-edit"></i></button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecurringItem('expense', ${index})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function handleRecurringItem(type, isUpdate = false) {
-            const category = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Category`).value.trim();
-            const amount = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Amount`).value;
-            const instances = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Instances`).value;
-            const frequency = document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Frequency`).value;
-
-            if (!category || !amount || !instances) {
-                alert('Please fill in all fields for the recurring item.');
-                return;
-            }
-
-            const newItem = { category, amount, instances, frequency, type };
-
-            if (isUpdate) {
-                if (type === 'income') {
-                    recurringIncomes[editingRecurringItem.index] = newItem;
-                } else {
-                    recurringExpenses[editingRecurringItem.index] = newItem;
-                }
-            } else {
-                if (type === 'income') {
-                    recurringIncomes.push(newItem);
-                } else {
-                    recurringExpenses.push(newItem);
-                }
-            }
-
-            renderRecurringItems();
-            resetRecurringItemForm(type);
-        }
-
-        function resetRecurringItemForm(type) {
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Category`).value = '';
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Amount`).value = '';
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Instances`).value = '';
-            const addBtn = document.getElementById(`addRecurring${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
-            addBtn.textContent = 'Add';
-            addBtn.onclick = () => handleRecurringItem(type);
-            editingRecurringItem = { type: null, index: -1 };
-        }
-
-        window.editRecurringItem = function(type, index) {
-            editingRecurringItem = { type, index };
-            const item = type === 'income' ? recurringIncomes[index] : recurringExpenses[index];
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Category`).value = item.category;
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Amount`).value = item.amount;
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Instances`).value = item.instances;
-            document.getElementById(`recurring${type.charAt(0).toUpperCase() + type.slice(1)}Frequency`).value = item.frequency;
-
-            const addBtn = document.getElementById(`addRecurring${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
-            addBtn.textContent = 'Update';
-            addBtn.onclick = () => handleRecurringItem(type, true);
-        }
-
-        window.deleteRecurringItem = function(type, index) {
-            if (confirm('Are you sure you want to delete this recurring item?')) {
-                if (type === 'income') {
-                    recurringIncomes.splice(index, 1);
-                } else {
-                    recurringExpenses.splice(index, 1);
-                }
-                renderRecurringItems();
-            }
-        }
-
-        document.getElementById('addRecurringIncomeBtn').onclick = () => handleRecurringItem('income');
-        document.getElementById('addRecurringExpenseBtn').onclick = () => handleRecurringItem('expense');
 
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         changePasswordBtn.addEventListener('click', async () => {
