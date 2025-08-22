@@ -70,61 +70,88 @@
             <h2>Transaction History</h2>
         </div>
 
-        <div class="row mb-3 g-3">
-            <div class="col-md-4">
-                <label for="filterCategory" class="form-label">Category</label>
-                <select id="filterCategory" class="form-select" onchange="renderHistory()">
-                    <option value="">All Categories</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="filterType" class="form-label">Type</label>
-                <select id="filterType" class="form-select" onchange="renderHistory()">
-                    <option value="">All</option>
-                    <option value="Income">Income</option>
-                    <option value="Expense">Expense</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="amountRange" class="form-label">Amount Range</label>
-                <input
-                    type="text"
-                    id="amountRange"
-                    class="form-control"
-                    placeholder="min-max"
-                    onchange="renderHistory()"
-                    title="Enter amount range like 100-1000"
-                />
-            </div>
-        </div>
+        <ul class="nav nav-tabs" id="historyTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-transactions-tab" data-bs-toggle="tab" data-bs-target="#all-transactions" type="button" role="tab" aria-controls="all-transactions" aria-selected="true">All Transactions</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recurring-transactions-tab" data-bs-toggle="tab" data-bs-target="#recurring-transactions" type="button" role="tab" aria-controls="recurring-transactions" aria-selected="false">Recurring Transactions</button>
+            </li>
+        </ul>
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Comment</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="historyTableBody"></tbody>
-        </table>
-        
-        <div class="d-flex justify-content-end mt-3">
-            <button class="btn btn-danger" onclick="deleteAllFilteredTransactions()">
-                <i class="fas fa-trash-alt"></i> Delete All
-            </button>
+        <div class="tab-content" id="historyTabsContent">
+            <div class="tab-pane fade show active" id="all-transactions" role="tabpanel" aria-labelledby="all-transactions-tab">
+                <div class="row mb-3 g-3 mt-2">
+                    <div class="col-md-4">
+                        <label for="filterCategory" class="form-label">Category</label>
+                        <select id="filterCategory" class="form-select" onchange="renderHistory()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filterType" class="form-label">Type</label>
+                        <select id="filterType" class="form-select" onchange="renderHistory()">
+                            <option value="">All</option>
+                            <option value="Income">Income</option>
+                            <option value="Expense">Expense</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="amountRange" class="form-label">Amount Range</label>
+                        <input
+                            type="text"
+                            id="amountRange"
+                            class="form-control"
+                            placeholder="min-max"
+                            onchange="renderHistory()"
+                            title="Enter amount range like 100-1000"
+                        />
+                    </div>
+                </div>
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Comment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+                
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-danger" onclick="deleteAllFilteredTransactions()">
+                        <i class="fas fa-trash-alt"></i> Delete All
+                    </button>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="recurring-transactions" role="tabpanel" aria-labelledby="recurring-transactions-tab">
+                <table class="table table-bordered mt-3">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Frequency</th>
+                            <th>Instances</th>
+                            <th>Start Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recurringHistoryTableBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
-
-    
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, writeBatch, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAl8wXLzjuHGHohU70LOoObJ7OZUhHpWDQ",
@@ -142,7 +169,6 @@
         let currentUserId = null;
 
         let txns = [];
-        let deletedTxnData = null;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -156,6 +182,7 @@
                     }));
                     renderCategoryFilter();
                     renderHistory();
+                    renderRecurringHistory();
                 }, (error) => {
                     console.error("Error listening to user transactions: ", error);
                     alert("Failed to load your transactions. Please try again.");
@@ -206,6 +233,40 @@
             });
         }
 
+        function renderRecurringHistory() {
+            const recurringTxns = txns.filter(t => t.isRecurring);
+            const recurringSeries = {};
+
+            recurringTxns.forEach(t => {
+                if (!recurringSeries[t.recurringId]) {
+                    recurringSeries[t.recurringId] = [];
+                }
+                recurringSeries[t.recurringId].push(t);
+            });
+
+            const tbody = document.getElementById("recurringHistoryTableBody");
+            tbody.innerHTML = "";
+
+            for (const recurringId in recurringSeries) {
+                const series = recurringSeries[recurringId];
+                const firstTxn = series.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${firstTxn.type}</td>
+                    <td>${firstTxn.category}</td>
+                    <td>Rs.${formatAmount(firstTxn.amount)}</td>
+                    <td>${firstTxn.frequency}</td>
+                    <td>${firstTxn.instances}</td>
+                    <td>${firstTxn.date}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" disabled>Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteRecurringSeries('${recurringId}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
         async function deleteTxn(docId) {
             if (!currentUserId) {
                 alert("You must be logged in to delete transactions.");
@@ -213,12 +274,7 @@
             }
             if (confirm("Are you sure you want to delete this transaction?")) {
                 try {
-                    const txnToDelete = txns.find(t => t.id === docId);
-                    if (txnToDelete) {
-                        deletedTxnData = { ...txnToDelete };
-                    }
                     await deleteDoc(doc(db, "users", currentUserId, "transactions", docId));
-                    showUndoToast();
                 } catch (e) {
                     console.error("Error deleting document: ", e);
                     alert("Failed to delete transaction. Please try again.");
@@ -226,28 +282,24 @@
             }
         }
 
-        function showUndoToast() {
-            const toast = document.getElementById("undoToast");
-            if (toast) {
-                toast.style.display = "block";
-                setTimeout(() => {
-                    toast.style.display = "none";
-                    deletedTxnData = null;
-                }, 5000);
+        async function deleteRecurringSeries(recurringId) {
+            if (!currentUserId) {
+                alert("You must be logged in to delete transactions.");
+                return;
             }
-        }
-
-        async function undoDelete() {
-            if (deletedTxnData && currentUserId) {
+            if (confirm("Are you sure you want to delete this entire recurring series?")) {
                 try {
-                    const { id, ...txnDataWithoutId } = deletedTxnData;
-                    await addDoc(collection(db, "users", currentUserId, "transactions"), txnDataWithoutId);
-                    document.getElementById("undoToast").style.display = "none";
-                    deletedTxnData = null;
-                    alert("Transaction restored successfully.");
+                    const batch = writeBatch(db);
+                    const q = query(collection(db, "users", currentUserId, "transactions"), where("recurringId", "==", recurringId));
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((doc) => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    alert("Recurring series deleted successfully.");
                 } catch (e) {
-                    console.error("Error restoring transaction: ", e);
-                    alert("Failed to restore transaction. Please try again.");
+                    console.error("Error deleting recurring series: ", e);
+                    alert("Failed to delete recurring series. Please try again.");
                 }
             }
         }
@@ -298,7 +350,6 @@
                 return;
             }
 
-            // Get filtered transactions based on current filters
             const category = document.getElementById("filterCategory").value;
             const type = document.getElementById("filterType").value;
             const range = document.getElementById("amountRange").value.split("-").map(x => parseFloat(x));
@@ -320,12 +371,13 @@
 
             if (confirm(`Are you sure you want to delete ${filteredTransactions.length} transaction(s)? This action cannot be undone.`)) {
                 try {
-                    let deletedCount = 0;
-                    for (const txn of filteredTransactions) {
-                        await deleteDoc(doc(db, "users", currentUserId, "transactions", txn.id));
-                        deletedCount++;
-                    }
-                    alert(`${deletedCount} transaction(s) deleted successfully.`);
+                    const batch = writeBatch(db);
+                    filteredTransactions.forEach(txn => {
+                        const docRef = doc(db, "users", currentUserId, "transactions", txn.id);
+                        batch.delete(docRef);
+                    });
+                    await batch.commit();
+                    alert(`${filteredTransactions.length} transaction(s) deleted successfully.`);
                 } catch (e) {
                     console.error("Error deleting transactions: ", e);
                     alert("Failed to delete some transactions. Please try again.");
@@ -335,7 +387,7 @@
 
         window.renderHistory = renderHistory;
         window.deleteTxn = deleteTxn;
-        window.undoDelete = undoDelete;
+        window.deleteRecurringSeries = deleteRecurringSeries;
         window.exportTransactions = exportTransactions;
         window.deleteAllFilteredTransactions = deleteAllFilteredTransactions;
     </script>

@@ -92,6 +92,26 @@
                     <label for="comment" class="form-label">Comment</label>
                     <textarea class="form-control" id="comment" rows="2"></textarea>
                 </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="recurringCheck">
+                    <label class="form-check-label" for="recurringCheck">Recurring Transaction</label>
+                </div>
+                <div id="recurringOptions" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="frequency" class="form-label">Frequency</label>
+                            <select class="form-select" id="frequency">
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Monthly" selected>Monthly</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="instances" class="form-label">Instances</label>
+                            <input type="number" class="form-control" id="instances" min="1">
+                        </div>
+                    </div>
+                </div>
                 <div class="d-grid mt-4">
                     <button type="submit" class="btn btn-primary btn-lg">Add Transaction</button>
                 </div>
@@ -102,7 +122,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -170,6 +190,15 @@
 
         document.getElementById("type").addEventListener("change", updateCategories);
 
+        document.getElementById('recurringCheck').addEventListener('change', function() {
+            const recurringOptions = document.getElementById('recurringOptions');
+            if (this.checked) {
+                recurringOptions.style.display = 'block';
+            } else {
+                recurringOptions.style.display = 'none';
+            }
+        });
+
         const transactionForm = document.getElementById("transactionForm");
         transactionForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -178,26 +207,77 @@
             const amount = document.getElementById("amount").value;
             const date = document.getElementById("date").value;
             const comment = document.getElementById("comment").value;
+            const isRecurring = document.getElementById("recurringCheck").checked;
 
             if (!currentUserId) {
                 alert("You must be logged in to add a transaction.");
                 return;
             }
 
-            try {
-                await addDoc(collection(db, "users", currentUserId, "transactions"), {
-                    type,
-                    category,
-                    amount: parseFloat(amount),
-                    date,
-                    comment
-                });
-                alert("Transaction added successfully!");
-                transactionForm.reset();
-                updateCategories();
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                alert("Failed to add transaction. Please try again.");
+            if (isRecurring) {
+                const frequency = document.getElementById("frequency").value;
+                const instances = parseInt(document.getElementById("instances").value);
+
+                if (!instances || instances <= 0) {
+                    alert("Please enter a valid number of instances for recurring transaction.");
+                    return;
+                }
+
+                const batch = writeBatch(db);
+                const recurringId = doc(collection(db, "users")).id; // Generate a unique ID for the series
+
+                for (let i = 0; i < instances; i++) {
+                    const transactionDate = new Date(date);
+                    if (frequency === 'Daily') {
+                        transactionDate.setDate(transactionDate.getDate() + i);
+                    } else if (frequency === 'Weekly') {
+                        transactionDate.setDate(transactionDate.getDate() + (i * 7));
+                    } else if (frequency === 'Monthly') {
+                        transactionDate.setMonth(transactionDate.getMonth() + i);
+                    }
+
+                    const transactionRef = doc(collection(db, "users", currentUserId, "transactions"));
+                    batch.set(transactionRef, {
+                        type,
+                        category,
+                        amount: parseFloat(amount),
+                        date: transactionDate.toISOString().split('T')[0],
+                        comment,
+                        isRecurring: true,
+                        recurringId,
+                        frequency,
+                        instances
+                    });
+                }
+
+                try {
+                    await batch.commit();
+                    alert(`Successfully added ${instances} recurring transactions!`);
+                    transactionForm.reset();
+                    document.getElementById('recurringOptions').style.display = 'none';
+                    updateCategories();
+                } catch (e) {
+                    console.error("Error adding recurring transactions: ", e);
+                    alert("Failed to add recurring transactions. Please try again.");
+                }
+
+            } else {
+                try {
+                    await addDoc(collection(db, "users", currentUserId, "transactions"), {
+                        type,
+                        category,
+                        amount: parseFloat(amount),
+                        date,
+                        comment,
+                        isRecurring: false
+                    });
+                    alert("Transaction added successfully!");
+                    transactionForm.reset();
+                    updateCategories();
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    alert("Failed to add transaction. Please try again.");
+                }
             }
         });
 
