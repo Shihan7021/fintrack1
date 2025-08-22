@@ -200,10 +200,8 @@
             const minAmount = rangeParts[0] ? parseFloat(rangeParts[0]) : NaN;
             const maxAmount = rangeParts.length > 1 && rangeParts[1] ? parseFloat(rangeParts[1]) : NaN;
 
-            // MODIFICATION START: Get date range values
             const startDate = document.getElementById("startDate").value;
             const endDate = document.getElementById("endDate").value;
-            // MODIFICATION END
 
             const filteredTxns = txns.filter(t => {
                 const inCategory = !category || t.category === category;
@@ -218,12 +216,9 @@
                     inRange = false;
                 }
                 
-                // MODIFICATION START: Add date range check
-                // Since dates are 'YYYY-MM-DD', direct string comparison is safe and avoids timezone issues.
                 const inDateRange = (!startDate || t.date >= startDate) && (!endDate || t.date <= endDate);
-                // MODIFICATION END
                 
-                return inCategory && inType && inRange && inDateRange; // Added inDateRange
+                return inCategory && inType && inRange && inDateRange;
             });
 
             if (filteredTxns.length === 0) {
@@ -234,23 +229,25 @@
             filteredTxns.forEach((t) => {
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${t.type.toLowerCase()}`;
-                card.innerHTML = "`
-                    <div class=\"card-body p-2">
-                        <div class=\"d-flex justify-content-between align-items-center">
-                            <div class=\"d-flex align-items-center">
-                                <i class=\"fas ${" + (t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger') + `} me-3 fa-lg"></i>
+                // --- SYNTAX FIX START ---
+                card.innerHTML = `
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="fas ${t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} me-3 fa-lg"></i>
                                 <div>
-                                    <h6 class=\"mb-0\">${t.category}</h6>
-                                    <small class=\"text-muted\">${t.date}</small>
+                                    <h6 class="mb-0">${t.category}</h6>
+                                    <small class="text-muted">${t.date}</small>
                                 </div>
                             </div>
-                            <div class=\"text-end">
-                                <h6 class=\"mb-0 ${" + (t.type === 'Income' ? 'text-success' : 'text-danger') + `}">${t.type === "Income" ? '+' : '-'} Rs.${formatAmount(t.amount)}</h6>
-                                <small class=\"text-muted\">${t.comment || ""}</small>
+                            <div class="text-end">
+                                <h6 class="mb-0 ${t.type === 'Income' ? 'text-success' : 'text-danger'}">${t.type === "Income" ? '+' : '-'} Rs.${formatAmount(t.amount)}</h6>
+                                <small class="text-muted">${t.comment || ""}</small>
                             </div>
-                            <button class=\"btn btn-sm btn-outline-danger ms-3\" onclick=\"deleteTxn('${t.id}')\"><i class=\"fas fa-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-danger ms-3" onclick="deleteTxn('${t.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
+                // --- SYNTAX FIX END ---
                 container.appendChild(card);
             });
         }
@@ -278,28 +275,30 @@
                 const firstTxn = series.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${firstTxn.type.toLowerCase()}`;
-                card.innerHTML = "`
-                    <div class=\"card-body">
-                        <div class=\"d-flex justify-content-between align-items-center">
-                            <div class=\"d-flex align-items-center">
-                                <div class=\"me-3">
-                                    <i class=\"fas ${" + (firstTxn.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger') + ` fa-2x"></i>
+                // --- SYNTAX FIX START ---
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas ${firstTxn.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} fa-2x"></i>
                                 </div>
                                 <div>
-                                    <h6 class=\"mb-0\">${firstTxn.category}</h6>
-                                    <small class=\"text-muted\">${firstTxn.frequency} - ${firstTxn.instances} times</small>
+                                    <h6 class="mb-0">${firstTxn.category}</h6>
+                                    <small class="text-muted">${firstTxn.frequency} - ${firstTxn.instances} times</small>
                                 </div>
                             </div>
-                            <div class=\"text-end">
-                                <h6 class=\"mb-0 ${" + (firstTxn.type === 'Income' ? 'text-success' : 'text-danger') + `}">${firstTxn.type === "Income" ? '+' : '-'} Rs.${formatAmount(firstTxn.amount)}</h6>
-                                <small class=\"text-muted\">Starts on ${firstTxn.date}</small>
+                            <div class="text-end">
+                                <h6 class="mb-0 ${firstTxn.type === 'Income' ? 'text-success' : 'text-danger'}">${firstTxn.type === "Income" ? '+' : '-'} Rs.${formatAmount(firstTxn.amount)}</h6>
+                                <small class="text-muted">Starts on ${firstTxn.date}</small>
                             </div>
                             <div>
-                                <button class=\"btn btn-sm btn-primary me-2" disabled>Edit</button>
-                                <button class=\"btn btn-sm btn-danger" onclick=\"deleteRecurringSeries('${recurringId}')">Delete</button>
+                                <button class="btn btn-sm btn-primary me-2" disabled>Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecurringSeries('${recurringId}')">Delete</button>
                             </div>
                         </div>
                     </div>`;
+                // --- SYNTAX FIX END ---
                 container.appendChild(card);
             }
         }
@@ -376,10 +375,8 @@
             const minAmount = rangeParts[0] ? parseFloat(rangeParts[0]) : NaN;
             const maxAmount = rangeParts.length > 1 && rangeParts[1] ? parseFloat(rangeParts[1]) : NaN;
             
-            // MODIFICATION START: Get date range values for deletion
             const startDate = document.getElementById("startDate").value;
             const endDate = document.getElementById("endDate").value;
-            // MODIFICATION END
 
             const filteredTransactions = txns.filter(t => {
                 const inCategory = !category || t.category === category;
@@ -389,11 +386,9 @@
                 if (!isNaN(minAmount) && amount < minAmount) inRange = false;
                 if (!isNaN(maxAmount) && amount > maxAmount) inRange = false;
 
-                // MODIFICATION START: Add date range check for deletion
                 const inDateRange = (!startDate || t.date >= startDate) && (!endDate || t.date <= endDate);
-                // MODIFICATION END
 
-                return inCategory && inType && inRange && inDateRange; // Added inDateRange
+                return inCategory && inType && inRange && inDateRange;
             });
 
             if (filteredTransactions.length === 0) return alert("No transactions match the current filters.");
