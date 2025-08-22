@@ -448,3 +448,71 @@ textarea:focus {
     font-size: 26px;
   }
 }
+
+/*
+==========================================================================
+  NEW STYLES FOR MODERN LOGIN PAGE THEME
+  These styles will only apply to pages with <body class="login-theme">
+==========================================================================
+*/
+
+body.login-theme {
+  /* A subtle, modern pink gradient for the background */
+  background: linear-gradient(135deg, #ff85a2, #ffb3c6);
+  color: white; /* Sets default text color to white as requested */
+}
+
+/* Overriding the default .login-card for our pink theme */
+body.login-theme .login-card {
+  padding: 2rem;
+  border: none;
+  border-radius: 15px;
+  /* Soft shadow for a "floating" effect */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* Semi-transparent white to allow the gradient to peek through */
+  background-color: rgba(255, 255, 255, 0.95);
+  /* Overrides the body's white text for readability inside the card */
+  color: #333;
+}
+
+/* Update focus ring to match the pink theme */
+body.login-theme .form-control:focus {
+  border-color: #ff85a2;
+  box-shadow: 0 0 0 0.25rem rgba(255, 133, 162, 0.25);
+}
+
+/* Themed buttons for the login page */
+body.login-theme .btn {
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Primary Login Button */
+body.login-theme .btn-login {
+  background-color: #f75c80;
+  border-color: #f75c80;
+  color: white;
+}
+
+body.login-theme .btn-login:hover {
+  background-color: #e64a6d;
+  border-color: #e64a6d;
+  transform: translateY(-2px); /* Slight lift on hover */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary Buttons (Home, Reset Password) */
+body.login-theme .btn-register,
+body.login-theme .btn-reset-password {
+  background-color: transparent;
+  color: #f75c80;
+  border-color: #f75c80;
+}
+
+body.login-theme .btn-register:hover,
+body.login-theme .btn-reset-password:hover {
+  background-color: #f75c80;
+  color: white;
+}
