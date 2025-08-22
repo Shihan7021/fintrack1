@@ -156,13 +156,18 @@
         let currentUserId = null;
 
         let txns = [];
+        let unsubscribeFromTransactions = null;
 
         onAuthStateChanged(auth, (user) => {
+            if (unsubscribeFromTransactions) {
+                unsubscribeFromTransactions();
+            }
+
             if (user) {
                 currentUserId = user.uid;
                 const userTransactionsCollection = collection(db, "users", currentUserId, "transactions");
                 
-                onSnapshot(query(userTransactionsCollection), (querySnapshot) => {
+                unsubscribeFromTransactions = onSnapshot(query(userTransactionsCollection), (querySnapshot) => {
                     txns = querySnapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
@@ -175,6 +180,8 @@
                     alert("Failed to load your transactions. Please try again.");
                 });
             } else {
+                currentUserId = null;
+                txns = [];
                 window.location.href = "index.html";
             }
         });
@@ -338,8 +345,10 @@
 
         const logout = async () => {
             try {
+                if (unsubscribeFromTransactions) {
+                    unsubscribeFromTransactions();
+                }
                 await signOut(auth);
-                window.location.href = "index.html";
             } catch (error) {
                 console.error("Error signing out: ", error);
                 alert("Failed to log out. Please try again.");
