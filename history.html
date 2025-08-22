@@ -89,13 +89,13 @@
         <div class="tab-content" id="historyTabsContent">
             <div class="tab-pane fade show active" id="all-transactions" role="tabpanel" aria-labelledby="all-transactions-tab">
                 <div class="row mb-3 g-3 mt-2">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="filterCategory" class="form-label">Category</label>
                         <select id="filterCategory" class="form-select" onchange="renderHistory()">
                             <option value="">All Categories</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="filterType" class="form-label">Type</label>
                         <select id="filterType" class="form-select" onchange="renderHistory()">
                             <option value="">All</option>
@@ -103,7 +103,7 @@
                             <option value="Expense">Expense</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="amountRange" class="form-label">Amount Range</label>
                         <input
                             type="text"
@@ -114,8 +114,14 @@
                             title="Enter amount range like 100-1000, 100-, or -1000"
                         />
                     </div>
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">Date Range</label>
+                        <div class="input-group">
+                            <input type="date" id="startDate" class="form-control" onchange="renderHistory()" title="Start Date">
+                            <input type="date" id="endDate" class="form-control" onchange="renderHistory()" title="End Date">
+                        </div>
+                    </div>
                 </div>
-
                 <div id="historyContainer"></div>
                 
                 <div class="d-flex justify-content-end mt-3">
@@ -153,6 +159,8 @@
                         id: doc.id,
                         ...doc.data()
                     }));
+                    // Sort transactions by date descending (newest first)
+                    txns.sort((a, b) => new Date(b.date) - new Date(a.date));
                     renderCategoryFilter();
                     renderHistory();
                     renderRecurringHistory();
@@ -169,7 +177,7 @@
 
         function renderCategoryFilter() {
             const filter = document.getElementById("filterCategory");
-            const currentCategory = filter.value; // Preserve selection
+            const currentCategory = filter.value; 
             const categories = [...new Set(txns.map(t => t.category))].sort();
             filter.innerHTML = '<option value="">All Categories</option>' + categories.map(c => `<option value="${c}" ${c === currentCategory ? 'selected' : ''}>${c}</option>`).join('');
         }
@@ -184,11 +192,15 @@
             const container = document.getElementById("historyContainer");
             container.innerHTML = "";
             
-            // **FIXED**: More robust amount range parsing
             const rangeInput = document.getElementById("amountRange").value.trim();
             const rangeParts = rangeInput.split("-").map(x => x.trim());
             const minAmount = rangeParts[0] ? parseFloat(rangeParts[0]) : NaN;
             const maxAmount = rangeParts.length > 1 && rangeParts[1] ? parseFloat(rangeParts[1]) : NaN;
+
+            // MODIFICATION START: Get date range values
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+            // MODIFICATION END
 
             const filteredTxns = txns.filter(t => {
                 const inCategory = !category || t.category === category;
@@ -203,7 +215,12 @@
                     inRange = false;
                 }
                 
-                return inCategory && inType && inRange;
+                // MODIFICATION START: Add date range check
+                // Since dates are 'YYYY-MM-DD', direct string comparison is safe and avoids timezone issues.
+                const inDateRange = (!startDate || t.date >= startDate) && (!endDate || t.date <= endDate);
+                // MODIFICATION END
+                
+                return inCategory && inType && inRange && inDateRange; // Added inDateRange
             });
 
             if (filteredTxns.length === 0) {
@@ -214,7 +231,6 @@
             filteredTxns.forEach((t) => {
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${t.type.toLowerCase()}`;
-                // **FIXED**: Switched from double quotes to backticks (``) for template literal
                 card.innerHTML = `
                     <div class="card-body p-2">
                         <div class="d-flex justify-content-between align-items-center">
@@ -259,7 +275,6 @@
                 const firstTxn = series.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${firstTxn.type.toLowerCase()}`;
-                // **FIXED**: Switched from double quotes to backticks (``) for template literal
                 card.innerHTML = `
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -353,12 +368,16 @@
             const category = document.getElementById("filterCategory").value;
             const type = document.getElementById("filterType").value;
             
-            // **FIXED**: Using the same robust amount range logic here
             const rangeInput = document.getElementById("amountRange").value.trim();
             const rangeParts = rangeInput.split("-").map(x => x.trim());
             const minAmount = rangeParts[0] ? parseFloat(rangeParts[0]) : NaN;
             const maxAmount = rangeParts.length > 1 && rangeParts[1] ? parseFloat(rangeParts[1]) : NaN;
             
+            // MODIFICATION START: Get date range values for deletion
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+            // MODIFICATION END
+
             const filteredTransactions = txns.filter(t => {
                 const inCategory = !category || t.category === category;
                 const inType = !type || t.type === type;
@@ -366,7 +385,12 @@
                 let inRange = true;
                 if (!isNaN(minAmount) && amount < minAmount) inRange = false;
                 if (!isNaN(maxAmount) && amount > maxAmount) inRange = false;
-                return inCategory && inType && inRange;
+
+                // MODIFICATION START: Add date range check for deletion
+                const inDateRange = (!startDate || t.date >= startDate) && (!endDate || t.date <= endDate);
+                // MODIFICATION END
+
+                return inCategory && inType && inRange && inDateRange; // Added inDateRange
             });
 
             if (filteredTransactions.length === 0) return alert("No transactions match the current filters.");
