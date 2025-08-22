@@ -49,6 +49,9 @@
                             <i class="fas fa-list"></i> All Transactions
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a>
+                    </li>
                 </ul>
                 
                 <ul class="navbar-nav">
@@ -231,21 +234,21 @@
             filteredTxns.forEach((t) => {
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${t.type.toLowerCase()}`;
-                card.innerHTML = `
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <i class="fas ${t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} me-3 fa-lg"></i>
+                card.innerHTML = "`
+                    <div class=\"card-body p-2">
+                        <div class=\"d-flex justify-content-between align-items-center">
+                            <div class=\"d-flex align-items-center">
+                                <i class=\"fas ${" + (t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger') + `} me-3 fa-lg"></i>
                                 <div>
-                                    <h6 class="mb-0">${t.category}</h6>
-                                    <small class="text-muted">${t.date}</small>
+                                    <h6 class=\"mb-0\">${t.category}</h6>
+                                    <small class=\"text-muted\">${t.date}</small>
                                 </div>
                             </div>
-                            <div class="text-end">
-                                <h6 class="mb-0 ${t.type === 'Income' ? 'text-success' : 'text-danger'}">${t.type === "Income" ? '+' : '-'} Rs.${formatAmount(t.amount)}</h6>
-                                <small class="text-muted">${t.comment || ""}</small>
+                            <div class=\"text-end">
+                                <h6 class=\"mb-0 ${" + (t.type === 'Income' ? 'text-success' : 'text-danger') + `}">${t.type === "Income" ? '+' : '-'} Rs.${formatAmount(t.amount)}</h6>
+                                <small class=\"text-muted\">${t.comment || ""}</small>
                             </div>
-                            <button class="btn btn-sm btn-outline-danger ms-3" onclick="deleteTxn('${t.id}')"><i class="fas fa-trash"></i></button>
+                            <button class=\"btn btn-sm btn-outline-danger ms-3\" onclick=\"deleteTxn('${t.id}')\"><i class=\"fas fa-trash"></i></button>
                         </div>
                     </div>`;
                 container.appendChild(card);
@@ -275,25 +278,25 @@
                 const firstTxn = series.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${firstTxn.type.toLowerCase()}`;
-                card.innerHTML = `
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="fas ${firstTxn.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} fa-2x"></i>
+                card.innerHTML = "`
+                    <div class=\"card-body">
+                        <div class=\"d-flex justify-content-between align-items-center">
+                            <div class=\"d-flex align-items-center">
+                                <div class=\"me-3">
+                                    <i class=\"fas ${" + (firstTxn.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger') + ` fa-2x"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">${firstTxn.category}</h6>
-                                    <small class="text-muted">${firstTxn.frequency} - ${firstTxn.instances} times</small>
+                                    <h6 class=\"mb-0\">${firstTxn.category}</h6>
+                                    <small class=\"text-muted\">${firstTxn.frequency} - ${firstTxn.instances} times</small>
                                 </div>
                             </div>
-                            <div class="text-end">
-                                <h6 class="mb-0 ${firstTxn.type === 'Income' ? 'text-success' : 'text-danger'}">${firstTxn.type === "Income" ? '+' : '-'} Rs.${formatAmount(firstTxn.amount)}</h6>
-                                <small class="text-muted">Starts on ${firstTxn.date}</small>
+                            <div class=\"text-end">
+                                <h6 class=\"mb-0 ${" + (firstTxn.type === 'Income' ? 'text-success' : 'text-danger') + `}">${firstTxn.type === "Income" ? '+' : '-'} Rs.${formatAmount(firstTxn.amount)}</h6>
+                                <small class=\"text-muted\">Starts on ${firstTxn.date}</small>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-primary me-2" disabled>Edit</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteRecurringSeries('${recurringId}')">Delete</button>
+                                <button class=\"btn btn-sm btn-primary me-2" disabled>Edit</button>
+                                <button class=\"btn btn-sm btn-danger" onclick=\"deleteRecurringSeries('${recurringId}')">Delete</button>
                             </div>
                         </div>
                     </div>`;
