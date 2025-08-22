@@ -7,6 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
+    <style>
+        .transaction-card {
+            border: 1px solid #dee2e6;
+            border-left-width: .25rem;
+        }
+        .transaction-card.income {
+            border-left-color: #198754;
+        }
+        .transaction-card.expense {
+            border-left-color: #dc3545;
+        }
+    </style>
 </head>
 <body>
     <!-- Header Menu Bar -->
@@ -109,19 +121,7 @@
                     </div>
                 </div>
 
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Category</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Comment</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody"></tbody>
-                </table>
+                <div id="historyContainer"></div>
                 
                 <div class="d-flex justify-content-end mt-3">
                     <button class="btn btn-danger" onclick="deleteAllFilteredTransactions()">
@@ -130,20 +130,7 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="recurring-transactions" role="tabpanel" aria-labelledby="recurring-transactions-tab">
-                <table class="table table-bordered mt-3">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Category</th>
-                            <th>Amount</th>
-                            <th>Frequency</th>
-                            <th>Instances</th>
-                            <th>Start Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recurringHistoryTableBody"></tbody>
-                </table>
+                <div id="recurringHistoryContainer" class="mt-3"></div>
             </div>
         </div>
     </div>
@@ -206,29 +193,41 @@
             const category = document.getElementById("filterCategory").value;
             const type = document.getElementById("filterType").value;
             const range = document.getElementById("amountRange").value.split("-").map(x => parseFloat(x));
-            const tbody = document.getElementById("historyTableBody");
-            tbody.innerHTML = "";
+            const container = document.getElementById("historyContainer");
+            container.innerHTML = "";
 
             txns.forEach((t) => {
                 const inCategory = !category || t.category === category;
                 const inType = !type || t.type === type;
                 const amount = parseFloat(t.amount);
-                const inRange =
+                const inRange = 
                     (isNaN(range[0]) && isNaN(range[1])) ||
                     ((!isNaN(range[0]) && amount >= range[0]) && (!isNaN(range[1]) && amount <= range[1]));
 
                 if (inCategory && inType && inRange) {
-                    const row = document.createElement("tr");
-                    row.className = t.type === "Income" ? "income-row" : "expense-row";
-                    row.innerHTML = `
-                        <td>${t.type}</td>
-                        <td>${t.category}</td>
-                        <td>Rs.${formatAmount(t.amount)}</td>
-                        <td>${t.date}</td>
-                        <td>${t.comment || ""}</td>
-                        <td><button class="btn btn-sm btn-danger" onclick="deleteTxn('${t.id}')">Delete</button></td>
+                    const card = document.createElement("div");
+                    card.className = `card transaction-card mb-2 ${t.type.toLowerCase()}`;
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="fas ${t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">${t.category}</h6>
+                                        <small class="text-muted">${t.date}</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <h6 class="mb-0 ${t.type === 'Income' ? 'text-success' : 'text-danger'}">${t.type === "Income" ? '+' : '-'} Rs.${formatAmount(t.amount)}</h6>
+                                    <small class="text-muted">${t.comment || ""}</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger ms-3" onclick="deleteTxn('${t.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
                     `;
-                    tbody.appendChild(row);
+                    container.appendChild(card);
                 }
             });
         }
@@ -244,26 +243,38 @@
                 recurringSeries[t.recurringId].push(t);
             });
 
-            const tbody = document.getElementById("recurringHistoryTableBody");
-            tbody.innerHTML = "";
+            const container = document.getElementById("recurringHistoryContainer");
+            container.innerHTML = "";
 
             for (const recurringId in recurringSeries) {
                 const series = recurringSeries[recurringId];
                 const firstTxn = series.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${firstTxn.type}</td>
-                    <td>${firstTxn.category}</td>
-                    <td>Rs.${formatAmount(firstTxn.amount)}</td>
-                    <td>${firstTxn.frequency}</td>
-                    <td>${firstTxn.instances}</td>
-                    <td>${firstTxn.date}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-2" disabled>Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteRecurringSeries('${recurringId}')">Delete</button>
-                    </td>
+                const card = document.createElement("div");
+                card.className = `card transaction-card mb-2 ${firstTxn.type.toLowerCase()}`;
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas ${firstTxn.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">${firstTxn.category}</h6>
+                                    <small class="text-muted">${firstTxn.frequency} - ${firstTxn.instances} times</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0 ${firstTxn.type === 'Income' ? 'text-success' : 'text-danger'}">${firstTxn.type === "Income" ? '+' : '-'} Rs.${formatAmount(firstTxn.amount)}</h6>
+                                <small class="text-muted">Starts on ${firstTxn.date}</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary me-2" disabled>Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecurringSeries('${recurringId}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
                 `;
-                tbody.appendChild(row);
+                container.appendChild(card);
             }
         }
 
@@ -358,7 +369,7 @@
                 const inCategory = !category || t.category === category;
                 const inType = !type || t.type === type;
                 const amount = parseFloat(t.amount);
-                const inRange =
+                const inRange = 
                     (isNaN(range[0]) && isNaN(range[1])) ||
                     ((!isNaN(range[0]) && amount >= range[0]) && (!isNaN(range[1]) && amount <= range[1]));
                 return inCategory && inType && inRange;
