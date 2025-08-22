@@ -215,12 +215,10 @@
                     const card = document.createElement("div");
                     card.className = `card transaction-card mb-2 ${t.type.toLowerCase()}`;
                     card.innerHTML = `
-                        <div class="card-body">
+                        <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <div class="me-3">
-                                        <i class="fas ${t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} fa-2x"></i>
-                                    </div>
+                                    <i class="fas ${t.type === 'Income' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'} me-3"></i>
                                     <div>
                                         <h6 class="mb-0">${t.category}</h6>
                                         <small class="text-muted">${t.date}</small>
