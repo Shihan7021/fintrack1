@@ -242,7 +242,7 @@
 
             // Fetch all expense transactions for the user ONCE for efficiency
             const transactionsCol = collection(db, "users", user.uid, "transactions");
-            const q = query(transactionsCol, where("type", "==", "expense"));
+            const q = query(transactionsCol, where("type", "==", "Expense"));
             const transactionSnapshot = await getDocs(q);
             const allExpenses = [];
             transactionSnapshot.forEach(doc => {
