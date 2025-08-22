@@ -46,7 +46,6 @@
     </style>
 </head>
 <body>
-    <!-- Header Menu Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
@@ -108,7 +107,6 @@
 
             <div class="col-lg-9">
                 <div class="tab-content" id="v-pills-tabContent">
-                    <!-- Personal Information Pane -->
                     <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                         <div class="card">
                             <div class="card-body">
@@ -240,6 +238,43 @@
                                         </div>
                                     </div>
                                     <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="profileEducation" class="form-label">Highest Educational Qualification</label>
+                                            <select id="profileEducation" class="form-select">
+                                                <option value="">Select Qualification</option>
+                                                <option value="High School">High School</option>
+                                                <option value="Diploma">Diploma</option>
+                                                <option value="Bachelors Degree">Bachelor's Degree</option>
+                                                <option value="Masters Degree">Master's Degree</option>
+                                                <option value="PhD">PhD</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3" id="serviceYearsContainer" style="display: none;">
+                                            <label for="profileServiceYears" class="form-label">Years of Service</label>
+                                            <select id="profileServiceYears" class="form-select">
+                                                <option value="">Select Range</option>
+                                                <option value="0-1">0 - 1 years</option>
+                                                <option value="2-5">2 - 5 years</option>
+                                                <option value="6-10">6 - 10 years</option>
+                                                <option value="11-15">11 - 15 years</option>
+                                                <option value="15+">15+ years</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3" id="spouseStatusContainer" style="display: none;">
+                                            <label for="profileSpouseStatus" class="form-label">Spouse's Working Status</label>
+                                            <select id="profileSpouseStatus" class="form-select">
+                                                <option value="">Select Status</option>
+                                                <option value="Working">Working</option>
+                                                <option value="Not Working">Not Working</option>
+                                                <option value="Student">Student</option>
+                                                <option value="Retired">Retired</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-12 mb-3">
                                             <label for="profileInterests" class="form-label">Interests</label>
                                             <textarea id="profileInterests" class="form-control" rows="3" placeholder="e.g., Reading, Traveling, Sports"></textarea>
@@ -251,7 +286,6 @@
                         </div>
                     </div>
 
-                    <!-- Financial Information Pane -->
                     <div class="tab-pane fade" id="v-pills-financial" role="tabpanel" aria-labelledby="v-pills-financial-tab">
                         <div class="card">
                             <div class="card-body">
@@ -278,12 +312,10 @@
                         </div>
                     </div>
 
-                    <!-- Categories Pane -->
                     <div class="tab-pane fade" id="v-pills-categories" role="tabpanel" aria-labelledby="v-pills-categories-tab">
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title mb-4">Categories</h4>
-                                <!-- Income Categories Section -->
                                 <h5 class="text-primary"><i class="fas fa-arrow-up text-success"></i> Income Categories</h5>
                                 <p class="text-muted mb-3">Select the income categories you want to track</p>
                                 <div class="border rounded p-3 mb-4" style="max-height: 300px; overflow-y: auto;">
@@ -294,7 +326,6 @@
                                     <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('income')"><i class="fas fa-plus"></i> Add</button>
                                 </div>
 
-                                <!-- Expense Categories Section -->
                                 <h5 class="text-primary"><i class="fas fa-arrow-down text-danger"></i> Expense Categories</h5>
                                 <p class="text-muted mb-3">Select the expense categories you want to track</p>
                                 <div class="border rounded p-3 mb-4" style="max-height: 300px; overflow-y: auto;">
@@ -307,8 +338,16 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="tab-pane fade" id="v-pills-preferences" role="tabpanel" aria-labelledby="v-pills-preferences-tab">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title mb-4">Preferences</h4>
+                                <p class="text-muted">Preferences settings will be available here in a future update.</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <!-- Security Pane -->
                     <div class="tab-pane fade" id="v-pills-security" role="tabpanel" aria-labelledby="v-pills-security-tab">
                         <div class="card">
                             <div class="card-body">
@@ -334,7 +373,6 @@
                         </div>
                     </div>
 
-                    <!-- Danger Zone Pane -->
                     <div class="tab-pane fade" id="v-pills-danger" role="tabpanel" aria-labelledby="v-pills-danger-tab">
                         <div class="card">
                             <div class="card-body">
@@ -349,7 +387,6 @@
         </div>
     </div>
 
-    <!-- Delete Account Modal -->
     <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -368,7 +405,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
@@ -405,6 +441,7 @@
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
                         const userData = userDoc.data();
+                        
                         // Personal Info
                         document.getElementById('profileEmail').value = user.email;
                         document.getElementById('profileProfession').value = userData.profession || '';
@@ -418,13 +455,16 @@
                         document.getElementById('profileVehicleOwned').value = userData.vehicleOwned || '';
                         document.getElementById('profileFuelType').value = userData.fuelType || '';
                         document.getElementById('profileInterests').value = userData.interests || '';
+                        
+                        // NEW: Load additional fields
+                        document.getElementById('profileEducation').value = userData.education || '';
+                        document.getElementById('profileServiceYears').value = userData.serviceYears || '';
+                        document.getElementById('profileSpouseStatus').value = userData.spouseStatus || '';
 
-                        const fuelTypeContainer = document.getElementById('profileFuelTypeContainer');
-                        if (userData.vehicleOwned === 'Yes') {
-                            fuelTypeContainer.style.display = 'block';
-                        } else {
-                            fuelTypeContainer.style.display = 'none';
-                        }
+                        // Trigger change events to show/hide conditional fields
+                        document.getElementById('profileVehicleOwned').dispatchEvent(new Event('change'));
+                        document.getElementById('profileProfession').dispatchEvent(new Event('change'));
+                        document.getElementById('profileCivilStatus').dispatchEvent(new Event('change'));
 
                         // Financial Info
                         document.getElementById('savingMode').value = userData.savingMode || '';
@@ -578,6 +618,11 @@
                         vehicleOwned: document.getElementById('profileVehicleOwned').value,
                         fuelType: document.getElementById('profileFuelType').value,
                         interests: document.getElementById('profileInterests').value,
+                        // NEW: Save additional fields
+                        education: document.getElementById('profileEducation').value,
+                        serviceYears: document.getElementById('profileServiceYears').value,
+                        spouseStatus: document.getElementById('profileSpouseStatus').value,
+                        // ---
                         email: user.email,
                         updatedAt: new Date().toISOString()
                     }, { merge: true });
@@ -681,7 +726,7 @@
                             const credential = EmailAuthProvider.credential(user.email, password);
                             try {
                                 await reauthenticateWithCredential(user, credential);
-                                await deleteAccount();
+                                await deleteAccount(); // Retry deletion
                             } catch (reauthError) {
                                 console.error("Re-authentication failed:", reauthError);
                                 alert("Incorrect password. Account deletion failed.");
@@ -704,12 +749,30 @@
             }
         });
 
+        // Event listener for conditional field: Fuel Type
         document.getElementById('profileVehicleOwned').addEventListener('change', function () {
-            const fuelTypeContainer = document.getElementById('profileFuelTypeContainer');
-            if (this.value === 'Yes') {
-                fuelTypeContainer.style.display = 'block';
+            document.getElementById('profileFuelTypeContainer').style.display = this.value === 'Yes' ? 'block' : 'none';
+        });
+
+        // NEW: Event listener for conditional field: Years of Service
+        document.getElementById('profileProfession').addEventListener('change', function () {
+            const container = document.getElementById('serviceYearsContainer');
+            if (this.value === 'Employed') {
+                container.style.display = 'block';
             } else {
-                fuelTypeContainer.style.display = 'none';
+                container.style.display = 'none';
+                document.getElementById('profileServiceYears').value = ''; // Clear value if hidden
+            }
+        });
+
+        // NEW: Event listener for conditional field: Spouse Status
+        document.getElementById('profileCivilStatus').addEventListener('change', function () {
+            const container = document.getElementById('spouseStatusContainer');
+            if (this.value === 'Married') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+                document.getElementById('profileSpouseStatus').value = ''; // Clear value if hidden
             }
         });
 
