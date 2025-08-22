@@ -265,11 +265,14 @@
                 const budgetId = doc.id;
 
                 // Filter transactions that fall within this budget's category and date range
-                const relevantExpenses = allExpenses.filter(expense =>
-                    expense.category === budget.category &&
-                    expense.date >= budget.fromDate &&
-                    expense.date <= budget.toDate
-                );
+                const relevantExpenses = allExpenses.filter(expense => {
+                    const expenseDate = new Date(expense.date);
+                    const budgetFromDate = new Date(budget.fromDate);
+                    const budgetToDate = new Date(budget.toDate);
+                    return expense.category === budget.category &&
+                           expenseDate >= budgetFromDate &&
+                           expenseDate <= budgetToDate;
+                });
 
                 // Calculate the total amount spent
                 const totalSpent = relevantExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
