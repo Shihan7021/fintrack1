@@ -123,31 +123,13 @@
                                         <select class="form-select" id="budgetCategory">
                                             </select>
                                     </div>
-                                    <!--<div class="mb-3">
+                                    <div class="mb-3">
                                         <label for="budgetFromDate" class="form-label">From Date</label>
                                         <input type="date" class="form-control" id="budgetFromDate" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="budgetToDate" class="form-label">To Date</label>
                                         <input type="date" class="form-control" id="budgetToDate" required>
-                                    </div> -->
-                                    <div class="mb-3">
-                                        <label for="budgetDateRangeType" class="form-label">Date Range Type</label>
-                                        <select class="form-select" id="budgetDateRangeType" required>
-                                            <option value="">Select Date Range Type</option>
-                                            <option value="currentCycle">Current Cycle</option>
-                                            <option value="nextCycle">Next Cycle</option>
-                                            <option value="regular">Regular Date Range</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3" id="budgetDateRangeContainer">
-                                        <!-- Regular date range inputs will be displayed here -->
-                                    </div>
-
-                                    <div class="mb-3" id="budgetCycleDateContainer" style="display: none;">
-                                        <!-- Current cycle and next cycle date range will be displayed here -->
-                                        <p id="budgetCycleDates"></p>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Create Budget</button>
                                 </form>
@@ -348,41 +330,39 @@
             });
         }
 
-        {
-            const createBudgetForm = document.getElementById('createBudgetForm');
-            createBudgetForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const user = auth.currentUser;
-                if (user) {
-                    const budgetName = document.getElementById('budgetName').value;
-                    const budgetAmount = document.getElementById('budgetAmount').value;
-                    const budgetCategory = document.getElementById('budgetCategory').value;
-                    const budgetFromDate = document.getElementById('budgetFromDate').value;
-                    const budgetToDate = document.getElementById('budgetToDate').value;
+        const createBudgetForm = document.getElementById('createBudgetForm');
+        createBudgetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (user) {
+                const budgetName = document.getElementById('budgetName').value;
+                const budgetAmount = document.getElementById('budgetAmount').value;
+                const budgetCategory = document.getElementById('budgetCategory').value;
+                const budgetFromDate = document.getElementById('budgetFromDate').value;
+                const budgetToDate = document.getElementById('budgetToDate').value;
 
-                    if (budgetName && budgetAmount && budgetCategory && budgetFromDate && budgetToDate) {
-                        try {
-                            await addDoc(collection(db, "users", user.uid, "budgets"), {
-                                name: budgetName,
-                                amount: Number(budgetAmount),
-                                category: budgetCategory,
-                                fromDate: budgetFromDate,
-                                toDate: budgetToDate,
-                                createdAt: new Date().toISOString()
-                            });
-                            alert('Budget created successfully!');
-                            createBudgetForm.reset();
-                            loadBudgetData(user);
-                        } catch (error) {
-                            console.error("Error creating budget:", error);
-                            alert('Error creating budget. Please try again.');
-                        }
-                    } else {
-                        alert('Please fill out all fields.');
+                if (budgetName && budgetAmount && budgetCategory && budgetFromDate && budgetToDate) {
+                    try {
+                        await addDoc(collection(db, "users", user.uid, "budgets"), {
+                            name: budgetName,
+                            amount: Number(budgetAmount),
+                            category: budgetCategory,
+                            fromDate: budgetFromDate,
+                            toDate: budgetToDate,
+                            createdAt: new Date().toISOString()
+                        });
+                        alert('Budget created successfully!');
+                        createBudgetForm.reset();
+                        loadBudgetData(user);
+                    } catch (error) {
+                        console.error("Error creating budget:", error);
+                        alert('Error creating budget. Please try again.');
                     }
+                } else {
+                    alert('Please fill out all fields.');
                 }
-            });
-        }
+            }
+        });
 
         document.getElementById('editBudgetModal').addEventListener('show.bs.modal', async (event) => {
             const button = event.relatedTarget;
@@ -486,61 +466,6 @@
                 console.error('Error signing out:', error);
             }
         });
-        const budgetDateRangeTypeSelect = document.getElementById('budgetDateRangeType');
-        const budgetDateRangeContainer = document.getElementById('budgetDateRangeContainer');
-        const budgetCycleDateContainer = document.getElementById('budgetCycleDateContainer');
-
-        budgetDateRangeTypeSelect.addEventListener('change', (e) => {
-            const selectedValue = e.target.value;
-            if (selectedValue === 'regular') {
-                budgetDateRangeContainer.style.display = 'block';
-                budgetCycleDateContainer.style.display = 'none';
-            } else if (selectedValue === 'currentCycle' || selectedValue === 'nextCycle') {
-                budgetDateRangeContainer.style.display = 'none';
-                budgetCycleDateContainer.style.display = 'block';
-                // Calculate and display the current or next cycle dates
-                const cycleDates = calculateCycleDates(selectedValue);
-                document.getElementById('budgetCycleDates').textContent = `From: ${cycleDates.fromDate} to ${cycleDates.toDate}`;
-            }
-        });
-
-        function calculateCycleDates(cycleType) {
-            // Calculate the current or next cycle dates based on the user's cycle date and the current date
-            // You can use the loadUserCycleDate function from dashboard.html as a reference
-            const userCycleDate = parseInt(userData.cycleDate || 10); // Default to 10th if not set
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = today.getMonth();
-            const d = today.getDate();
-
-            let fromDate, toDate;
-
-            if (d >= userCycleDate) {
-                // Current cycle starts this month
-                fromDate = new Date(y, m, userCycleDate);
-                toDate = new Date(y, m + 1, userCycleDate);
-            } else {
-                // Current cycle started last month
-                fromDate = new Date(y, m - 1, userCycleDate);
-                toDate = new Date(y, m, userCycleDate);
-            }
-
-            if (cycleType === 'nextCycle') {
-                // Calculate the next cycle dates
-                if (m === 11) {
-                    // If the current month is December, the next cycle will start in January of the next year
-                    fromDate = new Date(y + 1, 0, userCycleDate);
-                    toDate = new Date(y + 1, 1, userCycleDate);
-                } else {
-                    fromDate = new Date(y, m + 1, userCycleDate);
-                    toDate = new Date(y, m + 2, userCycleDate);
-                }
-            }
-
-            return { fromDate, toDate };
-        }
-        
-        
     </script>
 </body>
 </html>
