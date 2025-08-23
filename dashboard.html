@@ -200,6 +200,10 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, doc, deleteDoc, addDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { auth, db, analytics } from "./firebase-config.js";
+        import { setupThemeToggle } from './theme.js';
+
+        // Theme toggle
+        setupThemeToggle();
 
         // Data and state variables
         let transactions = [];
@@ -771,6 +775,36 @@
         window.setLastMonth = setLastMonth;
 
         // What If functions removed - now using standalone page
+
+
+
+        // Get the theme toggle checkbox
+        const themeToggle = document.getElementById('theme-toggle-checkbox');
+
+// Add an event listener to the checkbox
+        themeToggle.addEventListener('change', () => {
+  // Get the current theme
+        const currentTheme = themeToggle.checked ? 'dark' : 'light';
+
+  // Apply the theme
+        applyTheme(currentTheme);
+        });
+
+// Function to apply the theme
+
+        function applyTheme(theme) {
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.querySelectorAll('.theme-switch .slider').forEach(slider => {
+            slider.style.background = '#fff';
+            });
+        } else {
+            document.body.classList.remove('dark-mode');
+            document.querySelectorAll('.theme-switch .slider').forEach(slider => {
+            slider.style.background = '#333';
+            });
+        }
+        }
     </script>
 </body>
 </html>
