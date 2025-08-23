@@ -142,8 +142,17 @@
                     title="Enter amount range like 100-1000"
                 />
             </div>
-            <div class="col-12 text-end">
-                <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                    <button type="button" class="btn btn-primary" onclick="resetToCurrentCycle()">Reset to Current Cycle</button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="setLast30Days()">Last 30 Days</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setThisMonth()">This Month</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setLastMonth()">Last Month</button>
+                    </div>
+                </div>
             </div>
         </form>
 
@@ -673,6 +682,60 @@
             renderRecentTransactions();
         }
 
+        function clearFilters() {
+            document.getElementById("fromDate").value = "";
+            document.getElementById("toDate").value = "";
+            document.getElementById("filterCategory").value = "";
+            document.getElementById("amountRange").value = "";
+            filterData();
+        }
+
+        function resetToCurrentCycle() {
+            loadUserCycleDate();
+        }
+
+        function setLast30Days() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            document.getElementById("fromDate").value = formatDate(thirtyDaysAgo);
+            document.getElementById("toDate").value = formatDate(today);
+            filterData();
+        }
+
+        function setThisMonth() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            document.getElementById("fromDate").value = formatDate(firstDay);
+            document.getElementById("toDate").value = formatDate(lastDay);
+            filterData();
+        }
+
+        function setLastMonth() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+            
+            const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            document.getElementById("fromDate").value = formatDate(firstDay);
+            document.getElementById("toDate").value = formatDate(lastDay);
+            filterData();
+        }
+
         const logout = async () => {
             try {
                 if (unsubscribeFromTransactions) {
@@ -701,6 +764,11 @@
         window.exportTransactions = exportTransactions;
         window.deleteTxn = deleteTxn;
         window.undoDelete = undoDelete;
+        window.clearFilters = clearFilters;
+        window.resetToCurrentCycle = resetToCurrentCycle;
+        window.setLast30Days = setLast30Days;
+        window.setThisMonth = setThisMonth;
+        window.setLastMonth = setLastMonth;
 
         // What If functions removed - now using standalone page
     </script>
