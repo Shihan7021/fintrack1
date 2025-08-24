@@ -827,6 +827,13 @@
             deleteAccountModal.hide();
             await deleteAccount();
         });
+
+        // Clear password fields when Security tab is activated
+        document.getElementById('v-pills-security-tab').addEventListener('shown.bs.tab', function () {
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        });
     </script>
 </body>
 </html>
