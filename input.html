@@ -160,6 +160,29 @@
                 console.error("Error loading user categories:", error);
             }
         }
+        // Autofill date with last transaction date
+        async function autofillLastTransactionDate(userId) {
+            try {
+                const transactionsRef = collection(db, "users", userId, "transactions");
+                const q = query(transactionsRef, orderBy("date", "desc"), limit(1));
+                const querySnapshot = await getDocs(q);
+                let lastDate = null;
+                querySnapshot.forEach((doc) => {
+                    lastDate = doc.data().date;
+                });
+                const dateInput = document.getElementById("date");
+                if (lastDate) {
+                    dateInput.value = lastDate;
+                } else {
+                    // If no previous transaction, set to today
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+            } catch (error) {
+                console.error("Error fetching last transaction date:", error);
+                // Fallback to today
+                document.getElementById("date").value = new Date().toISOString().split('T')[0];
+            }
+        }
 
         const updateCategories = () => {
             const type = document.getElementById("type").value;
