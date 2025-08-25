@@ -61,11 +61,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="exportTransactions()">
-                            <i class="fas fa-download"></i> Export
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="#" id="logoutButton">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
@@ -127,6 +122,16 @@
                 </div>
                 <div id="historyContainer"></div>
                 
+                <div class="d-flex justify-content-start mt-3">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Export
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="exportTransactions('csv')">Export as CSV</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportTransactions('pdf')">Export as PDF</a></li>
+                    </ul>
+                </div>
+
                 <div class="d-flex justify-content-end mt-3">
                     <button class="btn btn-danger" onclick="deleteAllFilteredTransactions()">
                         <i class="fas fa-trash-alt"></i> Delete Filtered
@@ -332,22 +337,27 @@
             }
         }
 
-        async function exportTransactions() {
+        async function exportTransactions(format) {
             if (!txns.length) return alert("No transactions to export.");
             
-            let csv = "Type,Category,Amount,Date,Comment\n";
-            txns.forEach((t) => {
-                const comment = t.comment ? `"${t.comment.replace(/"/g, '""')}"` : "";
-                csv += `${t.type},${t.category},${t.amount},${t.date},${comment}\n`;
-            });
+            if (format === 'csv') {
+                let csv = "Type,Category,Amount,Date,Comment\n";
+                txns.forEach((t) => {
+                    const comment = t.comment ? `"${t.comment.replace(/"/g, '""')}"` : "";
+                    csv += `${t.type},${t.category},${t.amount},${t.date},${comment}\n`;
+                });
 
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", "transactions.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute("download", "transactions.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else if (format === 'pdf') {
+                // PDF export logic here
+                alert("PDF export is not yet implemented.");
+            }
         }
 
         const logout = async () => {
