@@ -338,11 +338,12 @@
         }
 
         async function exportTransactions(format) {
-            if (!txns.length) return alert("No transactions to export.");
+            const filteredTxns = getFilteredTxns();
+            if (!filteredTxns.length) return alert("No transactions to export.");
             
             if (format === 'csv') {
                 let csv = "Type,Category,Amount,Date,Comment\n";
-                txns.forEach((t) => {
+                filteredTxns.forEach((t) => {
                     const comment = t.comment ? `"${t.comment.replace(/"/g, '""')}"` : "";
                     csv += `${t.type},${t.category},${t.amount},${t.date},${comment}\n`;
                 });
