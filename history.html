@@ -338,9 +338,29 @@
         }
 
         async function exportTransactions(format) {
-            const filteredTxns = getFilteredTxns();
+            const category = document.getElementById("filterCategory").value;
+            const type = document.getElementById("filterType").value;
+            const rangeInput = document.getElementById("amountRange").value.trim();
+            const rangeParts = rangeInput.split("-").map(x => x.trim());
+            const minAmount = rangeParts[0] ? parseFloat(rangeParts[0]) : NaN;
+            const maxAmount = rangeParts.length > 1 && rangeParts[1] ? parseFloat(rangeParts[1]) : NaN;
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+
+            // Filter transactions based on current filters
+            const filteredTxns = txns.filter(t => {
+                const inCategory = !category || t.category === category;
+                const inType = !type || t.type === type;
+                const amount = parseFloat(t.amount);
+                let inRange = true;
+                if (!isNaN(minAmount) && amount < minAmount) inRange = false;
+                if (!isNaN(maxAmount) && amount > maxAmount) inRange = false;
+                const inDateRange = (!startDate || t.date >= startDate) && (!endDate || t.date <= endDate);
+                return inCategory && inType && inRange && inDateRange;
+            });
+
             if (!filteredTxns.length) return alert("No transactions to export.");
-            
+
             if (format === 'csv') {
                 let csv = "Type,Category,Amount,Date,Comment\n";
                 filteredTxns.forEach((t) => {
@@ -351,7 +371,7 @@
                 const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute("download", "transactions.csv");
+                link.setAttribute("download", "filtered_transactions.csv");
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
