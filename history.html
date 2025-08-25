@@ -208,7 +208,8 @@
             const startDate = document.getElementById("startDate").value;
             const endDate = document.getElementById("endDate").value;
 
-            const filteredTxns = txns.filter(t => {
+            // Store filtered transactions in a global variable
+            window.filteredTxns = txns.filter(t => {
                 const inCategory = !category || t.category === category;
                 const inType = !type || t.type === type;
                 
@@ -226,15 +227,14 @@
                 return inCategory && inType && inRange && inDateRange;
             });
 
-            if (filteredTxns.length === 0) {
+            if (window.filteredTxns.length === 0) {
                 container.innerHTML = '<p class="text-center text-muted mt-3">No transactions match your filters.</p>';
                 return;
             }
 
-            filteredTxns.forEach((t) => {
+            window.filteredTxns.forEach((t) => {
                 const card = document.createElement("div");
                 card.className = `card transaction-card mb-2 ${t.type.toLowerCase()}`;
-                // --- SYNTAX FIX START ---
                 card.innerHTML = `
                     <div class="card-body p-2">
                         <div class="d-flex justify-content-between align-items-center">
@@ -252,7 +252,6 @@
                             <button class="btn btn-sm btn-outline-danger ms-3" onclick="deleteTxn('${t.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
-                // --- SYNTAX FIX END ---
                 container.appendChild(card);
             });
         }
