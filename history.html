@@ -169,9 +169,10 @@
                     }));
                     // Sort transactions by date and time descending (newest first)
                     txns.sort((a, b) => {
-                        const dateA = new Date(a.date + ' ' + a.time);
-                        const dateB = new Date(b.date + ' ' + b.time);
-                        return dateB - dateA;
+                        if (a.date === b.date) {
+                            return b.time.localeCompare(a.time);
+                        }
+                        return b.date.localeCompare(a.date);
                     });
                     renderCategoryFilter();
                     renderHistory();
