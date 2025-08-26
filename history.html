@@ -167,8 +167,12 @@
                         id: doc.id,
                         ...doc.data()
                     }));
-                    // Sort transactions by date descending (newest first)
-                    txns.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    // Sort transactions by date and time descending (newest first)
+                    txns.sort((a, b) => {
+                        const dateA = new Date(a.date + ' ' + a.time);
+                        const dateB = new Date(b.date + ' ' + b.time);
+                        return dateB - dateA;
+                    });
                     renderCategoryFilter();
                     renderHistory();
                     renderRecurringHistory();
