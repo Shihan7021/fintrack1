@@ -169,8 +169,8 @@
                     }));
                     // Sort transactions by date and time descending (newest first)
                     txns.sort((a, b) => {
-                        const dateA = new Date(a.date);
-                        const dateB = new Date(b.date);
+                        const dateA = new Date(a.transactionDate); // Use the transaction date
+                        const dateB = new Date(b.transactionDate); // Use the transaction date
                         if (dateA.getTime() === dateB.getTime()) {
                             // If dates are the same, sort by time
                             return (b.time || '').localeCompare(a.time || '');
