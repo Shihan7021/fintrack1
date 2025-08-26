@@ -119,6 +119,14 @@
                             <input type="date" id="endDate" class="form-control" onchange="renderHistory()" title="End Date">
                         </div>
                     </div>
+                    <div class="col-md-3">
+                        <label for="sortOptions" class="form-label">Sort By</label>
+                        <select id="sortOptions" class="form-select" onchange="renderHistory()">
+                            <option value="date-desc">Date: Latest to Oldest</option>
+                            <option value="date-asc">Date: Oldest to Latest</option>
+                            <option value="category-asc">Category: A-Z</option>
+                        </select>
+                    </div>
                 </div>
                 <div id="historyContainer"></div>
                 
@@ -245,6 +253,16 @@
             if (window.filteredTxns.length === 0) {
                 container.innerHTML = '<p class="text-center text-muted mt-3">No transactions match your filters.</p>';
                 return;
+            }
+
+            // Sort filtered transactions based on selected sort option
+            const sortOption = document.getElementById("sortOptions").value;
+            if (sortOption === "date-asc") {
+                window.filteredTxns.sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else if (sortOption === "date-desc") {
+                window.filteredTxns.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else if (sortOption === "category-asc") {
+                window.filteredTxns.sort((a, b) => a.category.localeCompare(b.category));
             }
 
             window.filteredTxns.forEach((t) => {
