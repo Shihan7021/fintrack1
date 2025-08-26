@@ -167,15 +167,22 @@
                         id: doc.id,
                         ...doc.data()
                     }));
-                    // Sort transactions by date and time descending (newest first)
+                    // Sort transactions by transaction date (t.date) descending, then by time descending (latest first)
                     txns.sort((a, b) => {
-                        const dateA = new Date(a.transactionDate); // Use the transaction date
-                        const dateB = new Date(b.transactionDate); // Use the transaction date
-                        if (dateA.getTime() === dateB.getTime()) {
-                            // If dates are the same, sort by time
-                            return (b.time || '').localeCompare(a.time || '');
+                        // Use t.date for transaction date (format: "YYYY-MM-DD")
+                        if (a.date === b.date) {
+                            // If both have time, sort by time descending
+                            if (a.time && b.time) {
+                                return b.time.localeCompare(a.time);
+                            }
+                            // If only one has time, that one is newer
+                            if (a.time) return -1;
+                            if (b.time) return 1;
+                            // If neither has time, keep order
+                            return 0;
                         }
-                        return dateB.getTime() - dateA.getTime();
+                        // Sort by date descending (latest first)
+                        return b.date.localeCompare(a.date);
                     });
                     renderCategoryFilter();
                     renderHistory();
