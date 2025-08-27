@@ -108,11 +108,11 @@
                                     </select>
                                 </div>
                                 <!-- Charts -->
-                                <div style="max-width:100%; overflow-x:auto;">
-                                    <canvas id="incomeChart" height="120"></canvas>
+                                <div class="mb-4" style="height: 400px;">
+                                    <canvas id="incomeChart"></canvas>
                                 </div>
-                                <div class="mt-4" style="max-width:100%; overflow-x:auto;">
-                                    <canvas id="expenseChart" height="120"></canvas>
+                                <div class="mb-4" style="height: 400px;">
+                                    <canvas id="expenseChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -152,9 +152,12 @@
         let incomeChart, expenseChart;
 
         function formatDate(date) {
+            // Handles both Date objects and date strings
+            if (typeof date === 'string') date = new Date(date);
             return date.toISOString().split('T')[0];
         }
         function getWeek(date) {
+            if (typeof date === 'string') date = new Date(date);
             const d = new Date(date);
             d.setHours(0,0,0,0);
             d.setDate(d.getDate() + 4 - (d.getDay()||7));
@@ -163,6 +166,7 @@
             return `${d.getFullYear()}-W${weekNo}`;
         }
         function getMonth(date) {
+            if (typeof date === 'string') date = new Date(date);
             return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
         }
 
@@ -172,7 +176,9 @@
             const income = {}, expense = {};
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const date = new Date(data.date);
+                // Defensive: handle missing or invalid date
+                let date = data.date;
+                if (!date) return;
                 let key;
                 if (mode === 'daily') key = formatDate(date);
                 else if (mode === 'weekly') key = getWeek(date);
@@ -191,11 +197,25 @@
         }
 
         function renderCharts(labels, incomeData, expenseData) {
+            // Defensive: If no labels, show empty chart
+            if (!labels.length) {
+                labels = ['No Data'];
+                incomeData = [0];
+                expenseData = [0];
+            }
+
             if (incomeChart) incomeChart.destroy();
             if (expenseChart) expenseChart.destroy();
 
-            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+            const incomeCanvas = document.getElementById('incomeChart');
+            const expenseCanvas = document.getElementById('expenseChart');
+
+            // Ensure canvases exist and have width
+            incomeCanvas.width = Math.max(labels.length * 60, 400);
+            expenseCanvas.width = Math.max(labels.length * 60, 400);
+
+            const incomeCtx = incomeCanvas.getContext('2d');
+            const expenseCtx = expenseCanvas.getContext('2d');
 
             incomeChart = new Chart(incomeCtx, {
                 type: 'bar',
@@ -210,7 +230,7 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: false,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
@@ -239,7 +259,7 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: false,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
