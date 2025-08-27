@@ -1,26 +1,25 @@
 {
-  "rules": {
-    "users": {
-      "$userId": {
-        ".read": "auth != null && auth.uid == $userId",
-        ".write": "auth != null && auth.uid == $userId"
+  "firestore": {
+    "rules_version": "2",
+    "service": "cloud.firestore",
+    "match": "/databases/{database}/documents",
+    "rules": {
+      "users": {
+        "match": "/users/{userId}",
+        "allow": "read, write: if request.auth != null && request.auth.uid == userId"
+      },
+      "transactions": {
+        "match": "/transactions/{transactionId}",
+        "allow_read": "read, list: if request.auth != null && (resource.data.userId == request.auth.uid || request.query.where.userId == request.auth.uid)",
+        "allow_create": "create: if request.auth != null && request.resource.data.userId == request.auth.uid",
+        "allow_update": "update, delete: if request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid"
+      },
+      "budgets": {
+        "match": "/budgets/{budgetId}",
+        "allow_read": "read, list: if request.auth != null && resource.data.userId == request.auth.uid",
+        "allow_create": "create: if request.auth != null && request.resource.data.userId == request.auth.uid",
+        "allow_update": "update, delete: if request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid"
       }
-    },
-    "transactions": {
-      "$transactionId": {
-        ".read": "auth != null && resource.data.userId == auth.uid",
-        ".write": "auth != null && request.resource.data.userId == auth.uid"
-      },
-      ".read": "auth != null",
-      ".write": "auth != null"
-    },
-    "budgets": {
-      "$budgetId": {
-        ".read": "auth != null && resource.data.userId == auth.uid",
-        ".write": "auth != null && request.resource.data.userId == auth.uid"
-      },
-      ".read": "auth != null",
-      ".write": "auth != null"
     }
   }
 }

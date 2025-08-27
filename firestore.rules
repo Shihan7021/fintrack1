@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Transactions collection - users can read/write their own transactions
+    match /transactions/{transactionId} {
+      allow read, list: if request.auth != null && 
+                        (resource.data.userId == request.auth.uid || 
+                         request.query.where.userId == request.auth.uid);
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid && 
+                           request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Budgets collection - users can read/write their own budgets
+    match /budgets/{budgetId} {
+      allow read, list: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid && 
+                           request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
