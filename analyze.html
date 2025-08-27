@@ -176,31 +176,30 @@
         let incomeChart, expenseChart;
         let currentUser = null;
 
-        // --- Date Helper Functions ---
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
+        // --- Date Helper Functions (Made more robust) ---
+        function formatDate(date) {
+            if (!(date instanceof Date)) date = new Date(date);
             return date.toISOString().split('T')[0];
         }
         
-        function getWeek(dateStr) {
-            const date = new Date(dateStr);
-            date.setHours(0, 0, 0, 0);
-            date.setDate(date.getDate() + 4 - (date.getDay() || 7));
-            const yearStart = new Date(date.getFullYear(), 0, 1);
-            const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-            return `${date.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+        function getWeek(date) {
+            if (!(date instanceof Date)) date = new Date(date);
+            const d = new Date(date); // Create a copy to avoid modifying the original
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
         }
         
-        function getMonth(dateStr) {
-            const date = new Date(dateStr);
+        function getMonth(date) {
+            if (!(date instanceof Date)) date = new Date(date);
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // --- Data Aggregation ---
+        // --- Data Aggregation (Improved Validation and Timestamp Handling) ---
         async function aggregateTransactions(userId, mode) {
             try {
-                // *** MAJOR FIX: Query the user's subcollection ***
-                // This now looks for data at /users/{userId}/transactions
                 const transactionsQuery = query(
                     collection(db, "users", userId, "transactions"), 
                     orderBy("date", "desc")
@@ -209,29 +208,47 @@
                 const snapshot = await getDocs(transactionsQuery);
                 
                 if (snapshot.empty) {
-                    console.log('No transactions found for user.');
+                    console.log('No transactions found for user in path:', `users/${userId}/transactions`);
                     return { labels: [], incomeData: [], expenseData: [] };
                 }
+                console.log(`Found ${snapshot.size} transaction documents.`);
 
                 const income = {}, expense = {};
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    // Detailed validation
                     if (!data || !data.date || data.amount === undefined || !data.type) {
-                        console.warn('Skipping invalid document:', doc.id);
+                        console.warn('Skipping invalid document (missing fields):', doc.id, data);
                         return;
                     }
                     
                     const amount = Number(data.amount);
-                    if (isNaN(amount) || amount < 0) return;
+                    if (isNaN(amount) || amount < 0) {
+                        console.warn('Skipping document with invalid amount:', doc.id, data.amount);
+                        return;
+                    }
+
+                    // *** FIX: Handle Firestore Timestamp objects ***
+                    let jsDate;
+                    if (data.date && typeof data.date.toDate === 'function') {
+                        jsDate = data.date.toDate(); // Convert Timestamp to JS Date
+                    } else {
+                        jsDate = new Date(data.date); // Fallback for string/number dates
+                    }
+
+                    if (isNaN(jsDate.getTime())) {
+                        console.warn(`Skipping document with unparseable date:`, doc.id, data.date);
+                        return;
+                    }
 
                     let key;
                     try {
-                        if (mode === 'daily') key = formatDate(data.date);
-                        else if (mode === 'weekly') key = getWeek(data.date);
-                        else key = getMonth(data.date);
+                        if (mode === 'daily') key = formatDate(jsDate);
+                        else if (mode === 'weekly') key = getWeek(jsDate);
+                        else key = getMonth(jsDate);
                     } catch (e) {
-                        console.warn(`Invalid date for doc ${doc.id}:`, data.date);
+                        console.warn(`Error processing date for doc ${doc.id}:`, jsDate, e);
                         return;
                     }
 
@@ -243,6 +260,11 @@
                 });
                 
                 const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
+                
+                if (labels.length === 0) {
+                    console.log("All documents were skipped due to validation errors. Check warnings above.");
+                }
+
                 const incomeData = labels.map(l => income[l] || 0);
                 const expenseData = labels.map(l => expense[l] || 0);
                 
@@ -250,6 +272,9 @@
                 
             } catch (error) {
                 console.error('Error in aggregateTransactions:', error);
+                if (error.code === 'failed-precondition') {
+                    throw new Error(`Query failed. A Firestore index is likely required. Check the browser console for a link to create it.`);
+                }
                 throw new Error(`Failed to load transaction data. (Error: ${error.code})`);
             }
         }
@@ -262,7 +287,6 @@
             const incomeContainer = document.getElementById('incomeChartContainer');
             const expenseContainer = document.getElementById('expenseChartContainer');
 
-            // Always clear containers before rendering
             incomeContainer.innerHTML = '';
             expenseContainer.innerHTML = '';
 
@@ -273,13 +297,10 @@
                 return;
             }
 
-            // Create and append new canvas elements
             const incomeCanvas = document.createElement('canvas');
-            incomeCanvas.id = 'incomeChart';
             incomeContainer.appendChild(incomeCanvas);
 
             const expenseCanvas = document.createElement('canvas');
-            expenseCanvas.id = 'expenseChart';
             expenseContainer.appendChild(expenseCanvas);
 
             const chartOptions = {
