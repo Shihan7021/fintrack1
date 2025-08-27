@@ -98,7 +98,22 @@
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title mb-4">Analyze by Type</h4>
-                                
+                                <!-- Filter Dropdown -->
+                                <div class="mb-3">
+                                    <label for="typeFilter" class="form-label fw-bold">View by:</label>
+                                    <select id="typeFilter" class="form-select w-auto d-inline-block ms-2">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                <!-- Charts -->
+                                <div style="max-width:100%; overflow-x:auto;">
+                                    <canvas id="incomeChart" height="120"></canvas>
+                                </div>
+                                <div class="mt-4" style="max-width:100%; overflow-x:auto;">
+                                    <canvas id="expenseChart" height="120"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -128,9 +143,132 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('logoutButton').addEventListener('click', async () => {
-            // Add logout functionality here
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module">
+        import { db, auth } from './firebase-config.js';
+        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Chart instances
+        let incomeChart, expenseChart;
+
+        // Utility: Format date to YYYY-MM-DD
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // Utility: Get week string (YYYY-WW)
+        function getWeek(date) {
+            const d = new Date(date);
+            d.setHours(0,0,0,0);
+            d.setDate(d.getDate() + 4 - (d.getDay()||7));
+            const yearStart = new Date(d.getFullYear(),0,1);
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            return `${d.getFullYear()}-W${weekNo}`;
+        }
+
+        // Utility: Get month string (YYYY-MM)
+        function getMonth(date) {
+            return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+        }
+
+        // Aggregation function
+        async function aggregateTransactions(userId, mode) {
+            const q = query(collection(db, "transactions"), where("userId", "==", userId));
+            const snapshot = await getDocs(q);
+            const income = {}, expense = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = new Date(data.date);
+                let key;
+                if (mode === 'daily') key = formatDate(date);
+                else if (mode === 'weekly') key = getWeek(date);
+                else key = getMonth(date);
+
+                if (data.type === 'income') {
+                    income[key] = (income[key] || 0) + Number(data.amount);
+                } else if (data.type === 'expense') {
+                    expense[key] = (expense[key] || 0) + Number(data.amount);
+                }
+            });
+            // Sort keys
+            const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
+            const incomeData = labels.map(l => income[l] || 0);
+            const expenseData = labels.map(l => expense[l] || 0);
+            return { labels, incomeData, expenseData };
+        }
+
+        // Chart rendering
+        function renderCharts(labels, incomeData, expenseData) {
+            // Destroy previous charts
+            if (incomeChart) incomeChart.destroy();
+            if (expenseChart) expenseChart.destroy();
+
+            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+
+            incomeChart = new Chart(incomeCtx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Total Income',
+                        data: incomeData,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Date' }, ticks: { autoSkip: false } },
+                        y: { title: { display: true, text: 'Amount' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            expenseChart = new Chart(expenseCtx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Total Expenses',
+                        data: expenseData,
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Date' }, ticks: { autoSkip: false } },
+                        y: { title: { display: true, text: 'Amount' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Main loader
+        async function loadCharts(mode) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const { labels, incomeData, expenseData } = await aggregateTransactions(user.uid, mode);
+                    renderCharts(labels, incomeData, expenseData);
+                }
+            });
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            const filter = document.getElementById('typeFilter');
+            loadCharts(filter.value);
+            filter.addEventListener('change', () => {
+                loadCharts(filter.value);
+            });
         });
     </script>
 </body>
