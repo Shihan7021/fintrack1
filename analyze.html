@@ -92,8 +92,47 @@
     
     <!-- Main Content Container -->
     <div class="container mt-4">
-        <h1>Analyze Page</h1>
-        <p>This is the analyze page where you can analyze your transactions.</p>
+        <div class="row">
+            <!-- Left Pane -->
+            <div class="col-md-3">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Analyze Options</h5>
+                        <ul class="nav flex-column">
+                            <li class="nav-item mb-2">
+                                <a class="nav-link active" href="#by-type"><i class="fas fa-exchange-alt me-2"></i>By Type</a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link" href="#by-category"><i class="fas fa-tags me-2"></i>By Category</a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link" href="#insights"><i class="fas fa-lightbulb me-2"></i>Insights</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <h1>Analyze</h1>
+                <p>This is the analyze page where you can analyze your transactions.</p>
+                <section id="by-type" class="mb-4">
+                    <h3>By Type</h3>
+                    <p>View analysis of your transactions by type (e.g., income, expense).</p>
+                    <!-- Add charts or tables here -->
+                </section>
+                <section id="by-category" class="mb-4">
+                    <h3>By Category</h3>
+                    <p>Analyze your spending and income by category.</p>
+                    <!-- Add charts or tables here -->
+                </section>
+                <section id="insights" class="mb-4">
+                    <h3>Insights</h3>
+                    <p>Get personalized insights based on your transaction history.</p>
+                    <!-- Add insights or tips here -->
+                </section>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
