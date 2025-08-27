@@ -171,16 +171,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
         import { db, auth } from './firebase-config.js';
-        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         let incomeChart, expenseChart;
+        let currentUser = null;
+
+        // Ensure auth state is properly tracked
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            console.log('Auth state changed:', user ? 'User logged in' : 'No user');
+        });
 
         function formatDate(date) {
-            // Handles both Date objects and date strings
             if (typeof date === 'string') date = new Date(date);
             return date.toISOString().split('T')[0];
         }
+        
         function getWeek(date) {
             if (typeof date === 'string') date = new Date(date);
             const d = new Date(date);
@@ -190,6 +197,7 @@
             const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
             return `${d.getFullYear()}-W${weekNo}`;
         }
+        
         function getMonth(date) {
             if (typeof date === 'string') date = new Date(date);
             return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
@@ -197,10 +205,28 @@
 
         async function aggregateTransactions(userId, mode) {
             try {
-                const q = query(collection(db, "transactions"), where("userId", "==", userId));
-                const snapshot = await getDocs(q);
+                console.log('Starting transaction aggregation for user:', userId, 'mode:', mode);
+                
+                // Add timeout and retry logic
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Query timeout')), 10000)
+                );
+
+                const queryPromise = getDocs(
+                    query(
+                        collection(db, "transactions"), 
+                        where("userId", "==", userId),
+                        orderBy("date", "desc"),
+                        limit(1000) // Add reasonable limit
+                    )
+                );
+
+                const snapshot = await Promise.race([queryPromise, timeoutPromise]);
+                
+                console.log('Query successful, documents found:', snapshot.size);
                 
                 if (snapshot.empty) {
+                    console.log('No transactions found for user');
                     return { labels: [], incomeData: [], expenseData: [] };
                 }
 
@@ -210,16 +236,35 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     
-                    // Defensive: handle missing or invalid data
-                    if (!data || !data.date || !data.amount || !data.type) {
-                        console.warn('Skipping invalid transaction:', doc.id);
+                    // Enhanced validation
+                    if (!data || typeof data !== 'object') {
+                        console.warn('Invalid document data:', doc.id);
                         return;
                     }
                     
-                    // Validate amount is a number
+                    if (!data.userId || data.userId !== userId) {
+                        console.warn('Document userId mismatch:', doc.id);
+                        return;
+                    }
+                    
+                    if (!data.date) {
+                        console.warn('Missing date in transaction:', doc.id);
+                        return;
+                    }
+                    
+                    if (data.amount === undefined || data.amount === null) {
+                        console.warn('Missing amount in transaction:', doc.id);
+                        return;
+                    }
+                    
+                    if (!data.type || !['income', 'expense'].includes(data.type)) {
+                        console.warn('Invalid type in transaction:', doc.id, data.type);
+                        return;
+                    }
+                    
                     const amount = Number(data.amount);
                     if (isNaN(amount) || amount < 0) {
-                        console.warn('Skipping transaction with invalid amount:', doc.id);
+                        console.warn('Invalid amount value:', doc.id, data.amount);
                         return;
                     }
                     
@@ -231,7 +276,7 @@
                         else if (mode === 'weekly') key = getWeek(date);
                         else key = getMonth(date);
                     } catch (dateError) {
-                        console.warn('Skipping transaction with invalid date:', doc.id, dateError);
+                        console.warn('Invalid date format:', doc.id, date, dateError);
                         return;
                     }
 
@@ -244,16 +289,26 @@
                     validTransactions++;
                 });
 
-                console.log(`Processed ${validTransactions} valid transactions`);
+                console.log(`Processed ${validTransactions} valid transactions out of ${snapshot.size} total`);
                 
                 const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
                 const incomeData = labels.map(l => income[l] || 0);
                 const expenseData = labels.map(l => expense[l] || 0);
                 
+                console.log('Aggregation complete:', { labels, incomeData, expenseData });
                 return { labels, incomeData, expenseData };
+                
             } catch (error) {
-                console.error('Error aggregating transactions:', error);
-                throw new Error('Failed to load transaction data');
+                console.error('Error in aggregateTransactions:', error);
+                
+                // Provide more specific error messages
+                if (error.code === 'permission-denied' || error.message.includes('Missing or insufficient permissions')) {
+                    throw new Error('Database access denied. Please ensure you are logged in and have proper permissions.');
+                } else if (error.message.includes('timeout')) {
+                    throw new Error('Database query timed out. Please check your connection and try again.');
+                } else {
+                    throw new Error(`Failed to load transaction data: ${error.message}`);
+                }
             }
         }
 
@@ -281,6 +336,11 @@
                 const incomeCanvas = document.getElementById('incomeChart');
                 const expenseCanvas = document.getElementById('expenseChart');
 
+                if (!incomeCanvas || !expenseCanvas) {
+                    console.error('Canvas elements not found');
+                    return;
+                }
+
                 // Calculate dynamic width based on number of labels
                 const chartWidth = Math.max(labels.length * 80, 800);
                 incomeCanvas.width = chartWidth;
@@ -289,7 +349,6 @@
                 const incomeCtx = incomeCanvas.getContext('2d');
                 const expenseCtx = expenseCanvas.getContext('2d');
 
-                // Chart.js default options
                 const chartOptions = {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -430,7 +489,6 @@
         }
 
         async function loadCharts(mode) {
-            // Get chart containers safely
             const incomeChartElement = document.getElementById('incomeChart');
             const expenseChartElement = document.getElementById('expenseChart');
             
@@ -447,36 +505,59 @@
                 container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
             });
 
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    try {
-                        const { labels, incomeData, expenseData } = await aggregateTransactions(user.uid, mode);
-                        
-                        // Restore canvas elements
-                        incomeContainer.innerHTML = '<canvas id="incomeChart"></canvas>';
-                        expenseContainer.innerHTML = '<canvas id="expenseChart"></canvas>';
-                        
-                        renderCharts(labels, incomeData, expenseData);
-                    } catch (error) {
-                        console.error('Error loading charts:', error);
-                        let errorMessage = 'Error loading data. Please try again.';
-                        
-                        // Handle Firebase permission errors
-                        if (error.message.includes('Missing or insufficient permissions')) {
-                            errorMessage = 'Access denied. Please check your permissions.';
-                        }
-                        
+            // Check if user is already authenticated
+            if (currentUser) {
+                console.log('User already authenticated:', currentUser.uid);
+                await loadUserData(currentUser.uid, mode, incomeContainer, expenseContainer);
+            } else {
+                // Wait for auth state
+                console.log('Waiting for auth state...');
+                const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                    unsubscribe(); // Clean up listener
+                    
+                    if (user) {
+                        currentUser = user;
+                        console.log('User authenticated:', user.uid);
+                        await loadUserData(user.uid, mode, incomeContainer, expenseContainer);
+                    } else {
+                        console.log('No user authenticated');
                         [incomeContainer, expenseContainer].forEach(container => {
-                            container.innerHTML = `<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-danger">${errorMessage}</div></div>`;
+                            container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-muted">Please log in to view charts</div></div>';
                         });
                     }
+                });
+            }
+        }
+
+        async function loadUserData(userId, mode, incomeContainer, expenseContainer) {
+            try {
+                console.log('Loading user data for:', userId, 'mode:', mode);
+                const { labels, incomeData, expenseData } = await aggregateTransactions(userId, mode);
+                
+                // Restore canvas elements
+                incomeContainer.innerHTML = '<canvas id="incomeChart"></canvas>';
+                expenseContainer.innerHTML = '<canvas id="expenseChart"></canvas>';
+                
+                renderCharts(labels, incomeData, expenseData);
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                
+                let errorMessage = 'Error loading data. Please try again.';
+                
+                if (error.message.includes('permission') || error.message.includes('denied')) {
+                    errorMessage = 'Access denied. Please ensure you are logged in with the correct account.';
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = 'Connection timeout. Please check your internet connection.';
+                } else if (error.message.includes('No transaction data')) {
+                    errorMessage = 'No transaction data found.';
                 } else {
-                    // Optionally clear charts if not logged in
-                    [incomeContainer, expenseContainer].forEach(container => {
-                        container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-muted">Please log in to view charts</div></div>';
-                    });
+                    errorMessage = error.message || 'An unexpected error occurred.';
                 }
-            });
+                
+                [incomeContainer, expenseContainer].forEach(container => {
+                    container.innerHTML = `<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-danger">${errorMessage}</div></div>`;
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
