@@ -29,6 +29,25 @@
             border: none;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
+        .chart-container {
+            position: relative;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background-color: #ffffff;
+            padding: 1rem;
+        }
+        .chart-container canvas {
+            min-width: 100%;
+            height: 100%;
+        }
+        .text-success {
+            color: #28a745 !important;
+            font-weight: 600;
+        }
+        .text-danger {
+            color: #dc3545 !important;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -108,11 +127,17 @@
                                     </select>
                                 </div>
                                 <!-- Charts -->
-                                <div class="mb-4" style="height: 400px;">
-                                    <canvas id="incomeChart"></canvas>
+                                <div class="mb-4">
+                                    <h5 class="text-success mb-3">Income Overview</h5>
+                                    <div class="chart-container" style="height: 400px; overflow-x: auto; overflow-y: hidden;">
+                                        <canvas id="incomeChart"></canvas>
+                                    </div>
                                 </div>
-                                <div class="mb-4" style="height: 400px;">
-                                    <canvas id="expenseChart"></canvas>
+                                <div class="mb-4">
+                                    <h5 class="text-danger mb-3">Expense Overview</h5>
+                                    <div class="chart-container" style="height: 400px; overflow-x: auto; overflow-y: hidden;">
+                                        <canvas id="expenseChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -171,120 +196,269 @@
         }
 
         async function aggregateTransactions(userId, mode) {
-            const q = query(collection(db, "transactions"), where("userId", "==", userId));
-            const snapshot = await getDocs(q);
-            const income = {}, expense = {};
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                // Defensive: handle missing or invalid date
-                let date = data.date;
-                if (!date) return;
-                let key;
-                if (mode === 'daily') key = formatDate(date);
-                else if (mode === 'weekly') key = getWeek(date);
-                else key = getMonth(date);
-
-                if (data.type === 'income') {
-                    income[key] = (income[key] || 0) + Number(data.amount);
-                } else if (data.type === 'expense') {
-                    expense[key] = (expense[key] || 0) + Number(data.amount);
+            try {
+                const q = query(collection(db, "transactions"), where("userId", "==", userId));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    return { labels: [], incomeData: [], expenseData: [] };
                 }
-            });
-            const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
-            const incomeData = labels.map(l => income[l] || 0);
-            const expenseData = labels.map(l => expense[l] || 0);
-            return { labels, incomeData, expenseData };
+
+                const income = {}, expense = {};
+                let validTransactions = 0;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    
+                    // Defensive: handle missing or invalid data
+                    if (!data || !data.date || !data.amount || !data.type) {
+                        console.warn('Skipping invalid transaction:', doc.id);
+                        return;
+                    }
+                    
+                    // Validate amount is a number
+                    const amount = Number(data.amount);
+                    if (isNaN(amount) || amount < 0) {
+                        console.warn('Skipping transaction with invalid amount:', doc.id);
+                        return;
+                    }
+                    
+                    let date = data.date;
+                    let key;
+                    
+                    try {
+                        if (mode === 'daily') key = formatDate(date);
+                        else if (mode === 'weekly') key = getWeek(date);
+                        else key = getMonth(date);
+                    } catch (dateError) {
+                        console.warn('Skipping transaction with invalid date:', doc.id, dateError);
+                        return;
+                    }
+
+                    if (data.type === 'income') {
+                        income[key] = (income[key] || 0) + amount;
+                    } else if (data.type === 'expense') {
+                        expense[key] = (expense[key] || 0) + amount;
+                    }
+                    
+                    validTransactions++;
+                });
+
+                console.log(`Processed ${validTransactions} valid transactions`);
+                
+                const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
+                const incomeData = labels.map(l => income[l] || 0);
+                const expenseData = labels.map(l => expense[l] || 0);
+                
+                return { labels, incomeData, expenseData };
+            } catch (error) {
+                console.error('Error aggregating transactions:', error);
+                throw new Error('Failed to load transaction data');
+            }
         }
 
         function renderCharts(labels, incomeData, expenseData) {
-            // Defensive: If no labels, show empty chart
-            if (!labels.length) {
-                labels = ['No Data'];
-                incomeData = [0];
-                expenseData = [0];
+            // Destroy existing charts
+            if (incomeChart) {
+                incomeChart.destroy();
+                incomeChart = null;
+            }
+            if (expenseChart) {
+                expenseChart.destroy();
+                expenseChart = null;
             }
 
-            if (incomeChart) incomeChart.destroy();
-            if (expenseChart) expenseChart.destroy();
+            // Handle empty data
+            if (!labels || labels.length === 0) {
+                const containers = document.querySelectorAll('.chart-container');
+                containers.forEach(container => {
+                    container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-muted">No transaction data available</div></div>';
+                });
+                return;
+            }
 
-            const incomeCanvas = document.getElementById('incomeChart');
-            const expenseCanvas = document.getElementById('expenseChart');
+            try {
+                const incomeCanvas = document.getElementById('incomeChart');
+                const expenseCanvas = document.getElementById('expenseChart');
 
-            // Ensure canvases exist and have width
-            incomeCanvas.width = Math.max(labels.length * 60, 400);
-            expenseCanvas.width = Math.max(labels.length * 60, 400);
+                // Calculate dynamic width based on number of labels
+                const chartWidth = Math.max(labels.length * 80, 800);
+                incomeCanvas.width = chartWidth;
+                expenseCanvas.width = chartWidth;
 
-            const incomeCtx = incomeCanvas.getContext('2d');
-            const expenseCtx = expenseCanvas.getContext('2d');
+                const incomeCtx = incomeCanvas.getContext('2d');
+                const expenseCtx = expenseCanvas.getContext('2d');
 
-            incomeChart = new Chart(incomeCtx, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Total Income',
-                        data: incomeData,
-                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                        borderColor: 'rgba(40, 167, 69, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: false,
+                // Chart.js default options
+                const chartOptions = {
+                    responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 12 },
+                            cornerRadius: 4,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Date' },
-                            ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10,
+                                maxRotation: 45,
+                                minRotation: 0,
+                                font: { size: 12 }
+                            },
+                            grid: {
+                                display: false
+                            }
                         },
                         y: {
-                            title: { display: true, text: 'Amount' },
-                            beginAtZero: true
+                            title: {
+                                display: true,
+                                text: 'Amount ($)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                font: { size: 12 },
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
                         }
                     }
-                }
-            });
+                };
 
-            expenseChart = new Chart(expenseCtx, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Total Expenses',
-                        data: expenseData,
-                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
-                        borderColor: 'rgba(220, 53, 69, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: false,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Date' },
-                            ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
-                        },
-                        y: {
-                            title: { display: true, text: 'Amount' },
-                            beginAtZero: true
+                incomeChart = new Chart(incomeCtx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Total Income',
+                            data: incomeData,
+                            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            title: {
+                                display: true,
+                                text: 'Income Over Time',
+                                font: { size: 16, weight: 'bold' },
+                                color: '#28a745'
+                            }
                         }
                     }
-                }
-            });
+                });
+
+                expenseChart = new Chart(expenseCtx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Total Expenses',
+                            data: expenseData,
+                            backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(220, 53, 69, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            title: {
+                                display: true,
+                                text: 'Expenses Over Time',
+                                font: { size: 16, weight: 'bold' },
+                                color: '#dc3545'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error rendering charts:', error);
+                const containers = document.querySelectorAll('.chart-container');
+                containers.forEach(container => {
+                    container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-danger">Error rendering charts. Please refresh the page.</div></div>';
+                });
+            }
         }
 
         async function loadCharts(mode) {
+            // Show loading state
+            const incomeContainer = document.querySelector('#incomeChart').parentElement;
+            const expenseContainer = document.querySelector('#expenseChart').parentElement;
+            
+            [incomeContainer, expenseContainer].forEach(container => {
+                container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            });
+
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    const { labels, incomeData, expenseData } = await aggregateTransactions(user.uid, mode);
-                    renderCharts(labels, incomeData, expenseData);
+                    try {
+                        const { labels, incomeData, expenseData } = await aggregateTransactions(user.uid, mode);
+                        
+                        // Restore canvas elements
+                        incomeContainer.innerHTML = '<canvas id="incomeChart"></canvas>';
+                        expenseContainer.innerHTML = '<canvas id="expenseChart"></canvas>';
+                        
+                        renderCharts(labels, incomeData, expenseData);
+                    } catch (error) {
+                        console.error('Error loading charts:', error);
+                        [incomeContainer, expenseContainer].forEach(container => {
+                            container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-danger">Error loading data. Please try again.</div></div>';
+                        });
+                    }
                 } else {
                     // Optionally clear charts if not logged in
-                    if (incomeChart) incomeChart.destroy();
-                    if (expenseChart) expenseChart.destroy();
+                    [incomeContainer, expenseContainer].forEach(container => {
+                        container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-muted">Please log in to view charts</div></div>';
+                    });
                 }
             });
         }
