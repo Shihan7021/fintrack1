@@ -169,7 +169,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
-        // --- Reverted to using external config file ---
         import { db, auth } from './firebase-config.js';
         import { collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -198,7 +197,7 @@
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // --- Data Aggregation with Enhanced Debugging ---
+        // --- Data Aggregation with Correct Type Checking ---
         async function aggregateTransactions(userId, mode) {
             try {
                 const transactionsQuery = query(
@@ -209,40 +208,24 @@
                 const snapshot = await getDocs(transactionsQuery);
                 
                 if (snapshot.empty) {
-                    console.log('Query successful, but no transactions found for user in path:', `users/${userId}/transactions`);
+                    console.log('Query successful, but no transactions found.');
                     return { labels: [], incomeData: [], expenseData: [] };
                 }
-                console.log(`Found ${snapshot.size} transaction documents. Now processing...`);
-
+                
                 const income = {}, expense = {};
                 let processedCount = 0;
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // --- START AGGRESSIVE LOGGING ---
-                    console.log(`[DEBUG] Processing doc ID: ${doc.id}`, data);
-
-                    if (!data) {
-                        console.warn(`[SKIP] Document data is null or undefined for doc: ${doc.id}`);
+                    
+                    if (!data || !data.date || data.amount === undefined || !data.type) {
+                        console.warn(`[SKIP] Doc ${doc.id} is missing required fields.`);
                         return;
                     }
-                    if (!data.date) {
-                        console.warn(`[SKIP] Missing 'date' field in doc: ${doc.id}`);
-                        return;
-                    }
-                    if (data.amount === undefined || data.amount === null) {
-                        console.warn(`[SKIP] Missing 'amount' field in doc: ${doc.id}`);
-                        return;
-                    }
-                     if (!data.type) {
-                        console.warn(`[SKIP] Missing 'type' field in doc: ${doc.id}`);
-                        return;
-                    }
-                    // --- END AGGRESSIVE LOGGING ---
                     
                     const amount = Number(data.amount);
                     if (isNaN(amount)) {
-                        console.warn(`[SKIP] 'amount' is not a valid number in doc: ${doc.id}. Value:`, data.amount);
+                        console.warn(`[SKIP] Doc ${doc.id} has an invalid amount:`, data.amount);
                         return;
                     }
 
@@ -254,7 +237,7 @@
                     }
 
                     if (isNaN(jsDate.getTime())) {
-                        console.warn(`[SKIP] Could not parse 'date' into a valid Date object in doc: ${doc.id}. Value:`, data.date);
+                        console.warn(`[SKIP] Doc ${doc.id} has an invalid date:`, data.date);
                         return;
                     }
 
@@ -268,19 +251,21 @@
                         return;
                     }
 
-                    if (data.type === 'income') {
+                    // *** MAJOR FIX: Convert type to lowercase for case-insensitive comparison ***
+                    const transactionType = data.type.toLowerCase();
+                    if (transactionType === 'income') {
                         income[key] = (income[key] || 0) + amount;
-                    } else if (data.type === 'expense') {
+                    } else if (transactionType === 'expense') {
                         expense[key] = (expense[key] || 0) + amount;
                     }
                     processedCount++;
                 });
                 
-                console.log(`Finished processing. Successfully processed ${processedCount} out of ${snapshot.size} documents.`);
+                console.log(`Successfully processed ${processedCount} of ${snapshot.size} documents.`);
                 const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
                 
                 if (labels.length === 0 && snapshot.size > 0) {
-                    console.error("CRITICAL: All documents were skipped. Please review the [SKIP] messages above to identify the data structure mismatch.");
+                    console.error("All documents were skipped. Check data for correct 'type', 'date', and 'amount' fields.");
                 }
 
                 const incomeData = labels.map(l => income[l] || 0);
