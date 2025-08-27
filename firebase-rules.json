@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "users": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "transactions": {
+      "$transactionId": {
+        ".read": "auth != null && resource.data.userId == auth.uid",
+        ".write": "auth != null && request.resource.data.userId == auth.uid"
+      },
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "budgets": {
+      "$budgetId": {
+        ".read": "auth != null && resource.data.userId == auth.uid",
+        ".write": "auth != null && request.resource.data.userId == auth.uid"
+      },
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

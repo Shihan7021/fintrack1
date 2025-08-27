@@ -430,10 +430,19 @@
         }
 
         async function loadCharts(mode) {
-            // Show loading state
-            const incomeContainer = document.querySelector('#incomeChart').parentElement;
-            const expenseContainer = document.querySelector('#expenseChart').parentElement;
+            // Get chart containers safely
+            const incomeChartElement = document.getElementById('incomeChart');
+            const expenseChartElement = document.getElementById('expenseChart');
             
+            if (!incomeChartElement || !expenseChartElement) {
+                console.error('Chart elements not found');
+                return;
+            }
+
+            const incomeContainer = incomeChartElement.parentElement;
+            const expenseContainer = expenseChartElement.parentElement;
+            
+            // Show loading state
             [incomeContainer, expenseContainer].forEach(container => {
                 container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
             });
@@ -450,8 +459,15 @@
                         renderCharts(labels, incomeData, expenseData);
                     } catch (error) {
                         console.error('Error loading charts:', error);
+                        let errorMessage = 'Error loading data. Please try again.';
+                        
+                        // Handle Firebase permission errors
+                        if (error.message.includes('Missing or insufficient permissions')) {
+                            errorMessage = 'Access denied. Please check your permissions.';
+                        }
+                        
                         [incomeContainer, expenseContainer].forEach(container => {
-                            container.innerHTML = '<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-danger">Error loading data. Please try again.</div></div>';
+                            container.innerHTML = `<div class="d-flex justify-content-center align-items-center" style="height: 400px;"><div class="text-danger">${errorMessage}</div></div>`;
                         });
                     }
                 } else {
