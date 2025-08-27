@@ -149,15 +149,11 @@
         import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // Chart instances
         let incomeChart, expenseChart;
 
-        // Utility: Format date to YYYY-MM-DD
         function formatDate(date) {
             return date.toISOString().split('T')[0];
         }
-
-        // Utility: Get week string (YYYY-WW)
         function getWeek(date) {
             const d = new Date(date);
             d.setHours(0,0,0,0);
@@ -166,13 +162,10 @@
             const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
             return `${d.getFullYear()}-W${weekNo}`;
         }
-
-        // Utility: Get month string (YYYY-MM)
         function getMonth(date) {
             return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
         }
 
-        // Aggregation function
         async function aggregateTransactions(userId, mode) {
             const q = query(collection(db, "transactions"), where("userId", "==", userId));
             const snapshot = await getDocs(q);
@@ -191,16 +184,13 @@
                     expense[key] = (expense[key] || 0) + Number(data.amount);
                 }
             });
-            // Sort keys
             const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
             const incomeData = labels.map(l => income[l] || 0);
             const expenseData = labels.map(l => expense[l] || 0);
             return { labels, incomeData, expenseData };
         }
 
-        // Chart rendering
         function renderCharts(labels, incomeData, expenseData) {
-            // Destroy previous charts
             if (incomeChart) incomeChart.destroy();
             if (expenseChart) expenseChart.destroy();
 
@@ -221,10 +211,17 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { title: { display: true, text: 'Date' }, ticks: { autoSkip: false } },
-                        y: { title: { display: true, text: 'Amount' }, beginAtZero: true }
+                        x: {
+                            title: { display: true, text: 'Date' },
+                            ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+                        },
+                        y: {
+                            title: { display: true, text: 'Amount' },
+                            beginAtZero: true
+                        }
                     }
                 }
             });
@@ -243,26 +240,35 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { title: { display: true, text: 'Date' }, ticks: { autoSkip: false } },
-                        y: { title: { display: true, text: 'Amount' }, beginAtZero: true }
+                        x: {
+                            title: { display: true, text: 'Date' },
+                            ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+                        },
+                        y: {
+                            title: { display: true, text: 'Amount' },
+                            beginAtZero: true
+                        }
                     }
                 }
             });
         }
 
-        // Main loader
         async function loadCharts(mode) {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     const { labels, incomeData, expenseData } = await aggregateTransactions(user.uid, mode);
                     renderCharts(labels, incomeData, expenseData);
+                } else {
+                    // Optionally clear charts if not logged in
+                    if (incomeChart) incomeChart.destroy();
+                    if (expenseChart) expenseChart.destroy();
                 }
             });
         }
 
-        // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             const filter = document.getElementById('typeFilter');
             loadCharts(filter.value);
