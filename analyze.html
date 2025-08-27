@@ -169,6 +169,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
+        // --- Reverted to using external config file ---
         import { db, auth } from './firebase-config.js';
         import { collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -176,7 +177,7 @@
         let incomeChart, expenseChart;
         let currentUser = null;
 
-        // --- Date Helper Functions (Made more robust) ---
+        // --- Date Helper Functions ---
         function formatDate(date) {
             if (!(date instanceof Date)) date = new Date(date);
             return date.toISOString().split('T')[0];
@@ -184,7 +185,7 @@
         
         function getWeek(date) {
             if (!(date instanceof Date)) date = new Date(date);
-            const d = new Date(date); // Create a copy to avoid modifying the original
+            const d = new Date(date);
             d.setHours(0, 0, 0, 0);
             d.setDate(d.getDate() + 4 - (d.getDay() || 7));
             const yearStart = new Date(d.getFullYear(), 0, 1);
@@ -197,7 +198,7 @@
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // --- Data Aggregation (Improved Validation and Timestamp Handling) ---
+        // --- Data Aggregation with Enhanced Debugging ---
         async function aggregateTransactions(userId, mode) {
             try {
                 const transactionsQuery = query(
@@ -208,37 +209,52 @@
                 const snapshot = await getDocs(transactionsQuery);
                 
                 if (snapshot.empty) {
-                    console.log('No transactions found for user in path:', `users/${userId}/transactions`);
+                    console.log('Query successful, but no transactions found for user in path:', `users/${userId}/transactions`);
                     return { labels: [], incomeData: [], expenseData: [] };
                 }
-                console.log(`Found ${snapshot.size} transaction documents.`);
+                console.log(`Found ${snapshot.size} transaction documents. Now processing...`);
 
                 const income = {}, expense = {};
+                let processedCount = 0;
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // Detailed validation
-                    if (!data || !data.date || data.amount === undefined || !data.type) {
-                        console.warn('Skipping invalid document (missing fields):', doc.id, data);
+                    // --- START AGGRESSIVE LOGGING ---
+                    console.log(`[DEBUG] Processing doc ID: ${doc.id}`, data);
+
+                    if (!data) {
+                        console.warn(`[SKIP] Document data is null or undefined for doc: ${doc.id}`);
                         return;
                     }
+                    if (!data.date) {
+                        console.warn(`[SKIP] Missing 'date' field in doc: ${doc.id}`);
+                        return;
+                    }
+                    if (data.amount === undefined || data.amount === null) {
+                        console.warn(`[SKIP] Missing 'amount' field in doc: ${doc.id}`);
+                        return;
+                    }
+                     if (!data.type) {
+                        console.warn(`[SKIP] Missing 'type' field in doc: ${doc.id}`);
+                        return;
+                    }
+                    // --- END AGGRESSIVE LOGGING ---
                     
                     const amount = Number(data.amount);
-                    if (isNaN(amount) || amount < 0) {
-                        console.warn('Skipping document with invalid amount:', doc.id, data.amount);
+                    if (isNaN(amount)) {
+                        console.warn(`[SKIP] 'amount' is not a valid number in doc: ${doc.id}. Value:`, data.amount);
                         return;
                     }
 
-                    // *** FIX: Handle Firestore Timestamp objects ***
                     let jsDate;
                     if (data.date && typeof data.date.toDate === 'function') {
-                        jsDate = data.date.toDate(); // Convert Timestamp to JS Date
+                        jsDate = data.date.toDate();
                     } else {
-                        jsDate = new Date(data.date); // Fallback for string/number dates
+                        jsDate = new Date(data.date);
                     }
 
                     if (isNaN(jsDate.getTime())) {
-                        console.warn(`Skipping document with unparseable date:`, doc.id, data.date);
+                        console.warn(`[SKIP] Could not parse 'date' into a valid Date object in doc: ${doc.id}. Value:`, data.date);
                         return;
                     }
 
@@ -248,7 +264,7 @@
                         else if (mode === 'weekly') key = getWeek(jsDate);
                         else key = getMonth(jsDate);
                     } catch (e) {
-                        console.warn(`Error processing date for doc ${doc.id}:`, jsDate, e);
+                        console.warn(`[SKIP] Error creating date key for doc ${doc.id}:`, e);
                         return;
                     }
 
@@ -257,12 +273,14 @@
                     } else if (data.type === 'expense') {
                         expense[key] = (expense[key] || 0) + amount;
                     }
+                    processedCount++;
                 });
                 
+                console.log(`Finished processing. Successfully processed ${processedCount} out of ${snapshot.size} documents.`);
                 const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
                 
-                if (labels.length === 0) {
-                    console.log("All documents were skipped due to validation errors. Check warnings above.");
+                if (labels.length === 0 && snapshot.size > 0) {
+                    console.error("CRITICAL: All documents were skipped. Please review the [SKIP] messages above to identify the data structure mismatch.");
                 }
 
                 const incomeData = labels.map(l => income[l] || 0);
@@ -271,7 +289,7 @@
                 return { labels, incomeData, expenseData };
                 
             } catch (error) {
-                console.error('Error in aggregateTransactions:', error);
+                console.error('Error during transaction aggregation:', error);
                 if (error.code === 'failed-precondition') {
                     throw new Error(`Query failed. A Firestore index is likely required. Check the browser console for a link to create it.`);
                 }
@@ -279,7 +297,7 @@
             }
         }
 
-        // --- Chart Rendering ---
+        // --- Chart Rendering (Unchanged) ---
         function renderCharts(labels, incomeData, expenseData) {
             if (incomeChart) incomeChart.destroy();
             if (expenseChart) expenseChart.destroy();
@@ -347,7 +365,7 @@
             });
         }
         
-        // --- Main Loading Function ---
+        // --- Main Loading Function (Unchanged) ---
         async function loadDataAndRenderCharts(mode) {
             if (!currentUser) return;
 
@@ -369,7 +387,7 @@
             }
         }
 
-        // --- Entry Point ---
+        // --- Entry Point (Unchanged) ---
         document.addEventListener('DOMContentLoaded', () => {
             const filter = document.getElementById('typeFilter');
             const incomeContainer = document.getElementById('incomeChartContainer');
