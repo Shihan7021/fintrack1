@@ -198,6 +198,14 @@
         import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { auth, db } from "./firebase-config.js";
 
+        let userCurrencySymbol = 'Rs.'; // Default currency symbol
+
+        // Utility to get currency symbol from code
+        function getCurrencySymbol(code) {
+            const symbols = { USD: '$', EUR: '€', GBP: '£', JPY: '¥', INR: '₹', LKR: 'Rs.' };
+            return symbols[code] || (code || ''); 
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 loadBudgetData(user);
@@ -214,11 +222,11 @@
         }
 
         async function loadBudgetData(user) {
-            // Load categories for budget creation form
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
             if (userDoc.exists()) {
                 const userData = userDoc.data();
+                userCurrencySymbol = getCurrencySymbol(userData.currency); // Get user's currency
                 const expenseCategories = userData.selectedExpenseCategories || [];
                 const customExpenseCategories = userData.customExpenseCategories || [];
                 const allExpenseCategories = [...new Set([...expenseCategories, ...customExpenseCategories])];
@@ -233,20 +241,15 @@
                 });
             }
 
-            // Fetch all expense transactions for the user ONCE for efficiency
             const transactionsCol = collection(db, "users", user.uid, "transactions");
             const q = query(transactionsCol, where("type", "==", "Expense"));
             const transactionSnapshot = await getDocs(q);
-            const allExpenses = [];
-            transactionSnapshot.forEach(doc => {
-                allExpenses.push(doc.data());
-            });
+            const allExpenses = transactionSnapshot.docs.map(doc => doc.data());
 
-            // Load existing budgets and calculate their progress
             const budgetList = document.getElementById('budgetList');
             const budgetsCol = collection(db, "users", user.uid, "budgets");
             const budgetSnapshot = await getDocs(budgetsCol);
-            budgetList.innerHTML = ''; // Clear list
+            budgetList.innerHTML = ''; 
 
             if (budgetSnapshot.empty) {
                 budgetList.innerHTML = '<p class="text-muted">No budgets have been created yet.</p>';
@@ -257,37 +260,24 @@
                 const budget = doc.data();
                 const budgetId = doc.id;
 
-                // Filter transactions that fall within this budget's category and date range
                 const relevantExpenses = allExpenses.filter(expense => {
                     const expenseDate = new Date(expense.date);
                     const budgetFromDate = new Date(budget.fromDate);
                     const budgetToDateObj = new Date(budget.toDate);
-                    budgetToDateObj.setDate(budgetToDateObj.getDate() + 1); // Go to the next day
+                    budgetToDateObj.setDate(budgetToDateObj.getDate() + 1);
                     
                     return expense.category === budget.category &&
                            expenseDate >= budgetFromDate &&
-                           expenseDate < budgetToDateObj; // Strictly less than the start of the next day
+                           expenseDate < budgetToDateObj;
                 });
 
-                // Calculate the total amount spent
                 const totalSpent = relevantExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
                 const budgetAmount = Number(budget.amount);
                 
-                // Calculate progress percentage
                 let progressPercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
-
-                // Determine progress bar color
-                let progressBarClass = 'bg-success';
-                if (progressPercentage > 100) {
-                    progressBarClass = 'bg-danger';
-                } else if (progressPercentage >= 80) {
-                    progressBarClass = 'bg-warning';
-                }
-
-                // The visual bar shouldn't exceed 100%
+                let progressBarClass = progressPercentage > 100 ? 'bg-danger' : (progressPercentage >= 80 ? 'bg-warning' : 'bg-success');
                 const visualProgressPercentage = Math.min(progressPercentage, 100);
 
-                // Create the budget card element
                 const budgetEl = document.createElement('div');
                 budgetEl.classList.add('card', 'mb-3');
                 budgetEl.innerHTML = `
@@ -305,8 +295,8 @@
                         </div>
                         
                         <div class="mb-1 d-flex justify-content-between">
-                            <span class="fw-bold">Spent: ${formatAmount(totalSpent)}</span>
-                            <span>Budget: ${formatAmount(budgetAmount)}</span>
+                            <span class="fw-bold">Spent: ${userCurrencySymbol}${formatAmount(totalSpent)}</span>
+                            <span>Budget: ${userCurrencySymbol}${formatAmount(budgetAmount)}</span>
                         </div>
                         <div class="progress">
                             <div class="progress-bar ${progressBarClass}" role="progressbar" 
@@ -453,7 +443,6 @@
         document.getElementById('logoutButton').addEventListener('click', async () => {
             try {
                 await signOut(auth);
-                window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error signing out:', error);
             }
