@@ -99,13 +99,13 @@
                     <div class="card-body">
                         <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                             <a class="nav-link active" id="v-pills-by-type-tab" data-bs-toggle="pill" href="#v-pills-by-type" role="tab" aria-controls="v-pills-by-type" aria-selected="true">
-                                <i class="fas fa-plus-circle me-2"></i>By Type
+                                <i class="fas fa-chart-line me-2"></i>By Type
                             </a>
                             <a class="nav-link" id="v-pills-by-category-tab" data-bs-toggle="pill" href="#v-pills-by-category" role="tab" aria-controls="v-pills-by-category" aria-selected="false">
-                                <i class="fas fa-edit me-2"></i>By Category
+                                <i class="fas fa-chart-bar me-2"></i>By Category
                             </a>
                             <a class="nav-link" id="v-pills-insights-tab" data-bs-toggle="pill" href="#v-pills-insights" role="tab" aria-controls="v-pills-insights" aria-selected="false">
-                                <i class="fas fa-chart-line me-2"></i>Insights
+                                <i class="fas fa-lightbulb me-2"></i>Insights
                             </a>
                         </div>
                     </div>
@@ -128,15 +128,11 @@
                                 </div>
                                 <div class="mb-4">
                                     <h5 class="text-success mb-3">Income Overview</h5>
-                                    <div id="incomeChartContainer" class="chart-container">
-                                        <!-- Canvas will be inserted here -->
-                                    </div>
+                                    <div id="incomeChartContainer" class="chart-container"></div>
                                 </div>
                                 <div class="mb-4">
                                     <h5 class="text-danger mb-3">Expense Overview</h5>
-                                    <div id="expenseChartContainer" class="chart-container">
-                                       <!-- Canvas will be inserted here -->
-                                    </div>
+                                    <div id="expenseChartContainer" class="chart-container"></div>
                                 </div>
                             </div>
                         </div>
@@ -145,8 +141,24 @@
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title mb-4">Analyze by Category</h4>
-                                <div id="categoryAnalysis">
-                                    <p class="text-muted">Analysis by category coming soon...</p>
+                                <div class="d-flex flex-wrap gap-3 mb-3">
+                                    <div>
+                                        <label for="categoryTimeFilter" class="form-label fw-bold">View by:</label>
+                                        <select id="categoryTimeFilter" class="form-select">
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly" selected>Monthly</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="categorySelectFilter" class="form-label fw-bold">Category:</label>
+                                        <select id="categorySelectFilter" class="form-select">
+                                            <option value="">-- Select a Category --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="categoryChartContainer" class="chart-container">
+                                    <!-- Category Bar Chart will be inserted here -->
                                 </div>
                             </div>
                         </div>
@@ -170,10 +182,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
         import { db, auth } from './firebase-config.js';
-        import { collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { collection, query, getDocs, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        let incomeChart, expenseChart;
+        let incomeChart, expenseChart, categoryChart;
         let currentUser = null;
 
         // --- Date Helper Functions ---
@@ -197,101 +209,77 @@
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // --- Data Aggregation with Correct Type Checking ---
+        // --- Data Aggregation for Type Charts ---
         async function aggregateTransactions(userId, mode) {
-            try {
-                const transactionsQuery = query(
-                    collection(db, "users", userId, "transactions"), 
-                    orderBy("date", "desc")
-                );
+            const transactionsQuery = query(collection(db, "users", userId, "transactions"), orderBy("date", "desc"));
+            const snapshot = await getDocs(transactionsQuery);
+            if (snapshot.empty) return { labels: [], incomeData: [], expenseData: [] };
+            
+            const income = {}, expense = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (!data || !data.date || data.amount === undefined || !data.type) return;
+                const amount = Number(data.amount);
+                if (isNaN(amount)) return;
+                let jsDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
+                if (isNaN(jsDate.getTime())) return;
 
-                const snapshot = await getDocs(transactionsQuery);
-                
-                if (snapshot.empty) {
-                    console.log('Query successful, but no transactions found.');
-                    return { labels: [], incomeData: [], expenseData: [] };
-                }
-                
-                const income = {}, expense = {};
-                let processedCount = 0;
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    
-                    if (!data || !data.date || data.amount === undefined || !data.type) {
-                        console.warn(`[SKIP] Doc ${doc.id} is missing required fields.`);
-                        return;
-                    }
-                    
-                    const amount = Number(data.amount);
-                    if (isNaN(amount)) {
-                        console.warn(`[SKIP] Doc ${doc.id} has an invalid amount:`, data.amount);
-                        return;
-                    }
+                let key;
+                if (mode === 'daily') key = formatDate(jsDate);
+                else if (mode === 'weekly') key = getWeek(jsDate);
+                else key = getMonth(jsDate);
 
-                    let jsDate;
-                    if (data.date && typeof data.date.toDate === 'function') {
-                        jsDate = data.date.toDate();
-                    } else {
-                        jsDate = new Date(data.date);
-                    }
-
-                    if (isNaN(jsDate.getTime())) {
-                        console.warn(`[SKIP] Doc ${doc.id} has an invalid date:`, data.date);
-                        return;
-                    }
-
-                    let key;
-                    try {
-                        if (mode === 'daily') key = formatDate(jsDate);
-                        else if (mode === 'weekly') key = getWeek(jsDate);
-                        else key = getMonth(jsDate);
-                    } catch (e) {
-                        console.warn(`[SKIP] Error creating date key for doc ${doc.id}:`, e);
-                        return;
-                    }
-
-                    // *** MAJOR FIX: Convert type to lowercase for case-insensitive comparison ***
-                    const transactionType = data.type.toLowerCase();
-                    if (transactionType === 'income') {
-                        income[key] = (income[key] || 0) + amount;
-                    } else if (transactionType === 'expense') {
-                        expense[key] = (expense[key] || 0) + amount;
-                    }
-                    processedCount++;
-                });
-                
-                console.log(`Successfully processed ${processedCount} of ${snapshot.size} documents.`);
-                const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
-                
-                if (labels.length === 0 && snapshot.size > 0) {
-                    console.error("All documents were skipped. Check data for correct 'type', 'date', and 'amount' fields.");
-                }
-
-                const incomeData = labels.map(l => income[l] || 0);
-                const expenseData = labels.map(l => expense[l] || 0);
-                
-                return { labels, incomeData, expenseData };
-                
-            } catch (error) {
-                console.error('Error during transaction aggregation:', error);
-                if (error.code === 'failed-precondition') {
-                    throw new Error(`Query failed. A Firestore index is likely required. Check the browser console for a link to create it.`);
-                }
-                throw new Error(`Failed to load transaction data. (Error: ${error.code})`);
-            }
+                const transactionType = data.type.toLowerCase();
+                if (transactionType === 'income') income[key] = (income[key] || 0) + amount;
+                else if (transactionType === 'expense') expense[key] = (expense[key] || 0) + amount;
+            });
+            
+            const labels = Array.from(new Set([...Object.keys(income), ...Object.keys(expense)])).sort();
+            const incomeData = labels.map(l => income[l] || 0);
+            const expenseData = labels.map(l => expense[l] || 0);
+            return { labels, incomeData, expenseData };
         }
 
-        // --- Chart Rendering (Unchanged) ---
+        // --- Data Aggregation for Category Chart ---
+        async function aggregateTransactionsByCategory(userId, mode, category) {
+            const transactionsQuery = query(
+                collection(db, "users", userId, "transactions"),
+                where("category", "==", category),
+                orderBy("date", "desc")
+            );
+            const snapshot = await getDocs(transactionsQuery);
+            if (snapshot.empty) return { labels: [], data: [] };
+
+            const categoryData = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (!data || !data.date || data.amount === undefined) return;
+                const amount = Number(data.amount);
+                if (isNaN(amount)) return;
+                let jsDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
+                if (isNaN(jsDate.getTime())) return;
+
+                let key;
+                if (mode === 'daily') key = formatDate(jsDate);
+                else if (mode === 'weekly') key = getWeek(jsDate);
+                else key = getMonth(jsDate);
+                
+                categoryData[key] = (categoryData[key] || 0) + amount;
+            });
+            
+            const labels = Object.keys(categoryData).sort();
+            const data = labels.map(l => categoryData[l] || 0);
+            return { labels, data };
+        }
+
+        // --- Chart Rendering ---
         function renderCharts(labels, incomeData, expenseData) {
             if (incomeChart) incomeChart.destroy();
             if (expenseChart) expenseChart.destroy();
 
             const incomeContainer = document.getElementById('incomeChartContainer');
             const expenseContainer = document.getElementById('expenseChartContainer');
-
-            incomeContainer.innerHTML = '';
-            expenseContainer.innerHTML = '';
+            incomeContainer.innerHTML = ''; expenseContainer.innerHTML = '';
 
             if (!labels || labels.length === 0) {
                 const noDataHtml = '<div class="d-flex justify-content-center align-items-center h-100 text-muted">No transaction data to display.</div>';
@@ -302,62 +290,49 @@
 
             const incomeCanvas = document.createElement('canvas');
             incomeContainer.appendChild(incomeCanvas);
-
             const expenseCanvas = document.createElement('canvas');
             expenseContainer.appendChild(expenseCanvas);
 
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: true, position: 'top' } },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            };
+            const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } };
+            incomeChart = new Chart(incomeCanvas.getContext('2d'), { type: 'line', data: { labels, datasets: [{ label: 'Total Income', data: incomeData, backgroundColor: 'rgba(40, 167, 69, 0.2)', borderColor: 'rgba(40, 167, 69, 1)', borderWidth: 2, fill: true, tension: 0.4 }] }, options: chartOptions });
+            expenseChart = new Chart(expenseCanvas.getContext('2d'), { type: 'line', data: { labels, datasets: [{ label: 'Total Expenses', data: expenseData, backgroundColor: 'rgba(220, 53, 69, 0.2)', borderColor: 'rgba(220, 53, 69, 1)', borderWidth: 2, fill: true, tension: 0.4 }] }, options: chartOptions });
+        }
 
-            incomeChart = new Chart(incomeCanvas.getContext('2d'), {
-                type: 'line',
+        function renderCategoryChart(labels, data, category) {
+            if (categoryChart) categoryChart.destroy();
+            const container = document.getElementById('categoryChartContainer');
+            container.innerHTML = '';
+
+            if (!labels || labels.length === 0) {
+                container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 text-muted">No data for "${category}" in this period.</div>`;
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+
+            categoryChart = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
                 data: {
                     labels,
                     datasets: [{
-                        label: 'Total Income',
-                        data: incomeData,
-                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                        borderColor: 'rgba(40, 167, 69, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
+                        label: `Total for ${category}`,
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
                     }]
                 },
-                options: chartOptions
-            });
-
-            expenseChart = new Chart(expenseCanvas.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Total Expenses',
-                        data: expenseData,
-                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                        borderColor: 'rgba(220, 53, 69, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                    }]
-                },
-                options: chartOptions
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
         }
-        
-        // --- Main Loading Function (Unchanged) ---
+
+        // --- Main Loading Functions ---
         async function loadDataAndRenderCharts(mode) {
             if (!currentUser) return;
-
             const incomeContainer = document.getElementById('incomeChartContainer');
             const expenseContainer = document.getElementById('expenseChartContainer');
-            const loadingHTML = `<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
-
+            const loadingHTML = `<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"></div></div>`;
             incomeContainer.innerHTML = loadingHTML;
             expenseContainer.innerHTML = loadingHTML;
             
@@ -365,30 +340,87 @@
                 const { labels, incomeData, expenseData } = await aggregateTransactions(currentUser.uid, mode);
                 renderCharts(labels, incomeData, expenseData);
             } catch (error) {
-                console.error("Error loading charts:", error);
-                const errorHTML = `<div class="d-flex justify-content-center align-items-center h-100"><div class="text-danger">${error.message}</div></div>`;
+                const errorHTML = `<div class="d-flex justify-content-center align-items-center h-100 text-danger">${error.message}</div>`;
                 incomeContainer.innerHTML = errorHTML;
                 expenseContainer.innerHTML = errorHTML;
             }
         }
 
-        // --- Entry Point (Unchanged) ---
+        async function loadCategoryAnalysis() {
+            if (!currentUser) return;
+            const mode = document.getElementById('categoryTimeFilter').value;
+            const category = document.getElementById('categorySelectFilter').value;
+            const container = document.getElementById('categoryChartContainer');
+
+            if (!category) {
+                if (categoryChart) categoryChart.destroy();
+                container.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 text-muted">Please select a category to view the analysis.</div>';
+                return;
+            }
+
+            container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"></div></div>`;
+            
+            try {
+                const { labels, data } = await aggregateTransactionsByCategory(currentUser.uid, mode, category);
+                renderCategoryChart(labels, data, category);
+            } catch (error) {
+                container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 text-danger">${error.message}</div>`;
+            }
+        }
+
+        async function setupCategoryAnalysis(userId) {
+            const categorySelect = document.getElementById('categorySelectFilter');
+            const timeSelect = document.getElementById('categoryTimeFilter');
+
+            // Fetch all unique categories
+            const transactionsQuery = query(collection(db, "users", userId, "transactions"));
+            const snapshot = await getDocs(transactionsQuery);
+            const categories = new Set();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.category) {
+                    categories.add(data.category);
+                }
+            });
+
+            // Populate category dropdown
+            categorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
+            [...categories].sort().forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+
+            // Add event listeners
+            categorySelect.onchange = loadCategoryAnalysis;
+            timeSelect.onchange = loadCategoryAnalysis;
+
+            // Initial load/message
+            loadCategoryAnalysis();
+        }
+
+        // --- Entry Point ---
         document.addEventListener('DOMContentLoaded', () => {
-            const filter = document.getElementById('typeFilter');
-            const incomeContainer = document.getElementById('incomeChartContainer');
-            const expenseContainer = document.getElementById('expenseChartContainer');
+            const typeFilter = document.getElementById('typeFilter');
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
-                    loadDataAndRenderCharts(filter.value);
-                    filter.onchange = () => loadDataAndRenderCharts(filter.value);
+                    // Load "By Type" charts
+                    loadDataAndRenderCharts(typeFilter.value);
+                    typeFilter.onchange = () => loadDataAndRenderCharts(typeFilter.value);
+
+                    // Setup and load "By Category" analysis
+                    setupCategoryAnalysis(user.uid);
+
                 } else {
                     currentUser = null;
-                    const loginMessage = '<div class="d-flex justify-content-center align-items-center h-100 text-muted">Please log in to view your analysis.</div>';
-                    incomeContainer.innerHTML = loginMessage;
-                    expenseContainer.innerHTML = loginMessage;
-                    filter.onchange = null; // Remove listener if logged out
+                    // Clear all sections and show login message
+                    document.getElementById('incomeChartContainer').innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 text-muted">Please log in to view your analysis.</div>';
+                    document.getElementById('expenseChartContainer').innerHTML = '';
+                    document.getElementById('categoryChartContainer').innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 text-muted">Please log in to view your analysis.</div>';
+                    typeFilter.onchange = null;
                 }
             });
         });
