@@ -404,13 +404,15 @@
         const defaultExpenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
 
         function createCategoryCheckbox(category, type) {
+            // Sanitize the category name to create a valid HTML ID (remove spaces, special chars, etc.)
+            const sanitizedCategory = category.replace(/[^a-zA-Z0-9]/g, '');
             const col = document.createElement('div');
             col.className = 'col-md-4';
             const formCheck = document.createElement('div');
             formCheck.className = 'form-check';
             formCheck.innerHTML = `
-                <input class="form-check-input" type="checkbox" value="${category}" id="${type}-${category}" checked>
-                <label class="form-check-label" for="${type}-${category}">
+                <input class="form-check-input" type="checkbox" value="${category}" id="${type}-${sanitizedCategory}" checked>
+                <label class="form-check-label" for="${type}-${sanitizedCategory}">
                     ${category}
                 </label>
             `;
@@ -432,7 +434,16 @@
             const listId = type === 'income' ? 'incomeCategoriesList' : 'expenseCategoriesList';
             const input = document.getElementById(inputId);
             const categoryName = input.value.trim();
+
             if (categoryName) {
+                // Sanitize the name to check for a valid ID
+                const sanitizedCategory = categoryName.replace(/[^a-zA-Z0-9]/g, '');
+                // Check if an element with this ID already exists
+                if (document.getElementById(`${type}-${sanitizedCategory}`)) {
+                    alert('Category already exists.');
+                    return;
+                }
+
                 const list = document.getElementById(listId);
                 list.appendChild(createCategoryCheckbox(categoryName, type));
                 input.value = '';
@@ -458,6 +469,10 @@
             
             const email = document.getElementById('userEmail').value;
             const password = document.getElementById('newPassword').value;
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
 
             try {
                 // 1. Create user in Firebase Auth
@@ -494,6 +509,8 @@
             } catch (error) {
                 console.error("Error during registration:", error);
                 alert(`Registration failed: ${error.message}`);
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-user-plus"></i> Complete Registration';
             }
         });
 
