@@ -460,7 +460,6 @@
             { code: "CHF", name: "Swiss Franc" }, { code: "CNY", name: "Chinese Yuan" }, { code: "INR", name: "Indian Rupee" },
             { code: "LKR", name: "Sri Lankan Rupee" }, { code: "BRL", name: "Brazilian Real" }, { code: "RUB", name: "Russian Ruble" },
             { code: "ZAR", name: "South African Rand" }, { code: "SGD", name: "Singapore Dollar" }, { code: "AED", name: "UAE Dirham" }
-            // Add more currencies as needed
         ];
         
         let categoriesWithTransactions = { income: new Set(), expense: new Set() };
@@ -643,7 +642,23 @@
             }
         });
 
-        financialForm.addEventListener('submit', async (e) => { /* ... (existing code) ... */ });
+        financialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if(user) {
+                try {
+                    await setDoc(doc(db, "users", user.uid), {
+                        savingMode: document.getElementById('savingMode').value,
+                        minSavingsTarget: document.getElementById('minSavingsTarget').value,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    alert('Financial information updated successfully!');
+                } catch (error) {
+                    console.error('Error updating financial information:', error);
+                    alert('Error updating financial information. Please try again.');
+                }
+            }
+        });
 
         preferencesForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -667,15 +682,157 @@
             }
         });
 
+        // ** THIS IS THE FIXED CODE FOR THE SAVE CATEGORIES BUTTON **
+        document.getElementById('saveCategoriesBtn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    const selectedIncome = getSelectedCategories('income');
+                    const selectedExpense = getSelectedCategories('expense');
 
-        document.getElementById('saveCategoriesBtn').addEventListener('click', async () => { /* ... (existing code) ... */ });
-        document.getElementById('changePasswordBtn').addEventListener('click', async () => { /* ... (existing code) ... */ });
-        logoutButton.addEventListener('click', async () => { /* ... (existing code) ... */ });
-        document.getElementById('profileVehicleOwned').addEventListener('change', function () { /* ... (existing code) ... */ });
-        document.getElementById('profileProfession').addEventListener('change', function () { /* ... (existing code) ... */ });
-        document.getElementById('profileCivilStatus').addEventListener('change', function () { /* ... (existing code) ... */ });
-        document.getElementById('deleteAccountBtn').addEventListener('click', () => { /* ... (existing code) ... */ });
-        document.getElementById('confirmDeleteAccount').addEventListener('click', async () => { /* ... (existing code) ... */ });
+                    await setDoc(doc(db, "users", user.uid), {
+                        customIncomeCategories: customCategories.income,
+                        customExpenseCategories: customCategories.expense,
+                        selectedIncomeCategories: selectedIncome,
+                        selectedExpenseCategories: selectedExpense,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    alert('Categories updated successfully!');
+                } catch (error) {
+                    console.error('Error updating categories:', error);
+                    alert('Error updating categories. Please try again.');
+                }
+            }
+        });
+
+        document.getElementById('changePasswordBtn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                alert('Please fill in all password fields.');
+                return;
+            }
+            if (newPassword !== confirmNewPassword) {
+                alert('New passwords do not match.');
+                return;
+            }
+            if (newPassword.length < 6) {
+                alert('New password must be at least 6 characters long.');
+                return;
+            }
+
+            if (user) {
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                try {
+                    await reauthenticateWithCredential(user, credential);
+                    await updatePassword(user, newPassword);
+                    alert('Password updated successfully!');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } catch (error) {
+                    console.error('Error changing password:', error);
+                    if (error.code === 'auth/wrong-password') {
+                        alert('Incorrect current password.');
+                    } else if (error.code === 'auth/requires-recent-login') {
+                        alert('This operation is sensitive and requires recent authentication. Please log in again before retrying this request.');
+                    } else {
+                        alert('An error occurred while changing your password. Please try again.');
+                    }
+                }
+            }
+        });
+
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        });
+
+        async function deleteAccount() {
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    // Delete all transactions first
+                    const batch = writeBatch(db);
+                    const transactionsRef = collection(db, "users", user.uid, "transactions");
+                    const snapshot = await getDocs(transactionsRef);
+                    snapshot.forEach((doc) => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    
+                    // Delete the user document
+                    await deleteDoc(doc(db, "users", user.uid));
+                    
+                    // Delete the user from auth
+                    await deleteUser(user);
+                    
+                    alert("Your account has been successfully deleted.");
+                    window.location.href = "index.html";
+
+                } catch (error) {
+                    console.error("Error deleting account:", error);
+                    if (error.code === 'auth/requires-recent-login') {
+                        const password = prompt("Please re-enter your password to confirm account deletion.");
+                        if (password) {
+                            const credential = EmailAuthProvider.credential(user.email, password);
+                            try {
+                                await reauthenticateWithCredential(user, credential);
+                                await deleteAccount(); // Retry deletion
+                            } catch (reauthError) {
+                                console.error("Re-authentication failed:", reauthError);
+                                alert("Incorrect password. Account deletion failed.");
+                            }
+                        } else {
+                            alert("Password not provided. Account deletion cancelled.");
+                        }
+                    } else {
+                        alert("An error occurred while deleting your account. Please try again.");
+                    }
+                }
+            }
+        }
+
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const confirmDeleteAccount = document.getElementById('confirmDeleteAccount');
+        const deleteAccountModal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+
+        deleteAccountBtn.addEventListener('click', () => {
+            deleteAccountModal.show();
+        });
+
+        confirmDeleteAccount.addEventListener('click', async () => {
+            deleteAccountModal.hide();
+            await deleteAccount();
+        });
+
+        document.getElementById('profileVehicleOwned').addEventListener('change', function () {
+            document.getElementById('profileFuelTypeContainer').style.display = this.value === 'Yes' ? 'block' : 'none';
+        });
+        
+        document.getElementById('profileProfession').addEventListener('change', function () {
+            const container = document.getElementById('serviceYearsContainer');
+            container.style.display = this.value === 'Employed' ? 'block' : 'none';
+            if (this.value !== 'Employed') {
+                document.getElementById('profileServiceYears').value = '';
+            }
+        });
+
+        document.getElementById('profileCivilStatus').addEventListener('change', function () {
+            const container = document.getElementById('spouseStatusContainer');
+            container.style.display = this.value === 'Married' ? 'block' : 'none';
+            if (this.value !== 'Married') {
+                document.getElementById('profileSpouseStatus').value = '';
+            }
+        });
 
         // --- Auth State and Initial Load ---
         onAuthStateChanged(auth, (user) => {
@@ -686,7 +843,6 @@
                 window.location.href = 'index.html';
             }
         });
-
     </script>
 </body>
 </html>
