@@ -187,7 +187,7 @@
 
         let incomeChart, expenseChart, categoryChart;
         let currentUser = null;
-        let allTransactions = []; // Global store for all transactions
+        let allTransactions = []; // This array will hold all fetched data.
 
         // --- Date Helper Functions ---
         function formatDate(date) {
@@ -210,7 +210,7 @@
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // --- Data Processing Functions (Now work on local data) ---
+        // --- Data Processing Functions (These operate on the 'allTransactions' array) ---
         function processTransactionsForTypeChart(transactions, mode) {
             const income = {}, expense = {};
             transactions.forEach(data => {
@@ -250,7 +250,7 @@
             return { labels, data };
         }
 
-        // --- Chart Rendering Functions ---
+        // --- Chart Rendering Functions (These call the processing functions) ---
         function renderTypeCharts() {
             if (!currentUser) return;
             const mode = document.getElementById('typeFilter').value;
@@ -328,21 +328,29 @@
                 if (user) {
                     currentUser = user;
                     
-                    // Show loading state while fetching
                     document.getElementById('incomeChartContainer').innerHTML = `<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"></div></div>`;
                     document.getElementById('categoryChartContainer').innerHTML = `<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"></div></div>`;
 
-                    // Fetch ALL data once
+                    // *** CRITICAL FIX: Fetch ALL data once without any sorting or filtering. ***
+                    // This simple query will NOT require a special index.
                     const transactionsQuery = query(collection(db, "users", user.uid, "transactions"));
                     const snapshot = await getDocs(transactionsQuery);
-                    allTransactions = snapshot.docs.map(doc => doc.data());
+                    
+                    // Pre-process data into a clean format
+                    allTransactions = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                            ...data,
+                            amount: Number(data.amount) || 0 // Ensure amount is a number
+                        };
+                    });
 
-                    // Now that data is local, setup and render everything
+                    // Now that all data is local, setup filters and render charts
                     setupCategoryFilter();
                     renderTypeCharts();
                     renderCategoryChart();
 
-                    // Setup event listeners to re-render from local data
+                    // Setup event listeners to re-render charts from the local 'allTransactions' array
                     typeFilter.onchange = renderTypeCharts;
                     categoryTimeFilter.onchange = renderCategoryChart;
                     categorySelectFilter.onchange = renderCategoryChart;
