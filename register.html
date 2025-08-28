@@ -92,7 +92,7 @@
                     <img src="logo-reg.png" alt="MindPay Logo" class="img-fluid" style="max-height: 50px;">
                 </div>
             </div>
-            <p class="mb-0 mt-2">Create your FinSight account in 3 simple steps</p>
+            <p class="mb-0 mt-2">Create your MindPay account in 3 simple steps</p>
         </div>
 
         <!-- Step Indicator -->
@@ -510,7 +510,7 @@
                 await setDoc(doc(db, "users", user.uid), userData);
 
                 alert('Registration successful! Redirecting to login page.');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
 
             } catch (error) {
                 console.error("Error during registration:", error);
