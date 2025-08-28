@@ -240,12 +240,13 @@
             return { labels, incomeData, expenseData };
         }
 
-        // --- Data Aggregation for Category Chart ---
+        // --- Data Aggregation for Category Chart (FIXED) ---
         async function aggregateTransactionsByCategory(userId, mode, category) {
+            // This query fetches documents filtered by category but does NOT order them.
+            // This avoids the need for a composite index.
             const transactionsQuery = query(
                 collection(db, "users", userId, "transactions"),
-                where("category", "==", category),
-                orderBy("date", "desc")
+                where("category", "==", category)
             );
             const snapshot = await getDocs(transactionsQuery);
             if (snapshot.empty) return { labels: [], data: [] };
@@ -267,6 +268,7 @@
                 categoryData[key] = (categoryData[key] || 0) + amount;
             });
             
+            // Sorting is now done in JavaScript, after fetching the data.
             const labels = Object.keys(categoryData).sort();
             const data = labels.map(l => categoryData[l] || 0);
             return { labels, data };
