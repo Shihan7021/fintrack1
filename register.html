@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale-1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register - MindPay</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -87,7 +87,6 @@
         <div class="register-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="mb-0"><i class="fas fa-user-plus"></i> Register</h1>
-                <!-- Logo -->
                 <div>
                     <img src="logo-reg.png" alt="MindPay Logo" class="img-fluid" style="max-height: 50px;">
                 </div>
@@ -95,7 +94,6 @@
             <p class="mb-0 mt-2">Create your MindPay account in 3 simple steps</p>
         </div>
 
-        <!-- Step Indicator -->
         <div class="step-indicator">
             <div class="step active" id="step1-indicator">1</div>
             <div class="step-line" id="line1-2"></div>
@@ -105,7 +103,6 @@
         </div>
 
         <form id="registerForm">
-            <!-- Step 1: Account Information -->
             <div class="register-section" id="step1">
                 <div class="row justify-content-center w-100">
                     <div class="col-md-8 text-center">
@@ -140,7 +137,6 @@
                 </div>
             </div>
 
-            <!-- Step 2: Personal Information -->
             <div class="register-section" id="step2" style="display: none;">
                 <h4 class="text-primary mb-3">Step 2: Personal Information</h4>
                 <div class="row">
@@ -176,32 +172,28 @@
                         <label for="country" class="form-label">Country</label>
                         <select id="country" class="form-select" required>
                             <option value="">Select Country</option>
-                            <option value="Sri Lanka">Sri Lanka</option>
-                            <option value="India">India</option>
-                            <option value="United States">United States</option>
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="Canada">Canada</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Germany">Germany</option>
-                            <option value="France">France</option>
-                            <option value="Japan">Japan</option>
-                            <option value="Other">Other</option>
-                        </select>
+                            </select>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="currency" class="form-label">Currency</label>
+                        <select id="currency" class="form-select" required>
+                            <option value="">Select currency</option>
+                            </select>
+                    </div>
+                </div>
+                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="incomeRange" class="form-label">Monthly Income Range</label>
                         <select id="incomeRange" class="form-select" required>
                             <option value="">Select Income Range</option>
-                            <option value="0-50000">Rs. 0 - 50,000</option>
-                            <option value="50001-100000">Rs. 50,001 - 100,000</option>
-                            <option value="100001-200000">Rs. 100,001 - 200,000</option>
-                            <option value="200001-500000">Rs. 200,001 - 500,000</option>
-                            <option value="500001-1000000">Rs. 500,001 - 1,000,000</option>
-                            <option value="1000000+">Rs. 1,000,000+</option>
+                            <option value="0-50000">0 - 50,000</option>
+                            <option value="50001-100000">50,001 - 100,000</option>
+                            <option value="100001-200000">100,001 - 200,000</option>
+                            <option value="200001-500000">200,001 - 500,000</option>
+                            <option value="500001-1000000">500,001 - 1,000,000</option>
+                            <option value="1000000+">1,000,000+</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="cycleDate" class="form-label">Cycle Date</label>
                         <select id="cycleDate" class="form-select" required>
@@ -215,6 +207,8 @@
                             <option value="30">30th</option>
                         </select>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="civilStatus" class="form-label">Civil Status</label>
                         <select id="civilStatus" class="form-select">
@@ -225,12 +219,12 @@
                             <option value="Widowed">Widowed</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+                     <div class="col-md-6 mb-3">
                         <label for="children" class="form-label">Number of Children</label>
                         <input type="number" id="children" class="form-control" min="0">
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="livingType" class="form-label">Living Type</label>
                         <select id="livingType" class="form-select">
@@ -241,9 +235,7 @@
                             <option value="With Parents">With Parents</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+                     <div class="col-md-6 mb-3">
                         <label for="vehicleOwned" class="form-label">Vehicle Owned</label>
                         <select id="vehicleOwned" class="form-select">
                             <option value="">Select an option</option>
@@ -251,6 +243,8 @@
                             <option value="No">No</option>
                         </select>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3" id="fuelTypeContainer" style="display: none;">
                         <label for="fuelType" class="form-label">Fuel Type</label>
                         <select id="fuelType" class="form-select">
@@ -278,7 +272,6 @@
                 </div>
             </div>
 
-            <!-- Step 3: Categories -->
             <div class="register-section" id="step3" style="display: none;">
                 <h4 class="text-primary mb-3">Step 3: Categories</h4>
                 
@@ -343,6 +336,56 @@
         const line1_2 = document.getElementById('line1-2');
         const line2_3 = document.getElementById('line2-3');
 
+        // --- State Variables ---
+        let customIncomeCategoriesState = [];
+        let customExpenseCategoriesState = [];
+        let allCountriesData = [];
+
+        // --- Country and Currency Logic ---
+        async function populateCountries() {
+            try {
+                const response = await fetch('https://restcountries.com/v3.1/all');
+                if (!response.ok) throw new Error('Failed to fetch countries');
+                allCountriesData = await response.json();
+
+                allCountriesData.sort((a, b) => a.name.common.localeCompare(b.name.common));
+
+                const countrySelect = document.getElementById('country');
+                allCountriesData.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.name.common;
+                    option.textContent = country.name.common;
+                    countrySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error populating countries:", error);
+                alert("Could not load country list. Please check your internet connection and try again.");
+            }
+        }
+
+        document.getElementById('country').addEventListener('change', (e) => {
+            const selectedCountryName = e.target.value;
+            const currencySelect = document.getElementById('currency');
+            currencySelect.innerHTML = '<option value="">Select Currency</option>'; 
+
+            if (selectedCountryName) {
+                const countryData = allCountriesData.find(c => c.name.common === selectedCountryName);
+                if (countryData && countryData.currencies) {
+                    for (const code in countryData.currencies) {
+                        const currency = countryData.currencies[code];
+                        const option = document.createElement('option');
+                        option.value = code;
+                        option.textContent = `${code} (${currency.symbol || 'N/A'}) - ${currency.name}`;
+                        currencySelect.appendChild(option);
+                    }
+                    if (currencySelect.options.length > 1) {
+                        currencySelect.selectedIndex = 1;
+                    }
+                }
+            }
+        });
+
+
         // --- Step Navigation Logic ---
         function updateStepIndicator(step) {
             step1Indicator.classList.toggle('active', step >= 1);
@@ -361,6 +404,9 @@
                 if (!email || !password || !confirmPassword) {
                     alert('Please fill in all account information fields.');
                     isValid = false;
+                } else if (password.length < 6) {
+                    alert('Password must be at least 6 characters long.');
+                    isValid = false;
                 } else if (password !== confirmPassword) {
                     alert('Passwords do not match.');
                     isValid = false;
@@ -371,7 +417,7 @@
                     updateStepIndicator(2);
                 }
             } else if (currentStep === 2) {
-                const requiredFields = ['profession', 'ageRange', 'country', 'incomeRange', 'cycleDate'];
+                const requiredFields = ['profession', 'ageRange', 'country', 'currency', 'incomeRange', 'cycleDate'];
                 for (const fieldId of requiredFields) {
                     if (!document.getElementById(fieldId).value) {
                         alert('Please fill in all required personal information fields.');
@@ -404,7 +450,6 @@
         const defaultExpenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
 
         function createCategoryCheckbox(category, type) {
-            // Sanitize the category name to create a valid HTML ID (remove spaces, special chars, etc.)
             const sanitizedCategory = category.replace(/[^a-zA-Z0-9]/g, '');
             const col = document.createElement('div');
             col.className = 'col-md-4';
@@ -432,20 +477,19 @@
         function addCustomCategory(type) {
             const inputId = type === 'income' ? 'customIncomeCategory' : 'customExpenseCategory';
             const listId = type === 'income' ? 'incomeCategoriesList' : 'expenseCategoriesList';
+            const customList = type === 'income' ? customIncomeCategoriesState : customExpenseCategoriesState;
+            const defaultList = type === 'income' ? defaultIncomeCategories : defaultExpenseCategories;
             const input = document.getElementById(inputId);
             const categoryName = input.value.trim();
 
             if (categoryName) {
-                // Sanitize the name to check for a valid ID
-                const sanitizedCategory = categoryName.replace(/[^a-zA-Z0-9]/g, '');
-                // Check if an element with this ID already exists
-                if (document.getElementById(`${type}-${sanitizedCategory}`)) {
+                const combinedList = [...defaultList, ...customList];
+                if (combinedList.some(cat => cat.toLowerCase() === categoryName.toLowerCase())) {
                     alert('Category already exists.');
                     return;
                 }
-
-                const list = document.getElementById(listId);
-                list.appendChild(createCategoryCheckbox(categoryName, type));
+                customList.push(categoryName);
+                document.getElementById(listId).appendChild(createCategoryCheckbox(categoryName, type));
                 input.value = '';
             }
         }
@@ -483,15 +527,12 @@
                 const selectedIncomeCategories = Array.from(document.querySelectorAll('#incomeCategoriesList .form-check-input:checked')).map(cb => cb.value);
                 const selectedExpenseCategories = Array.from(document.querySelectorAll('#expenseCategoriesList .form-check-input:checked')).map(cb => cb.value);
 
-                // Find custom categories (those not in default lists)
-                const customIncomeCategories = selectedIncomeCategories.filter(cat => !defaultIncomeCategories.includes(cat));
-                const customExpenseCategories = selectedExpenseCategories.filter(cat => !defaultExpenseCategories.includes(cat));
-
                 const userData = {
                     email: user.email,
                     profession: document.getElementById('profession').value,
                     ageRange: document.getElementById('ageRange').value,
                     country: document.getElementById('country').value,
+                    currency: document.getElementById('currency').value,
                     incomeRange: document.getElementById('incomeRange').value,
                     cycleDate: document.getElementById('cycleDate').value,
                     civilStatus: document.getElementById('civilStatus').value,
@@ -502,8 +543,8 @@
                     interests: document.getElementById('interests').value,
                     selectedIncomeCategories,
                     selectedExpenseCategories,
-                    customIncomeCategories,
-                    customExpenseCategories
+                    customIncomeCategories: customIncomeCategoriesState,
+                    customExpenseCategories: customExpenseCategoriesState
                 };
 
                 // 3. Save user data to Firestore
@@ -522,6 +563,7 @@
 
         // --- Initial Setup ---
         populateDefaultCategories();
+        populateCountries();
 
     </script>
 </body>
