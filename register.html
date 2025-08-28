@@ -106,7 +106,7 @@
 
         <form id="registerForm">
             <!-- Step 1: Account Information -->
-<div class="register-section d-flex flex-column align-items-center" id="step1">
+            <div class="register-section d-flex flex-column align-items-center" id="step1">
                 <h4 class="text-primary mb-3">Step 1: Account Information</h4>
                 <div class="row justify-content-center w-100">
                     <div class="col-md-8 mb-3">
@@ -127,8 +127,8 @@
                     </div>
                 </div>
                 <div class="text-end mb-3">
-                    <a href="index.html" class="btn btn-outline-secondary me-2" onclick="return confirm('Are you sure you want to cancel registration and go to Home?');">Home</a>
-                    <button type="button" class="btn btn-primary" onclick="nextStep(1)">
+                    <a href="index.html" class="btn btn-outline-secondary me-2">Home</a>
+                    <button type="button" class="btn btn-primary" id="nextStep1">
                         Next <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -263,10 +263,10 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-primary" onclick="previousStep(2)">
+                    <button type="button" class="btn btn-outline-primary" id="prevStep2">
                         <i class="fas fa-arrow-left"></i> Previous
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                    <button type="button" class="btn btn-primary" id="nextStep2">
                         Next <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -276,38 +276,32 @@
             <div class="register-section" id="step3" style="display: none;">
                 <h4 class="text-primary mb-3">Step 3: Categories</h4>
                 
-                <!-- Income Categories Section -->
                 <div class="mb-4">
                     <h5 class="text-primary mb-2"><i class="fas fa-arrow-up text-success"></i> Income Categories</h5>
                     <p class="text-muted mb-2">Select the income categories you want to track</p>
                     <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                        <div id="incomeCategoriesList" class="row">
-                            <!-- Income categories will be populated here -->
-                        </div>
+                        <div id="incomeCategoriesList" class="row"></div>
                     </div>
                     <div class="mt-3">
                         <div class="input-group">
                             <input type="text" id="customIncomeCategory" class="form-control" placeholder="Add custom income category">
-                            <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('income')">
+                            <button class="btn btn-outline-primary" type="button" id="addIncomeCategoryBtn">
                                 <i class="fas fa-plus"></i> Add
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Expense Categories Section -->
                 <div class="mb-4">
                     <h5 class="text-primary mb-2"><i class="fas fa-arrow-down text-danger"></i> Expense Categories</h5>
                     <p class="text-muted mb-2">Select the expense categories you want to track</p>
                     <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                        <div id="expenseCategoriesList" class="row">
-                            <!-- Expense categories will be populated here -->
-                        </div>
+                        <div id="expenseCategoriesList" class="row"></div>
                     </div>
                     <div class="mt-3">
                         <div class="input-group">
                             <input type="text" id="customExpenseCategory" class="form-control" placeholder="Add custom expense category">
-                            <button class="btn btn-outline-primary" type="button" onclick="addCustomCategory('expense')">
+                            <button class="btn btn-outline-primary" type="button" id="addExpenseCategoryBtn">
                                 <i class="fas fa-plus"></i> Add
                             </button>
                         </div>
@@ -315,7 +309,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-primary" onclick="previousStep(3)">
+                    <button type="button" class="btn btn-outline-primary" id="prevStep3">
                         <i class="fas fa-arrow-left"></i> Previous
                     </button>
                     <button type="submit" class="btn btn-primary">
@@ -323,4 +317,183 @@
                     </button>
                 </div>
             </div>
-        </form
+        </form>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- DOM Elements ---
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const registerForm = document.getElementById('registerForm');
+        
+        const step1Indicator = document.getElementById('step1-indicator');
+        const step2Indicator = document.getElementById('step2-indicator');
+        const step3Indicator = document.getElementById('step3-indicator');
+        const line1_2 = document.getElementById('line1-2');
+        const line2_3 = document.getElementById('line2-3');
+
+        // --- Step Navigation Logic ---
+        function updateStepIndicator(step) {
+            step1Indicator.classList.toggle('active', step >= 1);
+            line1_2.classList.toggle('active', step > 1);
+            step2Indicator.classList.toggle('active', step >= 2);
+            line2_3.classList.toggle('active', step > 2);
+            step3Indicator.classList.toggle('active', step >= 3);
+        }
+
+        function nextStep(currentStep) {
+            let isValid = true;
+            if (currentStep === 1) {
+                const email = document.getElementById('userEmail').value;
+                const password = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                if (!email || !password || !confirmPassword) {
+                    alert('Please fill in all account information fields.');
+                    isValid = false;
+                } else if (password !== confirmPassword) {
+                    alert('Passwords do not match.');
+                    isValid = false;
+                }
+                if (isValid) {
+                    step1.style.display = 'none';
+                    step2.style.display = 'block';
+                    updateStepIndicator(2);
+                }
+            } else if (currentStep === 2) {
+                const requiredFields = ['profession', 'ageRange', 'country', 'incomeRange', 'cycleDate'];
+                for (const fieldId of requiredFields) {
+                    if (!document.getElementById(fieldId).value) {
+                        alert('Please fill in all required personal information fields.');
+                        isValid = false;
+                        break;
+                    }
+                }
+                if (isValid) {
+                    step2.style.display = 'none';
+                    step3.style.display = 'block';
+                    updateStepIndicator(3);
+                }
+            }
+        }
+
+        function previousStep(currentStep) {
+            if (currentStep === 2) {
+                step2.style.display = 'none';
+                step1.style.display = 'block';
+                updateStepIndicator(1);
+            } else if (currentStep === 3) {
+                step3.style.display = 'none';
+                step2.style.display = 'block';
+                updateStepIndicator(2);
+            }
+        }
+
+        // --- Category Logic ---
+        const defaultIncomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
+        const defaultExpenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
+
+        function createCategoryCheckbox(category, type) {
+            const col = document.createElement('div');
+            col.className = 'col-md-4';
+            const formCheck = document.createElement('div');
+            formCheck.className = 'form-check';
+            formCheck.innerHTML = `
+                <input class="form-check-input" type="checkbox" value="${category}" id="${type}-${category}" checked>
+                <label class="form-check-label" for="${type}-${category}">
+                    ${category}
+                </label>
+            `;
+            col.appendChild(formCheck);
+            return col;
+        }
+
+        function populateDefaultCategories() {
+            const incomeList = document.getElementById('incomeCategoriesList');
+            const expenseList = document.getElementById('expenseCategoriesList');
+            incomeList.innerHTML = '';
+            expenseList.innerHTML = '';
+            defaultIncomeCategories.forEach(cat => incomeList.appendChild(createCategoryCheckbox(cat, 'income')));
+            defaultExpenseCategories.forEach(cat => expenseList.appendChild(createCategoryCheckbox(cat, 'expense')));
+        }
+
+        function addCustomCategory(type) {
+            const inputId = type === 'income' ? 'customIncomeCategory' : 'customExpenseCategory';
+            const listId = type === 'income' ? 'incomeCategoriesList' : 'expenseCategoriesList';
+            const input = document.getElementById(inputId);
+            const categoryName = input.value.trim();
+            if (categoryName) {
+                const list = document.getElementById(listId);
+                list.appendChild(createCategoryCheckbox(categoryName, type));
+                input.value = '';
+            }
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('nextStep1').addEventListener('click', () => nextStep(1));
+        document.getElementById('nextStep2').addEventListener('click', () => nextStep(2));
+        document.getElementById('prevStep2').addEventListener('click', () => previousStep(2));
+        document.getElementById('prevStep3').addEventListener('click', () => previousStep(3));
+        
+        document.getElementById('addIncomeCategoryBtn').addEventListener('click', () => addCustomCategory('income'));
+        document.getElementById('addExpenseCategoryBtn').addEventListener('click', () => addCustomCategory('expense'));
+
+        document.getElementById('vehicleOwned').addEventListener('change', (e) => {
+            document.getElementById('fuelTypeContainer').style.display = e.target.value === 'Yes' ? 'block' : 'none';
+        });
+
+        // --- Form Submission ---
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('newPassword').value;
+
+            try {
+                // 1. Create user in Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. Gather all data from the form
+                const selectedIncomeCategories = Array.from(document.querySelectorAll('#incomeCategoriesList .form-check-input:checked')).map(cb => cb.value);
+                const selectedExpenseCategories = Array.from(document.querySelectorAll('#expenseCategoriesList .form-check-input:checked')).map(cb => cb.value);
+
+                const userData = {
+                    email: user.email,
+                    profession: document.getElementById('profession').value,
+                    ageRange: document.getElementById('ageRange').value,
+                    country: document.getElementById('country').value,
+                    incomeRange: document.getElementById('incomeRange').value,
+                    cycleDate: document.getElementById('cycleDate').value,
+                    civilStatus: document.getElementById('civilStatus').value,
+                    children: document.getElementById('children').value,
+                    livingType: document.getElementById('livingType').value,
+                    vehicleOwned: document.getElementById('vehicleOwned').value,
+                    fuelType: document.getElementById('fuelType').value,
+                    interests: document.getElementById('interests').value,
+                    selectedIncomeCategories,
+                    selectedExpenseCategories
+                };
+
+                // 3. Save user data to Firestore
+                await setDoc(doc(db, "users", user.uid), userData);
+
+                alert('Registration successful! Redirecting to login page.');
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error("Error during registration:", error);
+                alert(`Registration failed: ${error.message}`);
+            }
+        });
+
+        // --- Initial Setup ---
+        populateDefaultCategories();
+
+    </script>
+</body>
+</html>
