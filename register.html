@@ -339,28 +339,237 @@
         // --- State Variables ---
         let customIncomeCategoriesState = [];
         let customExpenseCategoriesState = [];
-        let allCountriesData = [];
+        
+        // --- Local Country and Currency Data ---
+        // This data is embedded to prevent network errors and improve performance.
+        const allCountriesData = [
+            { name: "Afghanistan", currencies: { AFN: { name: "Afghan afghani", symbol: "؋" } } },
+            { name: "Åland Islands", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Albania", currencies: { ALL: { name: "Albanian lek", symbol: "L" } } },
+            { name: "Algeria", currencies: { DZD: { name: "Algerian dinar", symbol: "د.ج" } } },
+            { name: "American Samoa", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Andorra", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Angola", currencies: { AOA: { name: "Angolan kwanza", symbol: "Kz" } } },
+            { name: "Anguilla", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Antarctica", currencies: {} },
+            { name: "Antigua and Barbuda", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Argentina", currencies: { ARS: { name: "Argentine peso", symbol: "$" } } },
+            { name: "Armenia", currencies: { AMD: { name: "Armenian dram", symbol: "֏" } } },
+            { name: "Aruba", currencies: { AWG: { name: "Aruban florin", symbol: "ƒ" } } },
+            { name: "Australia", currencies: { AUD: { name: "Australian dollar", symbol: "$" } } },
+            { name: "Austria", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Azerbaijan", currencies: { AZN: { name: "Azerbaijani manat", symbol: "₼" } } },
+            { name: "Bahamas", currencies: { BSD: { name: "Bahamian dollar", symbol: "$" } } },
+            { name: "Bahrain", currencies: { BHD: { name: "Bahraini dinar", symbol: ".د.ب" } } },
+            { name: "Bangladesh", currencies: { BDT: { name: "Bangladeshi taka", symbol: "৳" } } },
+            { name: "Barbados", currencies: { BBD: { name: "Barbadian dollar", symbol: "$" } } },
+            { name: "Belarus", currencies: { BYN: { name: "Belarusian ruble", symbol: "Br" } } },
+            { name: "Belgium", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Belize", currencies: { BZD: { name: "Belize dollar", symbol: "$" } } },
+            { name: "Benin", currencies: { XOF: { name: "West African CFA franc", symbol: "Fr" } } },
+            { name: "Bermuda", currencies: { BMD: { name: "Bermudian dollar", symbol: "$" } } },
+            { name: "Bhutan", currencies: { BTN: { name: "Bhutanese ngultrum", symbol: "Nu." } } },
+            { name: "Bolivia", currencies: { BOB: { name: "Bolivian boliviano", symbol: "Bs." } } },
+            { name: "Bosnia and Herzegovina", currencies: { BAM: { name: "Bosnia and Herzegovina convertible mark", symbol: "KM" } } },
+            { name: "Botswana", currencies: { BWP: { name: "Botswana pula", symbol: "P" } } },
+            { name: "Brazil", currencies: { BRL: { name: "Brazilian real", symbol: "R$" } } },
+            { name: "British Indian Ocean Territory", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "British Virgin Islands", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Brunei", currencies: { BND: { name: "Brunei dollar", symbol: "$" } } },
+            { name: "Bulgaria", currencies: { BGN: { name: "Bulgarian lev", symbol: "лв" } } },
+            { name: "Burkina Faso", currencies: { XOF: { name: "West African CFA franc", symbol: "Fr" } } },
+            { name: "Burundi", currencies: { BIF: { name: "Burundian franc", symbol: "Fr" } } },
+            { name: "Cambodia", currencies: { KHR: { name: "Cambodian riel", symbol: "៛" } } },
+            { name: "Cameroon", currencies: { XAF: { name: "Central African CFA franc", symbol: "Fr" } } },
+            { name: "Canada", currencies: { CAD: { name: "Canadian dollar", symbol: "$" } } },
+            { name: "Cape Verde", currencies: { CVE: { name: "Cape Verdean escudo", symbol: "Esc" } } },
+            { name: "Cayman Islands", currencies: { KYD: { name: "Cayman Islands dollar", symbol: "$" } } },
+            { name: "Central African Republic", currencies: { XAF: { name: "Central African CFA franc", symbol: "Fr" } } },
+            { name: "Chad", currencies: { XAF: { name: "Central African CFA franc", symbol: "Fr" } } },
+            { name: "Chile", currencies: { CLP: { name: "Chilean peso", symbol: "$" } } },
+            { name: "China", currencies: { CNY: { name: "Chinese yuan", symbol: "¥" } } },
+            { name: "Colombia", currencies: { COP: { name: "Colombian peso", symbol: "$" } } },
+            { name: "Comoros", currencies: { KMF: { name: "Comorian franc", symbol: "Fr" } } },
+            { name: "Congo", currencies: { XAF: { name: "Central African CFA franc", symbol: "Fr" } } },
+            { name: "Cook Islands", currencies: { CKD: { name: "Cook Islands dollar", symbol: "$" }, NZD: { name: "New Zealand dollar", symbol: "$" } } },
+            { name: "Costa Rica", currencies: { CRC: { name: "Costa Rican colón", symbol: "₡" } } },
+            { name: "Croatia", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Cuba", currencies: { CUP: { name: "Cuban peso", symbol: "$" } } },
+            { name: "Cyprus", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Czechia", currencies: { CZK: { name: "Czech koruna", symbol: "Kč" } } },
+            { name: "Denmark", currencies: { DKK: { name: "Danish krone", symbol: "kr" } } },
+            { name: "Djibouti", currencies: { DJF: { name: "Djiboutian franc", symbol: "Fr" } } },
+            { name: "Dominica", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Dominican Republic", currencies: { DOP: { name: "Dominican peso", symbol: "$" } } },
+            { name: "Ecuador", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Egypt", currencies: { EGP: { name: "Egyptian pound", symbol: "£" } } },
+            { name: "El Salvador", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Equatorial Guinea", currencies: { XAF: { name: "Central African CFA franc", symbol: "Fr" } } },
+            { name: "Eritrea", currencies: { ERN: { name: "Eritrean nakfa", symbol: "Nfk" } } },
+            { name: "Estonia", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Eswatini", currencies: { SZL: { name: "Swazi lilangeni", symbol: "L" } } },
+            { name: "Ethiopia", currencies: { ETB: { name: "Ethiopian birr", symbol: "Br" } } },
+            { name: "Falkland Islands", currencies: { FKP: { name: "Falkland Islands pound", symbol: "£" } } },
+            { name: "Faroe Islands", currencies: { DKK: { name: "Danish krone", symbol: "kr" } } },
+            { name: "Fiji", currencies: { FJD: { name: "Fijian dollar", symbol: "$" } } },
+            { name: "Finland", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "France", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Gabon", currencies: { XAF: { name: "Central African CFA franc", symbol: "Fr" } } },
+            { name: "Gambia", currencies: { GMD: { name: "Gambian dalasi", symbol: "D" } } },
+            { name: "Georgia", currencies: { GEL: { name: "Georgian lari", symbol: "₾" } } },
+            { name: "Germany", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Ghana", currencies: { GHS: { name: "Ghanaian cedi", symbol: "₵" } } },
+            { name: "Gibraltar", currencies: { GIP: { name: "Gibraltar pound", symbol: "£" } } },
+            { name: "Greece", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Greenland", currencies: { DKK: { name: "Danish krone", symbol: "kr" } } },
+            { name: "Grenada", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Guatemala", currencies: { GTQ: { name: "Guatemalan quetzal", symbol: "Q" } } },
+            { name: "Guernsey", currencies: { GGP: { name: "Guernsey pound", symbol: "£" } } },
+            { name: "Guinea", currencies: { GNF: { name: "Guinean franc", symbol: "Fr" } } },
+            { name: "Guyana", currencies: { GYD: { name: "Guyanese dollar", symbol: "$" } } },
+            { name: "Haiti", currencies: { HTG: { name: "Haitian gourde", symbol: "G" } } },
+            { name: "Honduras", currencies: { HNL: { name: "Honduran lempira", symbol: "L" } } },
+            { name: "Hong Kong", currencies: { HKD: { name: "Hong Kong dollar", symbol: "$" } } },
+            { name: "Hungary", currencies: { HUF: { name: "Hungarian forint", symbol: "Ft" } } },
+            { name: "Iceland", currencies: { ISK: { name: "Icelandic króna", symbol: "kr" } } },
+            { name: "India", currencies: { INR: { name: "Indian rupee", symbol: "₹" } } },
+            { name: "Indonesia", currencies: { IDR: { name: "Indonesian rupiah", symbol: "Rp" } } },
+            { name: "Iran", currencies: { IRR: { name: "Iranian rial", symbol: "﷼" } } },
+            { name: "Iraq", currencies: { IQD: { name: "Iraqi dinar", symbol: "ع.د" } } },
+            { name: "Ireland", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Isle of Man", currencies: { IMP: { name: "Manx pound", symbol: "£" } } },
+            { name: "Israel", currencies: { ILS: { name: "Israeli new shekel", symbol: "₪" } } },
+            { name: "Italy", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Jamaica", currencies: { JMD: { name: "Jamaican dollar", symbol: "$" } } },
+            { name: "Japan", currencies: { JPY: { name: "Japanese yen", symbol: "¥" } } },
+            { name: "Jersey", currencies: { JEP: { name: "Jersey pound", symbol: "£" } } },
+            { name: "Jordan", currencies: { JOD: { name: "Jordanian dinar", symbol: "د.ا" } } },
+            { name: "Kazakhstan", currencies: { KZT: { name: "Kazakhstani tenge", symbol: "₸" } } },
+            { name: "Kenya", currencies: { KES: { name: "Kenyan shilling", symbol: "Sh" } } },
+            { name: "Kiribati", currencies: { KID: { name: "Kiribati dollar", symbol: "$" } } },
+            { name: "Kuwait", currencies: { KWD: { name: "Kuwaiti dinar", symbol: "د.ك" } } },
+            { name: "Kyrgyzstan", currencies: { KGS: { name: "Kyrgyzstani som", symbol: "с" } } },
+            { name: "Laos", currencies: { LAK: { name: "Lao kip", symbol: "₭" } } },
+            { name: "Latvia", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Lebanon", currencies: { LBP: { name: "Lebanese pound", symbol: "ل.ل" } } },
+            { name: "Lesotho", currencies: { LSL: { name: "Lesotho loti", symbol: "L" } } },
+            { name: "Liberia", currencies: { LRD: { name: "Liberian dollar", symbol: "$" } } },
+            { name: "Libya", currencies: { LYD: { name: "Libyan dinar", symbol: "ل.د" } } },
+            { name: "Liechtenstein", currencies: { CHF: { name: "Swiss franc", symbol: "Fr" } } },
+            { name: "Lithuania", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Luxembourg", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Macau", currencies: { MOP: { name: "Macanese pataca", symbol: "P" } } },
+            { name: "Madagascar", currencies: { MGA: { name: "Malagasy ariary", symbol: "Ar" } } },
+            { name: "Malawi", currencies: { MWK: { name: "Malawian kwacha", symbol: "MK" } } },
+            { name: "Malaysia", currencies: { MYR: { name: "Malaysian ringgit", symbol: "RM" } } },
+            { name: "Maldives", currencies: { MVR: { name: "Maldivian rufiyaa", symbol: ".ރ" } } },
+            { name: "Mali", currencies: { XOF: { name: "West African CFA franc", symbol: "Fr" } } },
+            { name: "Malta", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Marshall Islands", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Mauritania", currencies: { MRU: { name: "Mauritanian ouguiya", symbol: "UM" } } },
+            { name: "Mauritius", currencies: { MUR: { name: "Mauritian rupee", symbol: "₨" } } },
+            { name: "Mexico", currencies: { MXN: { name: "Mexican peso", symbol: "$" } } },
+            { name: "Micronesia", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Moldova", currencies: { MDL: { name: "Moldovan leu", symbol: "L" } } },
+            { name: "Monaco", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Mongolia", currencies: { MNT: { name: "Mongolian tögrög", symbol: "₮" } } },
+            { name: "Montenegro", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Montserrat", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Morocco", currencies: { MAD: { name: "Moroccan dirham", symbol: "د.م." } } },
+            { name: "Mozambique", currencies: { MZN: { name: "Mozambican metical", symbol: "MT" } } },
+            { name: "Myanmar", currencies: { MMK: { name: "Burmese kyat", symbol: "Ks" } } },
+            { name: "Namibia", currencies: { NAD: { name: "Namibian dollar", symbol: "$" } } },
+            { name: "Nauru", currencies: { AUD: { name: "Australian dollar", symbol: "$" } } },
+            { name: "Nepal", currencies: { NPR: { name: "Nepalese rupee", symbol: "₨" } } },
+            { name: "Netherlands", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "New Caledonia", currencies: { XPF: { name: "CFP franc", symbol: "Fr" } } },
+            { name: "New Zealand", currencies: { NZD: { name: "New Zealand dollar", symbol: "$" } } },
+            { name: "Nicaragua", currencies: { NIO: { name: "Nicaraguan córdoba", symbol: "C$" } } },
+            { name: "Niger", currencies: { XOF: { name: "West African CFA franc", symbol: "Fr" } } },
+            { name: "Nigeria", currencies: { NGN: { name: "Nigerian naira", symbol: "₦" } } },
+            { name: "North Korea", currencies: { KPW: { name: "North Korean won", symbol: "₩" } } },
+            { name: "North Macedonia", currencies: { MKD: { name: "Macedonian denar", symbol: "ден" } } },
+            { name: "Norway", currencies: { NOK: { name: "Norwegian krone", symbol: "kr" } } },
+            { name: "Oman", currencies: { OMR: { name: "Omani rial", symbol: "ر.ع." } } },
+            { name: "Pakistan", currencies: { PKR: { name: "Pakistani rupee", symbol: "₨" } } },
+            { name: "Palau", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Palestine", currencies: { ILS: { name: "Israeli new shekel", symbol: "₪" } } },
+            { name: "Panama", currencies: { PAB: { name: "Panamanian balboa", symbol: "B/." } } },
+            { name: "Papua New Guinea", currencies: { PGK: { name: "Papua New Guinean kina", symbol: "K" } } },
+            { name: "Paraguay", currencies: { PYG: { name: "Paraguayan guaraní", symbol: "₲" } } },
+            { name: "Peru", currencies: { PEN: { name: "Peruvian sol", symbol: "S/ " } } },
+            { name: "Philippines", currencies: { PHP: { name: "Philippine peso", symbol: "₱" } } },
+            { name: "Poland", currencies: { PLN: { name: "Polish złoty", symbol: "zł" } } },
+            { name: "Portugal", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Puerto Rico", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Qatar", currencies: { QAR: { name: "Qatari riyal", symbol: "ر.ق" } } },
+            { name: "Romania", currencies: { RON: { name: "Romanian leu", symbol: "lei" } } },
+            { name: "Russia", currencies: { RUB: { name: "Russian ruble", symbol: "₽" } } },
+            { name: "Rwanda", currencies: { RWF: { name: "Rwandan franc", symbol: "Fr" } } },
+            { name: "Saint Kitts and Nevis", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Saint Lucia", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Saint Vincent and the Grenadines", currencies: { XCD: { name: "East Caribbean dollar", symbol: "$" } } },
+            { name: "Samoa", currencies: { WST: { name: "Samoan tālā", symbol: "T" } } },
+            { name: "San Marino", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Sao Tome and Principe", currencies: { STN: { name: "São Tomé and Príncipe dobra", symbol: "Db" } } },
+            { name: "Saudi Arabia", currencies: { SAR: { name: "Saudi riyal", symbol: "ر.س" } } },
+            { name: "Senegal", currencies: { XOF: { name: "West African CFA franc", symbol: "Fr" } } },
+            { name: "Serbia", currencies: { RSD: { name: "Serbian dinar", symbol: "дин." } } },
+            { name: "Seychelles", currencies: { SCR: { name: "Seychellois rupee", symbol: "₨" } } },
+            { name: "Sierra Leone", currencies: { SLL: { name: "Sierra Leonean leone", symbol: "Le" } } },
+            { name: "Singapore", currencies: { SGD: { name: "Singapore dollar", symbol: "$" } } },
+            { name: "Slovakia", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Slovenia", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Solomon Islands", currencies: { SBD: { name: "Solomon Islands dollar", symbol: "$" } } },
+            { name: "Somalia", currencies: { SOS: { name: "Somali shilling", symbol: "Sh" } } },
+            { name: "South Africa", currencies: { ZAR: { name: "South African rand", symbol: "R" } } },
+            { name: "South Korea", currencies: { KRW: { name: "South Korean won", symbol: "₩" } } },
+            { name: "South Sudan", currencies: { SSP: { name: "South Sudanese pound", symbol: "£" } } },
+            { name: "Spain", currencies: { EUR: { name: "Euro", symbol: "€" } } },
+            { name: "Sri Lanka", currencies: { LKR: { name: "Sri Lankan rupee", symbol: "Rs" } } },
+            { name: "Sudan", currencies: { SDG: { name: "Sudanese pound", symbol: "ج.س." } } },
+            { name: "Suriname", currencies: { SRD: { name: "Surinamese dollar", symbol: "$" } } },
+            { name: "Sweden", currencies: { SEK: { name: "Swedish krona", symbol: "kr" } } },
+            { name: "Switzerland", currencies: { CHF: { name: "Swiss franc", symbol: "Fr" } } },
+            { name: "Syria", currencies: { SYP: { name: "Syrian pound", symbol: "£" } } },
+            { name: "Taiwan", currencies: { TWD: { name: "New Taiwan dollar", symbol: "$" } } },
+            { name: "Tanzania", currencies: { TZS: { name: "Tanzanian shilling", symbol: "Sh" } } },
+            { name: "Thailand", currencies: { THB: { name: "Thai baht", symbol: "฿" } } },
+            { name: "Timor-Leste", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Togo", currencies: { XOF: { name: "West African CFA franc", symbol: "Fr" } } },
+            { name: "Tonga", currencies: { TOP: { name: "Tongan paʻanga", symbol: "T$" } } },
+            { name: "Trinidad and Tobago", currencies: { TTD: { name: "Trinidad and Tobago dollar", symbol: "$" } } },
+            { name: "Tunisia", currencies: { TND: { name: "Tunisian dinar", symbol: "د.ت" } } },
+            { name: "Turkey", currencies: { TRY: { name: "Turkish lira", symbol: "₺" } } },
+            { name: "Turkmenistan", currencies: { TMT: { name: "Turkmenistan manat", symbol: "m" } } },
+            { name: "Tuvalu", currencies: { AUD: { name: "Australian dollar", symbol: "$" } } },
+            { name: "Uganda", currencies: { UGX: { name: "Ugandan shilling", symbol: "Sh" } } },
+            { name: "Ukraine", currencies: { UAH: { name: "Ukrainian hryvnia", symbol: "₴" } } },
+            { name: "United Arab Emirates", currencies: { AED: { name: "United Arab Emirates dirham", symbol: "د.إ" } } },
+            { name: "United Kingdom", currencies: { GBP: { name: "British pound", symbol: "£" } } },
+            { name: "United States", currencies: { USD: { name: "United States dollar", symbol: "$" } } },
+            { name: "Uruguay", currencies: { UYU: { name: "Uruguayan peso", symbol: "$" } } },
+            { name: "Uzbekistan", currencies: { UZS: { name: "Uzbekistani soʻm", symbol: "so'm" } } },
+            { name: "Vanuatu", currencies: { VUV: { name: "Vanuatu vatu", symbol: "Vt" } } },
+            { name: "Venezuela", currencies: { VES: { name: "Venezuelan bolívar soberano", symbol: "Bs." } } },
+            { name: "Vietnam", currencies: { VND: { name: "Vietnamese đồng", symbol: "₫" } } },
+            { name: "Yemen", currencies: { YER: { name: "Yemeni rial", symbol: "﷼" } } },
+            { name: "Zambia", currencies: { ZMW: { name: "Zambian kwacha", symbol: "ZK" } } },
+            { name: "Zimbabwe", currencies: { ZWL: { name: "Zimbabwean dollar", symbol: "$" } } }
+        ];
 
         // --- Country and Currency Logic ---
-        async function populateCountries() {
-            try {
-                const response = await fetch('https://restcountries.com/v3.1/all');
-                if (!response.ok) throw new Error('Failed to fetch countries');
-                allCountriesData = await response.json();
-
-                allCountriesData.sort((a, b) => a.name.common.localeCompare(b.name.common));
-
-                const countrySelect = document.getElementById('country');
-                allCountriesData.forEach(country => {
-                    const option = document.createElement('option');
-                    option.value = country.name.common;
-                    option.textContent = country.name.common;
-                    countrySelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Error populating countries:", error);
-                alert("Could not load country list. Please check your internet connection and try again.");
-            }
+        function populateCountries() {
+            // Sort data alphabetically by country name
+            allCountriesData.sort((a, b) => a.name.localeCompare(b.name));
+            
+            const countrySelect = document.getElementById('country');
+            allCountriesData.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.name;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
         }
 
         document.getElementById('country').addEventListener('change', (e) => {
@@ -369,7 +578,7 @@
             currencySelect.innerHTML = '<option value="">Select Currency</option>'; 
 
             if (selectedCountryName) {
-                const countryData = allCountriesData.find(c => c.name.common === selectedCountryName);
+                const countryData = allCountriesData.find(c => c.name === selectedCountryName);
                 if (countryData && countryData.currencies) {
                     for (const code in countryData.currencies) {
                         const currency = countryData.currencies[code];
