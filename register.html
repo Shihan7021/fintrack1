@@ -483,6 +483,10 @@
                 const selectedIncomeCategories = Array.from(document.querySelectorAll('#incomeCategoriesList .form-check-input:checked')).map(cb => cb.value);
                 const selectedExpenseCategories = Array.from(document.querySelectorAll('#expenseCategoriesList .form-check-input:checked')).map(cb => cb.value);
 
+                // Find custom categories (those not in default lists)
+                const customIncomeCategories = selectedIncomeCategories.filter(cat => !defaultIncomeCategories.includes(cat));
+                const customExpenseCategories = selectedExpenseCategories.filter(cat => !defaultExpenseCategories.includes(cat));
+
                 const userData = {
                     email: user.email,
                     profession: document.getElementById('profession').value,
@@ -497,7 +501,9 @@
                     fuelType: document.getElementById('fuelType').value,
                     interests: document.getElementById('interests').value,
                     selectedIncomeCategories,
-                    selectedExpenseCategories
+                    selectedExpenseCategories,
+                    customIncomeCategories,
+                    customExpenseCategories
                 };
 
                 // 3. Save user data to Firestore
