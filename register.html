@@ -119,15 +119,22 @@
                     <div class="col-md-8 mb-3">
                         <label for="newPassword" class="form-label">Password</label>
                         <input type="password" id="newPassword" class="form-control" placeholder="A-z@#123 (8 characters)" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&]).{8,}" required />
+                        <div id="passwordStrengthBar" style="height: 8px; border-radius: 4px; margin-top: 6px; background: #e0e0e0;">
+                            <div id="passwordStrengthFill" style="height: 100%; width: 0%; background: #e74c3c; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
+                        </div>
+                        <small id="passwordStrengthText" class="form-text"></small>
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
-                    <div class="col-md-8 mb-3">
+                    <div class="col-md-8 mb-3 position-relative">
                         <label for="confirmPassword" class="form-label">Confirm Password</label>
                         <input type="password" id="confirmPassword" class="form-control" required />
+                        <span id="passwordMatchIcon" style="position: absolute; right: 12px; top: 38px; font-size: 1.3em; color: #28a745; display: none;">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
                     </div>
                 </div>
-                 <div class="row justify-content-center w-100">
+                <div class="row justify-content-center w-100">
                     <div class="col-md-8 text-end mb-3">
                         <a href="index.html" class="btn btn-outline-secondary me-2">Home</a>
                         <button type="button" class="btn btn-primary" id="nextStep1">
@@ -732,6 +739,60 @@
         document.getElementById('vehicleOwned').addEventListener('change', (e) => {
             document.getElementById('fuelTypeContainer').style.display = e.target.value === 'Yes' ? 'block' : 'none';
         });
+
+        // --- Password Strength & Match Logic ---
+        const passwordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const strengthBar = document.getElementById('passwordStrengthFill');
+        const strengthText = document.getElementById('passwordStrengthText');
+        const matchIcon = document.getElementById('passwordMatchIcon');
+
+        function checkPasswordStrength(pw) {
+            let score = 0;
+            if (pw.length >= 8) score++;
+            if (/[A-Z]/.test(pw)) score++;
+            if (/[a-z]/.test(pw)) score++;
+            if (/\d/.test(pw)) score++;
+            if (/[@$!%*?&#]/.test(pw)) score++;
+            return score;
+        }
+
+        function updateStrengthBar() {
+            const pw = passwordInput.value;
+            const score = checkPasswordStrength(pw);
+            let percent = (score / 5) * 100;
+            let color = "#e74c3c";
+            let text = "Weak";
+
+            if (score >= 5) {
+                color = "#28a745";
+                text = "Strong";
+            } else if (score >= 3) {
+                color = "#f1c40f";
+                text = "Medium";
+            }
+
+            strengthBar.style.width = percent + "%";
+            strengthBar.style.background = color;
+            strengthText.textContent = pw ? text : "";
+            strengthText.style.color = color;
+        }
+
+        function updatePasswordMatch() {
+            const pw = passwordInput.value;
+            const cpw = confirmPasswordInput.value;
+            if (pw && cpw && pw === cpw && checkPasswordStrength(pw) === 5) {
+                matchIcon.style.display = "inline";
+            } else {
+                matchIcon.style.display = "none";
+            }
+        }
+
+        passwordInput.addEventListener('input', () => {
+            updateStrengthBar();
+            updatePasswordMatch();
+        });
+        confirmPasswordInput.addEventListener('input', updatePasswordMatch);
 
         // --- Form Submission ---
         registerForm.addEventListener('submit', async (e) => {
