@@ -110,13 +110,9 @@
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
-                    <div class="col-md-8 mb-3 position-relative">
+                    <div class="col-md-8 mb-3">
                         <label for="userEmail" class="form-label">Email</label>
                         <input type="email" id="userEmail" class="form-control" required />
-                        <span id="emailStatusIcon" style="position: absolute; right: 12px; top: 38px; font-size: 1.3em; display: none;">
-                            <i class="fas fa-check-circle" style="color: #28a745; display: none;" id="emailGoodIcon"></i>
-                            <i class="fas fa-times-circle" style="color: #e74c3c; display: none;" id="emailBadIcon"></i>
-                        </span>
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
@@ -351,7 +347,6 @@
         import { auth, db } from './firebase-config.js';
         import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // --- DOM Elements ---
         const step1 = document.getElementById('step1');
@@ -732,46 +727,17 @@
             }
         }
 
-        // --- Email Status Logic ---
-        const emailInput = document.getElementById('userEmail');
-        const emailStatusIcon = document.getElementById('emailStatusIcon');
-        const emailGoodIcon = document.getElementById('emailGoodIcon');
-        const emailBadIcon = document.getElementById('emailBadIcon');
+        // --- Event Listeners ---
+        document.getElementById('nextStep1').addEventListener('click', () => nextStep(1));
+        document.getElementById('nextStep2').addEventListener('click', () => nextStep(2));
+        document.getElementById('prevStep2').addEventListener('click', () => previousStep(2));
+        document.getElementById('prevStep3').addEventListener('click', () => previousStep(3));
+        
+        document.getElementById('addIncomeCategoryBtn').addEventListener('click', () => addCustomCategory('income'));
+        document.getElementById('addExpenseCategoryBtn').addEventListener('click', () => addCustomCategory('expense'));
 
-        async function checkEmailStatus() {
-            const email = emailInput.value.trim();
-            emailGoodIcon.style.display = "none";
-            emailBadIcon.style.display = "none";
-            emailStatusIcon.style.display = "none";
-
-            if (!email) return;
-
-            // Basic email format check
-            const validFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-            if (!validFormat) return;
-
-            try {
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-                emailStatusIcon.style.display = "inline";
-                if (methods.length === 0) {
-                    // Email not registered
-                    emailGoodIcon.style.display = "inline";
-                    emailBadIcon.style.display = "none";
-                } else {
-                    // Email already registered
-                    emailGoodIcon.style.display = "none";
-                    emailBadIcon.style.display = "inline";
-                }
-            } catch (err) {
-                // On error, hide icons
-                emailStatusIcon.style.display = "none";
-            }
-        }
-
-        emailInput.addEventListener('input', () => {
-            // Debounce to avoid too many requests
-            clearTimeout(emailInput._debounce);
-            emailInput._debounce = setTimeout(checkEmailStatus, 500);
+        document.getElementById('vehicleOwned').addEventListener('change', (e) => {
+            document.getElementById('fuelTypeContainer').style.display = e.target.value === 'Yes' ? 'block' : 'none';
         });
 
         // --- Password Strength & Match Logic ---
