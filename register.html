@@ -110,9 +110,11 @@
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
-                    <div class="col-md-8 mb-3">
+                    <div class="col-md-8 mb-3 position-relative">
                         <label for="userEmail" class="form-label">Email</label>
                         <input type="email" id="userEmail" class="form-control" required />
+                        <span id="emailValidationIcon" style="position: absolute; right: 20px; top: 38px; font-size: 1.3em; display: none;">
+                            </span>
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
@@ -129,7 +131,7 @@
                     <div class="col-md-8 mb-3 position-relative">
                         <label for="confirmPassword" class="form-label">Confirm Password</label>
                         <input type="password" id="confirmPassword" class="form-control" required />
-                        <span id="passwordMatchIcon" style="position: absolute; right: 12px; top: 38px; font-size: 1.3em; color: #28a745; display: none;">
+                        <span id="passwordMatchIcon" style="position: absolute; right: 20px; top: 38px; font-size: 1.3em; color: #28a745; display: none;">
                             <i class="fas fa-check-circle"></i>
                         </span>
                     </div>
@@ -346,7 +348,7 @@
     <script type="module">
         import { auth, db } from './firebase-config.js';
         import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { doc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- DOM Elements ---
         const step1 = document.getElementById('step1');
@@ -359,13 +361,14 @@
         const step3Indicator = document.getElementById('step3-indicator');
         const line1_2 = document.getElementById('line1-2');
         const line2_3 = document.getElementById('line2-3');
+        const userEmailInput = document.getElementById('userEmail');
+        const emailValidationIcon = document.getElementById('emailValidationIcon');
 
         // --- State Variables ---
         let customIncomeCategoriesState = [];
         let customExpenseCategoriesState = [];
         
         // --- Local Country and Currency Data ---
-        // This data is embedded to prevent network errors and improve performance.
         const allCountriesData = [
             { name: "Afghanistan", currencies: { AFN: { name: "Afghan afghani", symbol: "؋" } } },
             { name: "Åland Islands", currencies: { EUR: { name: "Euro", symbol: "€" } } },
@@ -584,9 +587,7 @@
 
         // --- Country and Currency Logic ---
         function populateCountries() {
-            // Sort data alphabetically by country name
             allCountriesData.sort((a, b) => a.name.localeCompare(b.name));
-            
             const countrySelect = document.getElementById('country');
             allCountriesData.forEach(country => {
                 const option = document.createElement('option');
@@ -600,7 +601,6 @@
             const selectedCountryName = e.target.value;
             const currencySelect = document.getElementById('currency');
             currencySelect.innerHTML = '<option value="">Select Currency</option>'; 
-
             if (selectedCountryName) {
                 const countryData = allCountriesData.find(c => c.name === selectedCountryName);
                 if (countryData && countryData.currencies) {
@@ -618,6 +618,35 @@
             }
         });
 
+        // --- NEW: Email Validation Function ---
+        async function validateEmailUniqueness() {
+            const email = userEmailInput.value.trim();
+            emailValidationIcon.style.display = 'none'; 
+
+            if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+                return; 
+            }
+
+            emailValidationIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            emailValidationIcon.style.color = '#6c757d'; 
+            emailValidationIcon.style.display = 'inline';
+
+            try {
+                const q = query(collection(db, "users"), where("email", "==", email));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    emailValidationIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    emailValidationIcon.style.color = '#28a745'; 
+                } else {
+                    emailValidationIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                    emailValidationIcon.style.color = '#dc3545';
+                }
+            } catch (error) {
+                console.error("Error validating email:", error);
+                emailValidationIcon.style.display = 'none';
+            }
+        }
 
         // --- Step Navigation Logic ---
         function updateStepIndicator(step) {
@@ -637,8 +666,8 @@
                 if (!email || !password || !confirmPassword) {
                     alert('Please fill in all account information fields.');
                     isValid = false;
-                } else if (password.length < 6) {
-                    alert('Password must be at least 6 characters long.');
+                } else if (password.length < 8) {
+                    alert('Password must be at least 8 characters long.');
                     isValid = false;
                 } else if (password !== confirmPassword) {
                     alert('Passwords do not match.');
@@ -740,6 +769,8 @@
             document.getElementById('fuelTypeContainer').style.display = e.target.value === 'Yes' ? 'block' : 'none';
         });
 
+        userEmailInput.addEventListener('blur', validateEmailUniqueness);
+
         // --- Password Strength & Match Logic ---
         const passwordInput = document.getElementById('newPassword');
         const confirmPasswordInput = document.getElementById('confirmPassword');
@@ -764,13 +795,8 @@
             let color = "#e74c3c";
             let text = "Weak";
 
-            if (score >= 5) {
-                color = "#28a745";
-                text = "Strong";
-            } else if (score >= 3) {
-                color = "#f1c40f";
-                text = "Medium";
-            }
+            if (score >= 5) { color = "#28a745"; text = "Strong"; } 
+            else if (score >= 3) { color = "#f1c40f"; text = "Medium"; }
 
             strengthBar.style.width = percent + "%";
             strengthBar.style.background = color;
@@ -806,18 +832,16 @@
             submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
 
             try {
-                // 1. Create user in Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Gather all data from the form
                 const selectedIncomeCategories = Array.from(document.querySelectorAll('#incomeCategoriesList .form-check-input:checked')).map(cb => cb.value);
                 const selectedExpenseCategories = Array.from(document.querySelectorAll('#expenseCategoriesList .form-check-input:checked')).map(cb => cb.value);
 
                 const userData = {
                     email: user.email,
-                    firstname: document.getElementById('firstName').value,
-                    lastname: document.getElementById('lastName').value,
+                    firstname: document.getElementById('firstname').value,
+                    lastname: document.getElementById('lastname').value,
                     phone: document.getElementById('phone').value,
                     profession: document.getElementById('profession').value,
                     ageRange: document.getElementById('ageRange').value,
@@ -837,7 +861,6 @@
                     customExpenseCategories: customExpenseCategoriesState
                 };
 
-                // 3. Save user data to Firestore
                 await setDoc(doc(db, "users", user.uid), userData);
 
                 alert('Registration successful! Redirecting to login page.');
