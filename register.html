@@ -72,6 +72,9 @@
         .step-line.active {
             background-color: #3C0775;
         }
+        .form-text {
+            min-height: 20px; /* Reserve space for error messages */
+        }
         @media (max-width: 768px) {
             .register-section {
                 padding: 1rem;
@@ -110,11 +113,14 @@
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
-                    <div class="col-md-8 mb-3 position-relative">
+                    <div class="col-md-8 mb-3">
                         <label for="userEmail" class="form-label">Email</label>
-                        <input type="email" id="userEmail" class="form-control" required />
-                        <span id="emailValidationIcon" style="position: absolute; right: 20px; top: 38px; font-size: 1.3em; display: none;">
-                            </span>
+                        <div class="position-relative">
+                            <input type="email" id="userEmail" class="form-control" required />
+                            <span id="emailValidationIcon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 1.3em; display: none;">
+                                </span>
+                        </div>
+                        <div id="emailError" class="form-text text-danger"></div>
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
@@ -128,12 +134,14 @@
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
-                    <div class="col-md-8 mb-3 position-relative">
+                    <div class="col-md-8 mb-3">
                         <label for="confirmPassword" class="form-label">Confirm Password</label>
-                        <input type="password" id="confirmPassword" class="form-control" required />
-                        <span id="passwordMatchIcon" style="position: absolute; right: 20px; top: 38px; font-size: 1.3em; color: #28a745; display: none;">
-                            <i class="fas fa-check-circle"></i>
-                        </span>
+                        <div class="position-relative">
+                            <input type="password" id="confirmPassword" class="form-control" required />
+                            <span id="passwordMatchIcon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 1.3em; color: #28a745; display: none;">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="row justify-content-center w-100">
@@ -149,22 +157,19 @@
             <div class="register-section" id="step2" style="display: none;">
                 <h4 class="text-primary mb-3">Step 2: Personal Information</h4>
                 <div class="row">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="firstname" class="form-label">First Name</label>
-                            <input type="text" id="firstname" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="lastname" class="form-label">Last Name</label>
-                            <input type="text" id="lastname" class="form-control">
-                        </div>
-                        
+                    <div class="col-md-6 mb-3">
+                        <label for="firstname" class="form-label">First Name</label>
+                        <input type="text" id="firstname" class="form-control">
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Mobile Number</label>
-                            <input type="number" id="phone" class="form-control">
-                        </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="lastname" class="form-label">Last Name</label>
+                        <input type="text" id="lastname" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Mobile Number</label>
+                        <input type="tel" id="phone" class="form-control">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="profession" class="form-label">Profession</label>
@@ -180,6 +185,8 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="ageRange" class="form-label">Age Range</label>
                         <select id="ageRange" class="form-select" required>
@@ -192,22 +199,20 @@
                             <option value="65+">65+</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="country" class="form-label">Country</label>
                         <select id="country" class="form-select" required>
                             <option value="">Select Country</option>
-                            </select>
+                        </select>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="currency" class="form-label">Currency</label>
                         <select id="currency" class="form-select" required>
                             <option value="">Select currency</option>
-                            </select>
+                        </select>
                     </div>
-                </div>
-                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="incomeRange" class="form-label">Monthly Income Range</label>
                         <select id="incomeRange" class="form-select" required>
@@ -220,6 +225,8 @@
                             <option value="1000000+">1,000,000+</option>
                         </select>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="cycleDate" class="form-label">Cycle Date</label>
                         <select id="cycleDate" class="form-select" required>
@@ -233,8 +240,6 @@
                             <option value="30">30th</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="civilStatus" class="form-label">Civil Status</label>
                         <select id="civilStatus" class="form-select">
@@ -245,12 +250,12 @@
                             <option value="Widowed">Widowed</option>
                         </select>
                     </div>
-                     <div class="col-md-6 mb-3">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label for="children" class="form-label">Number of Children</label>
                         <input type="number" id="children" class="form-control" min="0">
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="livingType" class="form-label">Living Type</label>
                         <select id="livingType" class="form-select">
@@ -261,7 +266,9 @@
                             <option value="With Parents">With Parents</option>
                         </select>
                     </div>
-                     <div class="col-md-6 mb-3">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label for="vehicleOwned" class="form-label">Vehicle Owned</label>
                         <select id="vehicleOwned" class="form-select">
                             <option value="">Select an option</option>
@@ -269,8 +276,6 @@
                             <option value="No">No</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6 mb-3" id="fuelTypeContainer" style="display: none;">
                         <label for="fuelType" class="form-label">Fuel Type</label>
                         <select id="fuelType" class="form-select">
@@ -363,6 +368,7 @@
         const line2_3 = document.getElementById('line2-3');
         const userEmailInput = document.getElementById('userEmail');
         const emailValidationIcon = document.getElementById('emailValidationIcon');
+        const emailError = document.getElementById('emailError');
 
         // --- State Variables ---
         let customIncomeCategoriesState = [];
@@ -618,17 +624,28 @@
             }
         });
 
-        // --- NEW: Email Validation Function ---
+        // --- CORRECTED Email Validation Function ---
         async function validateEmailUniqueness() {
             const email = userEmailInput.value.trim();
-            emailValidationIcon.style.display = 'none'; 
+            emailValidationIcon.style.display = 'none';
+            emailError.textContent = ''; // Clear previous errors
 
-            if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-                return; 
+            if (!email) {
+                return; // Do nothing if the field is empty
             }
 
+            // 1. Check for valid email format first
+            if (!/^\S+@\S+\.\S+$/.test(email)) {
+                emailError.textContent = 'Please enter a valid email address.';
+                emailValidationIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                emailValidationIcon.style.color = '#dc3545'; // Red
+                emailValidationIcon.style.display = 'inline';
+                return; // Stop if format is invalid
+            }
+
+            // 2. If format is valid, check for uniqueness
             emailValidationIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            emailValidationIcon.style.color = '#6c757d'; 
+            emailValidationIcon.style.color = '#6c757d'; // Neutral color for spinner
             emailValidationIcon.style.display = 'inline';
 
             try {
@@ -641,13 +658,13 @@
                     // Email is already in use
                     emailValidationIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
                     emailValidationIcon.style.color = '#dc3545'; // Red
+                    emailError.textContent = 'This email is already registered.';
                 }
             } catch (error) {
                 console.error("Error checking email availability:", error);
                 emailValidationIcon.style.display = 'none'; // Hide icon on error
             }
         }
-
 
         // --- Step Navigation Logic ---
         function updateStepIndicator(step) {
