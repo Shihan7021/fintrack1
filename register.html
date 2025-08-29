@@ -347,8 +347,8 @@
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
-        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { doc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- DOM Elements ---
         const step1 = document.getElementById('step1');
@@ -632,21 +632,22 @@
             emailValidationIcon.style.display = 'inline';
 
             try {
-                const q = query(collection(db, "users"), where("email", "==", email));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
+                const methods = await fetchSignInMethodsForEmail(auth, email);
+                if (methods.length === 0) {
+                    // Email is unique and available
                     emailValidationIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
-                    emailValidationIcon.style.color = '#28a745'; 
+                    emailValidationIcon.style.color = '#28a745'; // Green
                 } else {
+                    // Email is already in use
                     emailValidationIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
-                    emailValidationIcon.style.color = '#dc3545';
+                    emailValidationIcon.style.color = '#dc3545'; // Red
                 }
             } catch (error) {
-                console.error("Error validating email:", error);
-                emailValidationIcon.style.display = 'none';
+                console.error("Error checking email availability:", error);
+                emailValidationIcon.style.display = 'none'; // Hide icon on error
             }
         }
+
 
         // --- Step Navigation Logic ---
         function updateStepIndicator(step) {
