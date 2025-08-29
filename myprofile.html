@@ -130,6 +130,23 @@
                                 <form id="profileForm">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
+                                            <label for="profileFirstname" class="form-label">First Name</label>
+                                            <input type="text" id="profileFirstname" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="profileLastname" id="profileLastname" class="form-label">Last Name</label>
+                                            <input type="text" id="profileLastname" class="form-control">
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="profilePhone" id="profilePhone" class="form-label">Mobile Number</label>
+                                            <input type="number" id="ProfilePhone" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label for="profileEmail" class="form-label">Email</label>
                                             <input type="email" id="profileEmail" class="form-control" readonly />
                                         </div>
@@ -673,6 +690,9 @@
                         
                         // Personal Info
                         document.getElementById('profileEmail').value = user.email;
+                        document.getElementById('profileFirstname').value = userData.firstname || '';
+                        document.getElementById('profileLastname').value = userData.lastname || '';
+                        document.getElementById('profilePhone').value = userData.phone || '';
                         document.getElementById('profileProfession').value = userData.profession || '';
                         document.getElementById('profileAgeRange').value = userData.ageRange || '';
                         document.getElementById('profileCountry').value = userData.country || '';
@@ -804,6 +824,9 @@
             if (user) {
                 try {
                     await setDoc(doc(db, "users", user.uid), {
+                        firstname: document.getElementById('profileFirstname').value,
+                        lastname: document.getElementById('profileLastname').value,
+                        phone: document.getElementById('profilePhone').value,
                         profession: document.getElementById('profileProfession').value,
                         ageRange: document.getElementById('profileAgeRange').value,
                         country: document.getElementById('profileCountry').value,
