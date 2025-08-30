@@ -155,6 +155,31 @@
             .navbar-toggler { display: block; background: none; border: 1px solid var(--border-color); color: #fff; padding: 0.5rem; border-radius: 8px; cursor: pointer; position: absolute; right: 2rem; top: 1.2rem; }
         }
         .navbar-toggler { display: none; }
+
+                /* NEW: FLOATING ACTION BUTTON */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-color-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.5rem;
+            text-decoration: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            z-index: 1001; /* Higher than nav */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(116, 84, 172, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -282,7 +307,6 @@
             Chart.defaults.color = 'var(--text-color)';
             Chart.defaults.borderColor = 'var(--border-color)';
 
-            // Dummy data and function calls for demonstration
             
             updateDashboard();
 
@@ -292,7 +316,7 @@
             });
         });
 
-        
+       
         function updateDashboard() {
             const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
             displaySummary(transactions);
@@ -489,5 +513,9 @@
             }
         }
     </script>
+    <!-- NEW: FLOATING ACTION BUTTON HTML -->
+    <a href="input.html" class="fab" title="Add Transaction">
+        <i class="fas fa-plus"></i>
+    </a>
 </body>
 </html>
