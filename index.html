@@ -4,37 +4,43 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MindPay - Financial Management Made Simple</title>
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href__="favicon.png" />
+    <link href__="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href__="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Exo 2', sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #3C0775 75%, #7454AC 100%);
             min-height: 100vh;
+            color: #fff;
             overflow-x: hidden;
-            position: relative;
         }
+
+        /* Animated background particles */
         .particles {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             z-index: 1;
             pointer-events: none;
         }
+
         .particle {
             position: absolute;
             background: rgba(116, 84, 172, 0.3);
             border-radius: 50%;
             animation: float 6s ease-in-out infinite;
         }
+
         .particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
         .particle:nth-child(2) { width: 6px; height: 6px; left: 20%; animation-delay: 1s; }
         .particle:nth-child(3) { width: 3px; height: 3px; left: 30%; animation-delay: 2s; }
@@ -44,177 +50,389 @@
         .particle:nth-child(7) { width: 3px; height: 3px; left: 70%; animation-delay: 0.5s; }
         .particle:nth-child(8) { width: 5px; height: 5px; left: 80%; animation-delay: 1.5s; }
         .particle:nth-child(9) { width: 4px; height: 4px; left: 90%; animation-delay: 2.5s; }
+
         @keyframes float {
             0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
         }
+
+        /* Futuristic grid overlay */
         .grid-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background-image: 
                 linear-gradient(rgba(116, 84, 172, 0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(116, 84, 172, 0.1) 1px, transparent 1px);
             background-size: 50px 50px;
-            z-index: 2;
-            pointer-events: none;
+            z-index: 1;
             animation: gridPulse 4s ease-in-out infinite;
+            pointer-events: none;
         }
+
         @keyframes gridPulse {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.1; }
         }
-        .navbar {
-            background: rgba(0,0,0,0.85);
-            border-bottom: 1px solid #7454AC;
-            box-shadow: 0 2px 20px rgba(116,84,172,0.1);
-            z-index: 20;
-        }
-        .navbar-brand {
-            font-family: 'Orbitron', monospace;
-            font-size: 2rem;
-            color: #fff !important;
-            letter-spacing: 2px;
-            text-shadow: 0 0 20px rgba(116, 84, 172, 0.8);
-            display: flex;
-            align-items: center;
-        }
-        .logo-header {
-            max-width: 40px;
-            margin-right: 10px;
-            filter: drop-shadow(0 0 10px rgba(116, 84, 172, 0.5));
-        }
-        .nav-link {
-            color: #7454AC !important;
-            font-family: 'Orbitron', monospace;
-            font-size: 1rem;
-            letter-spacing: 1px;
-            transition: color 0.2s;
-        }
-        .nav-link:hover {
-            color: #fff !important;
-            text-shadow: 0 0 10px #7454AC;
-        }
-        .btn-outline-light, .btn-warning, .btn-primary {
-            border-radius: 12px;
-            font-family: 'Orbitron', monospace;
-            font-weight: 600;
-            letter-spacing: 2px;
-            box-shadow: 0 2px 10px rgba(116,84,172,0.1);
-            transition: all 0.3s;
-        }
-        .btn-outline-light:hover, .btn-warning:hover, .btn-primary:hover {
-            box-shadow: 0 6px 20px rgba(116,84,172,0.3);
-            transform: translateY(-2px);
-        }
-        .hero-section {
-            background: rgba(255,255,255,0.03);
-            color: #fff;
-            padding: 120px 0 80px 0;
+
+        /* Content wrapper */
+        .content-wrapper {
             position: relative;
             z-index: 10;
         }
-        .display-4, .display-5, h1, h2, h4, h5, h6 {
+
+        /* Navigation */
+        .futuristic-nav {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(116, 84, 172, 0.3);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
             font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: #fff;
-            text-shadow: 0 0 10px rgba(116,84,172,0.4);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .lead, p, ul, li {
-            color: #cfcfff;
+
+        .logo-header {
+            height: 40px;
+            filter: drop-shadow(0 0 10px rgba(116, 84, 172, 0.5));
         }
-        .card, .testimonial-card, .pricing-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(116,84,172,0.2);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
             color: #fff;
-        }
-        .card-title, .card-header {
-            color: #7454AC;
-            font-family: 'Orbitron', monospace;
-        }
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #7454AC;
-            text-shadow: 0 0 10px #7454AC;
-        }
-        .pricing-card:hover {
-            box-shadow: 0 10px 25px rgba(60, 7, 117, 0.4), 0 0 20px rgba(116, 84, 172, 0.6);
-            transform: translateY(-2px);
-        }
-        .testimonial-card {
-            margin-bottom: 1rem;
-            border: 1px solid #7454AC;
-            background: rgba(0,0,0,0.7);
-        }
-        .testimonial-card img {
-            border: 2px solid #7454AC;
-            box-shadow: 0 0 10px #7454AC;
-        }
-        .text-warning i {
-            color: #FFD700;
-            text-shadow: 0 0 5px #FFD700;
-        }
-        .bg-light, .bg-primary, .bg-dark {
-            background: none !important;
-        }
-        .footer, footer {
-            background: rgba(0,0,0,0.95);
-            border-top: 1px solid #7454AC;
-            color: #fff;
+            text-decoration: none;
             font-family: 'Exo 2', sans-serif;
-            box-shadow: 0 -2px 20px rgba(116,84,172,0.1);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
         }
-        .footer a, footer a {
-            color: #7454AC !important;
-            transition: color 0.2s;
-        }
-        .footer a:hover, footer a:hover {
-            color: #fff !important;
-            text-shadow: 0 0 10px #7454AC;
-        }
-        .holographic-text {
-            background: linear-gradient(45deg, #7454AC, #3C0775, #7454AC);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: holographicShift 3s ease-in-out infinite;
-        }
-        @keyframes holographicShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        .cyber-text {
-            font-family: 'Orbitron', monospace;
+
+        .nav-links a:hover {
             color: #7454AC;
-            text-shadow: 0 0 10px rgba(116, 84, 172, 0.5);
-            animation: cyberGlow 2s ease-in-out infinite alternate;
+            text-shadow: 0 0 10px rgba(116, 84, 172, 0.8);
         }
-        @keyframes cyberGlow {
-            0% { text-shadow: 0 0 10px rgba(116, 84, 172, 0.5); }
-            100% { text-shadow: 0 0 20px rgba(116, 84, 172, 0.8), 0 0 30px rgba(116, 84, 172, 0.4); }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
         }
+
+        /* Futuristic buttons */
+        .futuristic-btn {
+            padding: 0.75rem 2rem;
+            background: rgba(116, 84, 172, 0.2);
+            border: 1px solid rgba(116, 84, 172, 0.5);
+            border-radius: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-family: 'Orbitron', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .futuristic-btn:hover {
+            color: #fff;
+            background: rgba(116, 84, 172, 0.4);
+            border-color: #7454AC;
+            box-shadow: 0 0 20px rgba(116, 84, 172, 0.5);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .futuristic-btn.primary {
+            background: linear-gradient(45deg, #7454AC, #3C0775);
+            border-color: #7454AC;
+        }
+
+        .futuristic-btn.primary:hover {
+            box-shadow: 0 0 30px rgba(116, 84, 172, 0.8);
+        }
+
+        /* Mobile menu toggle */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: 1px solid rgba(116, 84, 172, 0.5);
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 120px 2rem 80px;
+            text-align: center;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(116, 84, 172, 0.8);
+            line-height: 1.2;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .hero-image img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(116, 84, 172, 0.3);
+        }
+
+        /* Section styling */
+        .futuristic-section {
+            padding: 80px 2rem;
+            position: relative;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(116, 84, 172, 0.8);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            opacity: 0.8;
+        }
+
+        /* Feature cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .futuristic-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(116, 84, 172, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .futuristic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border-top: 2px solid #7454AC;
+            border-left: 2px solid #7454AC;
+            border-radius: 20px 0 0 0;
+        }
+
+        .futuristic-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            border-bottom: 2px solid #7454AC;
+            border-right: 2px solid #7454AC;
+            border-radius: 0 0 20px 0;
+        }
+
+        .futuristic-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(116, 84, 172, 0.3);
+            border-color: #7454AC;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: #7454AC;
+            filter: drop-shadow(0 0 15px rgba(116, 84, 172, 0.5));
+        }
+
+        .futuristic-card h5 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .futuristic-card p {
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        /* Pricing section */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(116, 84, 172, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: #7454AC;
+            background: rgba(116, 84, 172, 0.1);
+            transform: scale(1.05);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(116, 84, 172, 0.3);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .price {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #7454AC;
+            margin: 1rem 0;
+        }
+
+        /* Testimonials */
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(116, 84, 172, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        .futuristic-footer {
+            background: rgba(0, 0, 0, 0.6);
+            border-top: 1px solid rgba(116, 84, 172, 0.3);
+            padding: 3rem 2rem 1rem;
+            text-align: center;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .hero-section {
-                padding: 80px 0 40px 0;
+            .nav-links {
+                display: none;
             }
-            .navbar-brand {
-                font-size: 1.2rem;
+            
+            .mobile-toggle {
+                display: block;
             }
-            .display-4, .display-5 {
-                font-size: 1.5rem;
+
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
             }
-            .card, .testimonial-card, .pricing-card {
-                padding: 1rem;
-                margin: 1rem 0;
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.featured {
+                transform: none;
             }
         }
     </style>
@@ -232,296 +450,216 @@
         <div class="particle"></div>
         <div class="particle"></div>
     </div>
-    <!-- Grid overlay -->
     <div class="grid-overlay"></div>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand holographic-text" href="#">
-                <img src="logo-head.png" alt="MindPay Logo" class="logo-header">
-                MindPay
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon" style="color:#7454AC;"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link cyber-text" href="#features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link cyber-text" href="#pricing">Pricing</a></li>
-                    <li class="nav-item"><a class="nav-link cyber-text" href="#testimonials">Testimonials</a></li>
-                    <li class="nav-item"><a class="nav-link cyber-text" href="#about">About</a></li>
+
+    <div class="content-wrapper">
+        <!-- Navigation -->
+        <nav class="futuristic-nav">
+            <div class="nav-container">
+                <a class="nav-brand" href__="#">
+                    <img src="logo-head.png" alt="MindPay Logo" class="logo-header">
+                    MindPay
+                </a>
+                <ul class="nav-links">
+                    <li><a href__="#features">Features</a></li>
+                    <li><a href__="#pricing">Pricing</a></li>
+                    <li><a href__="#testimonials">Testimonials</a></li>
+                    <li><a href__="#about">About</a></li>
                 </ul>
-                <div class="d-flex">
-                    <a href="login.html" class="btn btn-outline-light me-2">Login</a>
-                    <a href="register.html" class="btn btn-warning">Register</a>
+                <div class="nav-buttons">
+                    <a href__="login.html" class="futuristic-btn">Login</a>
+                    <a href__="register.html" class="futuristic-btn primary">Register</a>
+                </div>
+                <button class="mobile-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1>Most Customizable Personal Financial Tracking Platform</h1>
+                    <p>MindPay helps you track expenses, manage budgets, and achieve your financial goals with powerful insights and easy-to-use tools.</p>
+                    <div class="hero-buttons">
+                        <a href__="register.html" class="futuristic-btn primary">Get Started Free</a>
+                        <a href__="#features" class="futuristic-btn">Learn More</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="home.png" alt="FinSight Dashboard">
                 </div>
             </div>
-        </div>
-    </nav>
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="row align-items-center min-vh-60 pt-5">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-4 holographic-text">Most Customizable Personal Financial Tracking Platform</h1>
-                    <p class="lead mb-4">MindPay helps you track expenses, manage budgets, and achieve your financial goals with powerful insights and easy-to-use tools.</p>
-                    <div class="d-flex gap-3">
-                        <a href="register.html" class="btn btn-warning btn-lg">Get Started Free</a>
-                        <a href="#features" class="btn btn-outline-light btn-lg">Learn More</a>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="futuristic-section">
+            <div class="section-container">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-subtitle">Everything you need to manage your finances effectively</p>
+                <div class="features-grid">
+                    <div class="futuristic-card">
+                        <i class="fas fa-chart-line feature-icon"></i>
+                        <h5>Expense Tracking</h5>
+                        <p>Track all your expenses in one place with automatic categorization and detailed insights.</p>
                     </div>
-                </div>
-                <div class="col-lg-6 text-center">
-                    <img src="home.png" alt="FinSight Dashboard" class="img-fluid rounded shadow" style="max-width:350px;box-shadow:0 0 40px #7454AC;">
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Features Section -->
-    <section id="features" class="py-5" style="position:relative;z-index:10;">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold holographic-text">Powerful Features</h2>
-                <p class="lead">Everything you need to manage your finances effectively</p>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-chart-line feature-icon"></i>
-                            <h5 class="card-title">Expense Tracking</h5>
-                            <p class="card-text">Track all your expenses in one place with automatic categorization and detailed insights.</p>
-                        </div>
+                    <div class="futuristic-card">
+                        <i class="fas fa-bullseye feature-icon"></i>
+                        <h5>Budget Planning</h5>
+                        <p>Set and monitor budgets for different categories with smart alerts and recommendations.</p>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-bullseye feature-icon"></i>
-                            <h5 class="card-title">Budget Planning</h5>
-                            <p class="card-text">Set and monitor budgets for different categories with smart alerts and recommendations.</p>
-                        </div>
+                    <div class="futuristic-card">
+                        <i class="fas fa-piggy-bank feature-icon"></i>
+                        <h5>Savings Goals</h5>
+                        <p>Create and track savings goals with visual progress indicators and achievement celebrations.</p>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-piggy-bank feature-icon"></i>
-                            <h5 class="card-title">Savings Goals</h5>
-                            <p class="card-text">Create and track savings goals with visual progress indicators and achievement celebrations.</p>
-                        </div>
+                    <div class="futuristic-card">
+                        <i class="fas fa-mobile-alt feature-icon"></i>
+                        <h5>Mobile Access</h5>
+                        <p>Access your financial data anywhere with our responsive web app that works on all devices.</p>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-mobile-alt feature-icon"></i>
-                            <h5 class="card-title">Mobile Access</h5>
-                            <p class="card-text">Access your financial data anywhere with our responsive web app that works on all devices.</p>
-                        </div>
+                    <div class="futuristic-card">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <h5>Bank Security</h5>
+                        <p>Your data is encrypted and secured with bank-level security protocols and regular backups.</p>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-shield-alt feature-icon"></i>
-                            <h5 class="card-title">Bank Security</h5>
-                            <p class="card-text">Your data is encrypted and secured with bank-level security protocols and regular backups.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-chart-pie feature-icon"></i>
-                            <h5 class="card-title">Smart Reports</h5>
-                            <p class="card-text">Get detailed financial reports and insights to make informed decisions about your money.</p>
-                        </div>
+                    <div class="futuristic-card">
+                        <i class="fas fa-chart-pie feature-icon"></i>
+                        <h5>Smart Reports</h5>
+                        <p>Generate comprehensive financial reports with AI-powered insights and recommendations.</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-5" style="position:relative;z-index:10;">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold holographic-text">Choose Your Plan</h2>
-                <p class="lead">Start free and scale as you grow</p>
-            </div>
-            <div class="row g-4 justify-content-center">
-                <div class="col-lg-4">
-                    <div class="card h-100 pricing-card">
-                        <div class="card-header text-center" style="background:rgba(255,255,255,0.05);">
-                            <h4 class="card-title mb-0">Free</h4>
-                            <div class="display-4 fw-bold cyber-text">$0<span class="fs-6" style="color:#cfcfff;">/month</span></div>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-check cyber-text me-2"></i>Track up to 200 transactions</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Basic expense categories</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Simple budget tracking</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Mobile access</li>
-                                <li><i class="fas fa-times text-muted me-2"></i>Advanced reports</li>
-                                <li><i class="fas fa-times text-muted me-2"></i>Customized Categories</li>
-                                <li><i class="fas fa-times text-muted me-2"></i>Bank sync</li>
-                            </ul>
-                            <a href="register.html" class="btn btn-outline-light w-100">Get Started</a>
-                        </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="futuristic-section">
+            <div class="section-container">
+                <h2 class="section-title">Choose Your Plan</h2>
+                <p class="section-subtitle">Flexible pricing options to suit your needs</p>
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h3>Starter</h3>
+                        <div class="price">Free</div>
+                        <ul style="text-align: left; margin: 2rem 0;">
+                            <li>Basic expense tracking</li>
+                            <li>3 budget categories</li>
+                            <li>Monthly reports</li>
+                            <li>Mobile access</li>
+                        </ul>
+                        <a href__="register.html" class="futuristic-btn">Get Started</a>
                     </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card h-100 pricing-card shadow-lg">
-                        <div class="card-header text-center" style="background:linear-gradient(135deg,#3C0775 0%,#7454AC 100%);color:#fff;">
-                            <span class="badge cyber-text mb-2" style="background:#FFD700;color:#3C0775;">Most Popular</span>
-                            <h4 class="card-title mb-0">Pro</h4>
-                            <div class="display-4 fw-bold holographic-text">$1.99<span class="fs-6" style="color:#cfcfff;">/month</span></div>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-check cyber-text me-2"></i>Unlimited transactions</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Advanced categories & tags</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Detailed budget planning</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Bank account sync</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Advanced reports & insights</li>
-                                <li><i class="fas fa-check cyber-text me-2"></i>Priority support</li>
-                            </ul>
-                            <a href="register.html" class="btn btn-warning w-100">Start Free Trial</a>
-                        </div>
+                    <div class="pricing-card featured">
+                        <h3>Professional</h3>
+                        <div class="price">$9.99<span style="font-size: 1rem;">/month</span></div>
+                        <ul style="text-align: left; margin: 2rem 0;">
+                            <li>Advanced expense tracking</li>
+                            <li>Unlimited budget categories</li>
+                            <li>Real-time insights</li>
+                            <li>Goal tracking</li>
+                            <li>Priority support</li>
+                        </ul>
+                        <a href__="register.html" class="futuristic-btn primary">Most Popular</a>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>Enterprise</h3>
+                        <div class="price">$19.99<span style="font-size: 1rem;">/month</span></div>
+                        <ul style="text-align: left; margin: 2rem 0;">
+                            <li>Everything in Professional</li>
+                            <li>Team collaboration</li>
+                            <li>Advanced analytics</li>
+                            <li>API access</li>
+                            <li>Dedicated support</li>
+                        </ul>
+                        <a href__="register.html" class="futuristic-btn">Contact Sales</a>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="py-5" style="position:relative;z-index:10;">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold holographic-text">What Our Users Say</h2>
-                <p class="lead">Join thousands of satisfied users who have transformed their finances</p>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="futuristic-section">
+            <div class="section-container">
+                <h2 class="section-title">What Our Users Say</h2>
+                <div class="testimonial-card">
+                    <p><i class="fas fa-quote-left"></i> "MindPay transformed how I manage my finances. The insights are incredible and the interface is so intuitive!" <i class="fas fa-quote-right"></i></p>
+                    <h6>- Sarah Johnson, Entrepreneur</h6>
+                </div>
+                <div class="testimonial-card">
+                    <p><i class="fas fa-quote-left"></i> "Finally, a financial app that actually helps me save money. The goal tracking feature is a game-changer." <i class="fas fa-quote-right"></i></p>
+                    <h6>- Mike Chen, Software Developer</h6>
+                </div>
+                <div class="testimonial-card">
+                    <p><i class="fas fa-quote-left"></i> "The most comprehensive financial tracking platform I've ever used. Highly recommended!" <i class="fas fa-quote-right"></i></p>
+                    <h6>- Emily Rodriguez, Financial Advisor</h6>
+                </div>
             </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="testimonial-card">
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="https://via.placeholder.com/50x50/007bff/ffffff?text=JD" alt="John Doe" class="rounded-circle me-3">
-                            <div>
-                                <h6 class="mb-0 cyber-text">John Doe</h6>
-                                <small class="text-muted">Small Business Owner</small>
-                            </div>
-                        </div>
-                        <p class="mb-0">"MindPay has completely changed how I manage my business finances. The expense tracking and budget features are incredibly intuitive and have saved me hours of work each month."</p>
-                        <div class="text-warning mt-2">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="futuristic-section">
+            <div class="section-container">
+                <h2 class="section-title">About MindPay</h2>
+                <p style="text-align: center; max-width: 800px; margin: 0 auto; font-size: 1.1rem; line-height: 1.8;">
+                    MindPay was founded with the vision of making personal finance management accessible to everyone. 
+                    Our team of financial experts and technology professionals work together to create tools that 
+                    empower individuals to take control of their financial future.
+                </p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="futuristic-footer">
+            <div class="section-container">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: left; margin-bottom: 2rem;">
+                    <div>
+                        <h5 style="font-family: 'Orbitron', monospace; margin-bottom: 1rem;">Product</h5>
+                        <ul style="list-style: none;">
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Features</a></li>
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Pricing</a></li>
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Security</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 style="font-family: 'Orbitron', monospace; margin-bottom: 1rem;">Company</h5>
+                        <ul style="list-style: none;">
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">About</a></li>
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Careers</a></li>
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 style="font-family: 'Orbitron', monospace; margin-bottom: 1rem;">Support</h5>
+                        <ul style="list-style: none;">
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Help Center</a></li>
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">Documentation</a></li>
+                            <li><a href__="#" style="color: #ccc; text-decoration: none;">API</a></li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="testimonial-card">
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="https://via.placeholder.com/50x50/28a745/ffffff?text=SM" alt="Sarah Miller" class="rounded-circle me-3">
-                            <div>
-                                <h6 class="mb-0 cyber-text">Sarah Miller</h6>
-                                <small class="text-muted">Marketing Manager</small>
-                            </div>
-                        </div>
-                        <p class="mb-0">"The savings goals feature helped me save for my dream vacation! I love how easy it is to set goals and track progress. The mobile app is fantastic too."</p>
-                        <div class="text-warning mt-2">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="testimonial-card">
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="https://via.placeholder.com/50x50/dc3545/ffffff?text=AL" alt="Alex Lee" class="rounded-circle me-3">
-                            <div>
-                                <h6 class="mb-0 cyber-text">Alex Lee</h6>
-                                <small class="text-muted">Freelance Designer</small>
-                            </div>
-                        </div>
-                        <p class="mb-0">"As a freelancer, managing irregular income was always challenging. FinSight's smart reports and budget planning features have given me complete control over my finances."</p>
-                        <div class="text-warning mt-2">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
-                    </div>
+                <div style="border-top: 1px solid rgba(116, 84, 172, 0.3); padding-top: 2rem;">
+                    <p>&copy; 2024 MindPay. All rights reserved.</p>
                 </div>
             </div>
-        </div>
-    </section>
-    <!-- About Section -->
-    <section id="about" class="py-5" style="position:relative;z-index:10;">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h2 class="display-5 fw-bold mb-4 holographic-text">About MindPay</h2>
-                    <p class="lead mb-4">FinSight was created with a simple mission: to make financial management accessible to everyone, regardless of their financial background or technical expertise.</p>
-                    <p>Our platform combines powerful analytics with an intuitive interface to help you understand your spending patterns, create realistic budgets, and achieve your financial goals faster.</p>
-                    <p>Whether you're saving for a house, planning for retirement, or just trying to get a better handle on your monthly expenses, FinSight provides the tools and insights you need to succeed.</p>
-                    <div class="row mt-4">
-                        <div class="col-6">
-                            <h4 class="cyber-text">10,000+</h4>
-                            <p class="text-muted">Active Users</p>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="cyber-text">$2M+</h4>
-                            <p class="text-muted">Tracked Expenses</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 text-center">
-                    <img src="about.png" alt="About FinSight" class="img-fluid rounded shadow" style="max-width:350px;box-shadow:0 0 40px #7454AC;">
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Footer -->
-    <footer class="py-5" style="position:relative;z-index:10;">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4">
-                    <h5 class="holographic-text">MindPay</h5>
-                    <p>Your trusted partner for financial management and budgeting.</p>
-                </div>
-                <div class="col-lg-2">
-                    <h6 class="cyber-text">Product</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#testimonials">Testimonials</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2">
-                    <h6 class="cyber-text">Support</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-4">
-                    <h6 class="cyber-text">Connect</h6>
-                    <p>Ready to take control of your finances?</p>
-                    <a href="register.html" class="btn btn-primary">Get Started Now</a>
-                </div>
-            </div>
-            <hr>
-            <div class="text-center">
-                <p>&copy; 2024 MindPay. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+        </footer>
+    </div>
+
     <script>
-        // Particle animation
-        function initParticles() {
-            const particles = document.querySelectorAll('.particle');
-            particles.forEach((particle, index) => {
-                particle.style.animationDelay = `${index * 0.5}s`;
-                particle.style.left = `${Math.random() * 100}%`;
+        // Simple mobile menu toggle
+        document.querySelector('.mobile-toggle').addEventListener('click', function() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
             });
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            initParticles();
         });
     </script>
 </body>
