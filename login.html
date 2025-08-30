@@ -5,35 +5,580 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - MindPay</title>
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css" />
-</head>
-<body class="login-theme">
-    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100">
-        <div class="card login-card">
-            <img src="logo-login.png" alt="FinSight Logo" class="logo-image">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            <h4 class="text-center mb-4">Login</h4>
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #3C0775 75%, #7454AC 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(116, 84, 172, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { width: 3px; height: 3px; left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { width: 5px; height: 5px; left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { width: 4px; height: 4px; left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { width: 7px; height: 7px; left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { width: 3px; height: 3px; left: 70%; animation-delay: 0.5s; }
+        .particle:nth-child(8) { width: 5px; height: 5px; left: 80%; animation-delay: 1.5s; }
+        .particle:nth-child(9) { width: 4px; height: 4px; left: 90%; animation-delay: 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Futuristic grid overlay */
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(116, 84, 172, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(116, 84, 172, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+            animation: gridPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.1; }
+        }
+
+        /* Main container */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 0 20px;
+        }
+
+        /* Futuristic login card */
+        .futuristic-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(116, 84, 172, 0.3);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: cardGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes cardGlow {
+            0% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(116, 84, 172, 0.3); }
+            100% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(116, 84, 172, 0.6); }
+        }
+
+        /* Card corner accents */
+        .futuristic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 30px;
+            border-top: 2px solid #7454AC;
+            border-left: 2px solid #7454AC;
+            border-radius: 20px 0 0 0;
+        }
+
+        .futuristic-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            border-bottom: 2px solid #7454AC;
+            border-right: 2px solid #7454AC;
+            border-radius: 0 0 20px 0;
+        }
+
+        /* Logo styling */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo-image {
+            max-width: 120px;
+            height: auto;
+            filter: drop-shadow(0 0 20px rgba(116, 84, 172, 0.5));
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .app-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(116, 84, 172, 0.8);
+            margin-top: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .login-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+        }
+
+        .login-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #7454AC, transparent);
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            color: #7454AC;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .futuristic-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(116, 84, 172, 0.3);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Exo 2', sans-serif;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .futuristic-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .futuristic-input:focus {
+            outline: none;
+            border-color: #7454AC;
+            box-shadow: 
+                0 0 0 2px rgba(116, 84, 172, 0.2),
+                inset 0 0 20px rgba(116, 84, 172, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Futuristic buttons */
+        .futuristic-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #3C0775 0%, #7454AC 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .futuristic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .futuristic-btn:hover::before {
+            left: 100%;
+        }
+
+        .futuristic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 10px 25px rgba(60, 7, 117, 0.4),
+                0 0 20px rgba(116, 84, 172, 0.6);
+        }
+
+        .futuristic-btn:active {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(116, 84, 172, 0.5);
+            color: #7454AC;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(116, 84, 172, 0.2);
+            color: #fff;
+            border-color: #7454AC;
+        }
+
+        /* Button container */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .button-group .futuristic-btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* Divider */
+        .futuristic-divider {
+            position: relative;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .futuristic-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(116, 84, 172, 0.5), transparent);
+        }
+
+        .futuristic-divider span {
+            background: rgba(0, 0, 0, 0.8);
+            color: #7454AC;
+            padding: 0 1rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Loading animation */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 100;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(116, 84, 172, 0.3);
+            border-top: 3px solid #7454AC;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Biometric scanner effect */
+        .biometric-scanner {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 22px;
+            background: linear-gradient(45deg, transparent, #7454AC, transparent);
+            opacity: 0;
+            animation: scannerPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes scannerPulse {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.02); }
+        }
+
+        /* Holographic effect */
+        .holographic-text {
+            background: linear-gradient(45deg, #7454AC, #3C0775, #7454AC);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: holographicShift 3s ease-in-out infinite;
+        }
+
+        @keyframes holographicShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .futuristic-card {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+
+            .app-title {
+                font-size: 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.2rem;
+                letter-spacing: 2px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Success/Error messages */
+        .message-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .futuristic-alert {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #7454AC;
+            border-radius: 12px;
+            padding: 1rem;
+            color: #fff;
+            font-family: 'Exo 2', sans-serif;
+            margin-bottom: 0.5rem;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .futuristic-alert.success {
+            border-color: #28a745;
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .futuristic-alert.error {
+            border-color: #dc3545;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Input focus effects */
+        .input-container {
+            position: relative;
+        }
+
+        .input-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            background: linear-gradient(45deg, transparent, rgba(116, 84, 172, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .input-container:focus-within::before {
+            opacity: 1;
+        }
+
+        /* Cyber text effect */
+        .cyber-text {
+            font-family: 'Orbitron', monospace;
+            color: #7454AC;
+            text-shadow: 0 0 10px rgba(116, 84, 172, 0.5);
+            animation: cyberGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes cyberGlow {
+            0% { text-shadow: 0 0 10px rgba(116, 84, 172, 0.5); }
+            100% { text-shadow: 0 0 20px rgba(116, 84, 172, 0.8), 0 0 30px rgba(116, 84, 172, 0.4); }
+        }
+
+        /* Scan line effect */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #7454AC, transparent);
+            animation: scanLine 2s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes scanLine {
+            0% { transform: translateY(0); opacity: 0; }
+            50% { opacity: 0.7; }
+            100% { transform: translateY(400px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <!-- Grid overlay -->
+    <div class="grid-overlay"></div>
+
+    <!-- Message container for alerts -->
+    <div class="message-container" id="messageContainer"></div>
+
+    <div class="login-container">
+        <div class="futuristic-card">
+            <!-- Biometric scanner effect -->
+            <div class="biometric-scanner"></div>
+            
+            <!-- Scan line effect -->
+            <div class="scan-line"></div>
+            
+            <!-- Loading overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Logo and title -->
+            <div class="logo-container">
+                <img src="logo-login.png" alt="MindPay Logo" class="logo-image">
+                <div class="app-title holographic-text">MindPay</div>
+            </div>
+
+            <!-- Login title -->
+            <h2 class="login-title cyber-text">Access Terminal</h2>
+
+            <!-- Login form -->
             <form id="loginForm">
-                <div class="mb-2">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" class="form-control" required />
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-container">
+                        <input type="email" id="email" class="futuristic-input" 
+                               placeholder="Enter your email" required />
+                    </div>
                 </div>
-                <div class="mb-3">
+
+                <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" class="form-control" required />
+                    <div class="input-container">
+                        <input type="password" id="password" class="futuristic-input" 
+                               placeholder="Enter your password" required />
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-login w-100">Login</button>
+
+                <button type="submit" class="futuristic-btn">
+                    Initialize Access
+                </button>
             </form>
 
-            <hr class="my-3" />
-
-            <div class="d-flex justify-content-between gap-2">
-                <a href="index.html" class="btn btn-register flex-fill">Home</a>
-                <a href="change-password.html" class="btn btn-reset-password flex-fill">Reset Password</a>
+            <!-- Divider -->
+            <div class="futuristic-divider">
+                <span>System Navigation</span>
             </div>
-            
+
+            <!-- Navigation buttons -->
+            <div class="button-group">
+                <button type="button" class="futuristic-btn secondary-btn" onclick="window.location.href='index.html'">
+                    Main Terminal
+                </button>
+                <button type="button" class="futuristic-btn secondary-btn" onclick="window.location.href='change-password.html'">
+                    Reset Access
+                </button>
+            </div>
         </div>
     </div>
 
@@ -42,10 +587,37 @@
         import { onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { auth } from "./firebase-config.js";
 
+        // Show futuristic message
+        function showMessage(text, type = 'success') {
+            const container = document.getElementById('messageContainer');
+            const alert = document.createElement('div');
+            alert.className = `futuristic-alert ${type}`;
+            alert.textContent = text;
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => {
+                    if (container.contains(alert)) {
+                        container.removeChild(alert);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Show loading state
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
         // Redirect already logged-in users to the dashboard
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                window.location.href = "dashboard.html";
+                showMessage('Access granted. Redirecting to main system...', 'success');
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1500);
             }
         });
 
@@ -56,24 +628,75 @@
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;
 
+            showLoading(true);
+
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "dashboard.html";
+                showMessage('Authentication successful. Accessing system...', 'success');
+                
+                // Add a slight delay for the futuristic effect
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1500);
+                
             } catch (error) {
                 const errorCode = error.code;
-                let errorMessage = "Invalid login credentials. Please try again.";
+                let errorMessage = "Access denied. Invalid credentials.";
 
                 if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
-                    errorMessage = "Invalid email or password.";
+                    errorMessage = "Authentication failed. User not found or incorrect password.";
                 } else if (errorCode === 'auth/invalid-email') {
-                    errorMessage = "The email address is not valid.";
+                    errorMessage = "Invalid email format detected.";
+                } else if (errorCode === 'auth/too-many-requests') {
+                    errorMessage = "Too many failed attempts. Access temporarily restricted.";
                 }
 
                 console.error(error);
-                alert(errorMessage);
+                showMessage(errorMessage, 'error');
+            } finally {
+                showLoading(false);
             }
         });
+
+        // Add typing sound effect simulation
+        document.querySelectorAll('.futuristic-input').forEach(input => {
+            input.addEventListener('keydown', () => {
+                // Visual feedback for typing
+                input.style.boxShadow = '0 0 0 2px rgba(116, 84, 172, 0.4), inset 0 0 20px rgba(116, 84, 172, 0.2)';
+                setTimeout(() => {
+                    input.style.boxShadow = '';
+                }, 100);
+            });
+        });
+
+        // Add enter key support for better UX
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const form = document.getElementById('loginForm');
+                if (document.activeElement.tagName === 'INPUT') {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // Initialize particle animation
+        function initParticles() {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach((particle, index) => {
+                particle.style.animationDelay = `${index * 0.5}s`;
+                particle.style.left = `${Math.random() * 100}%`;
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initParticles();
+            
+            // Add welcome message
+            setTimeout(() => {
+                showMessage('Welcome to MindPay Terminal. Please authenticate.', 'success');
+            }, 500);
+        });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
