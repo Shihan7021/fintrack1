@@ -609,7 +609,7 @@
         // Redirect already logged-in users to the dashboard
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                showMessage('Access granted. Redirecting to main system...', 'success');
+                showMessage('Access granted. Redirecting to Mindpay...', 'success');
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
                 }, 1500);
@@ -627,7 +627,7 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                showMessage('Authentication successful. Accessing system...', 'success');
+                showMessage('Authentication successful. Accessing Mindpay...', 'success');
                 
                 // Add a slight delay for the futuristic effect
                 setTimeout(() => {
@@ -689,7 +689,7 @@
             
             // Add welcome message
             setTimeout(() => {
-                showMessage('Welcome to MindPay Terminal. Please authenticate.', 'success');
+                showMessage('Welcome to MindPay. Please authenticate.', 'success');
             }, 500);
         });
     </script>
