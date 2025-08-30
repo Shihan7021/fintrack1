@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard - MindPay</title>
-    <link rel="icon" type="image/png" href__="favicon.png" />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <!-- UPDATED FONT LINK -->
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href__="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <!-- Scripts for charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@5"></script>
@@ -167,21 +167,21 @@
     <!-- Navigation -->
     <nav class="futuristic-nav" id="mainNav">
         <div class="nav-left">
-            <a class="nav-brand" href__="dashboard.html">
+            <a class="nav-brand" href="dashboard.html">
                 <img src="logo-head.png" alt="MindPay Logo" class="logo-header">
                 MindPay
             </a>
             <ul class="nav-links">
-                <li><a class="nav-link active" href__="dashboard.html"><i class="fas fa-home"></i> Home</a></li>
-                <li><a class="nav-link" href__="input.html"><i class="fas fa-plus-circle"></i> Add Transaction</a></li>
-                <li><a class="nav-link" href__="history.html"><i class="fas fa-list"></i> History</a></li>
-                <li><a class="nav-link" href__="budget.html"><i class="fas fa-chart-pie"></i> Budget</a></li>
-                <li><a class="nav-link" href__="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a></li>
+                <li><a class="nav-link active" href="dashboard.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a class="nav-link" href="input.html"><i class="fas fa-plus-circle"></i> Add Transaction</a></li>
+                <li><a class="nav-link" href="history.html"><i class="fas fa-list"></i> History</a></li>
+                <li><a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a></li>
+                <li><a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a></li>
             </ul>
         </div>
         <div class="nav-right">
-            <a class="nav-link" href__="myprofile.html" title="My Profile"><i class="fas fa-user"></i></a>
-            <a class="nav-link" href__="#" id="logoutButton" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+            <a class="nav-link" href="myprofile.html" title="My Profile"><i class="fas fa-user"></i></a>
+            <a class="nav-link" href="#" id="logoutButton" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
         </div>
         <button class="navbar-toggler" id="navbarToggler"><i class="fas fa-bars"></i></button>
     </nav>
@@ -189,7 +189,7 @@
     <main class="futuristic-container">
         <!-- Profile Completion Banner -->
         <div id="completeProfileBanner" class="futuristic-alert" style="display: none;">
-            <span><strong>Complete Your Profile!</strong> Add more details for a better experience. <a href__="myprofile.html">Go to Profile</a>.</span>
+            <span><strong>Complete Your Profile!</strong> Add more details for a better experience. <a href="myprofile.html">Go to Profile</a>.</span>
             <button type="button" class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
         </div>
 
@@ -283,7 +283,7 @@
             Chart.defaults.borderColor = 'var(--border-color)';
 
             // Dummy data and function calls for demonstration
-            populateDummyData();
+            
             updateDashboard();
 
             // Mobile menu toggle
@@ -292,29 +292,6 @@
             });
         });
 
-        // Dummy data for demonstration
-        function populateDummyData() {
-            // This would normally come from a database
-            localStorage.setItem('transactions', JSON.stringify([
-                { id: 1, type: 'expense', category: 'Groceries', amount: 75.50, date: '2023-10-25', description: 'Weekly shopping' },
-                { id: 2, type: 'income', category: 'Salary', amount: 2500, date: '2023-10-25', description: 'Monthly salary' },
-                { id: 3, type: 'expense', category: 'Utilities', amount: 120.00, date: '2023-10-24', description: 'Electricity bill' },
-                { id: 4, type: 'expense', category: 'Transport', amount: 45.00, date: '2023-10-23', description: 'Metro pass' },
-            ]));
-            localStorage.setItem('budgets', JSON.stringify([
-                { category: 'Groceries', limit: 400 },
-                { category: 'Utilities', limit: 200 },
-                { category: 'Entertainment', limit: 150 },
-            ]));
-            const categories = ['Groceries', 'Salary', 'Utilities', 'Transport', 'Entertainment'];
-            const categorySelect = document.getElementById('filterCategory');
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                categorySelect.appendChild(option);
-            });
-        }
         
         function updateDashboard() {
             const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
