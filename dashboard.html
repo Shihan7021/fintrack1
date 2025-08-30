@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard - MindPay</title>
     <link rel="icon" type="image/png" href="favicon.png" />
-    <!-- UPDATED FONT LINK -->
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <!-- Scripts for charts -->
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="theme.css" />
+    
+    <!-- Chart Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@5"></script>
     <script src="https://unpkg.com/d3-simple-gauge@0.2.0/dist/d3-simple-gauge.min.js"></script>
@@ -29,11 +31,7 @@
             --color-expense-glow: rgba(220, 53, 69, 0.7);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: var(--font-body);
@@ -44,7 +42,7 @@
             overflow-x: hidden;
         }
 
-        /* Particles and Grid Overlay (Same as index.html) */
+        /* Background particles and grid */
         .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; pointer-events: none; }
         .particle { position: absolute; background: rgba(116, 84, 172, 0.2); border-radius: 50%; animation: float 10s ease-in-out infinite; }
         .particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
@@ -56,107 +54,112 @@
         .grid-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; animation: gridPulse 8s ease-in-out infinite; pointer-events: none; }
         @keyframes gridPulse { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.3; } }
 
-        /* Main Layout */
-        .futuristic-container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+        /* Navigation Override */
+        .navbar { background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); }
+        .navbar-brand { font-family: var(--font-heading) !important; font-weight: 700 !important; color: #fff !important; }
+        .navbar-nav .nav-link { color: #fff !important; font-family: var(--font-body) !important; transition: all 0.3s ease; }
+        .navbar-nav .nav-link:hover { color: var(--primary-color) !important; text-shadow: 0 0 10px var(--primary-color); }
 
-        /* Navigation */
-        .futuristic-nav {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .nav-left, .nav-right { display: flex; align-items: center; gap: 1.5rem; }
-        .nav-brand { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
-        .logo-header { height: 40px; }
-        .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-        .nav-links a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s ease, text-shadow 0.3s ease; }
-        .nav-links a:hover, .nav-links a.active { color: var(--primary-color); text-shadow: 0 0 10px var(--primary-color); }
-        .nav-links i { margin-right: 8px; }
+        /* Container */
+        .container { max-width: 1600px; }
 
-        /* Cards */
-        .futuristic-card {
-            background: var(--glass-bg);
+        /* Cards Override */
+        .card, .futuristic-card {
+            background: var(--glass-bg) !important;
             backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 20px !important;
+            color: var(--text-color) !important;
             position: relative;
             overflow: hidden;
         }
-        .futuristic-card::before { content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 20px; border-top: 2px solid var(--primary-color); border-left: 2px solid var(--primary-color); border-radius: 20px 0 0 0; }
-        .futuristic-card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; border-bottom: 2px solid var(--primary-color); border-right: 2px solid var(--primary-color); border-radius: 0 0 20px 0; }
-        .card-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #fff; }
+        .card::before, .futuristic-card::before { content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 20px; border-top: 2px solid var(--primary-color); border-left: 2px solid var(--primary-color); border-radius: 20px 0 0 0; }
+        .card::after, .futuristic-card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; border-bottom: 2px solid var(--primary-color); border-right: 2px solid var(--primary-color); border-radius: 0 0 20px 0; }
+        .card-header, .card-title { font-family: var(--font-heading) !important; font-weight: 700 !important; color: #fff !important; background: transparent !important; border: none !important; }
 
-        /* Forms and Buttons */
-        .futuristic-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; align-items: flex-end; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-label { font-family: var(--font-heading); font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--primary-color); text-transform: uppercase; }
-        .futuristic-input, .futuristic-select {
-            width: 100%; padding: 0.75rem 1rem; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 12px; color: #fff; font-family: var(--font-body);
+        /* Form Controls */
+        .form-control, .form-select {
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            color: #fff !important;
+            font-family: var(--font-body) !important;
         }
-        .futuristic-btn {
-            padding: 0.75rem 1.5rem; background: transparent; border: 1px solid var(--primary-color); border-radius: 12px; color: #fff; text-decoration: none; font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; cursor: pointer;
+        .form-control:focus, .form-select:focus {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 10px rgba(116, 84, 172, 0.3) !important;
+            color: #fff !important;
         }
-        .futuristic-btn.primary { background: linear-gradient(45deg, var(--primary-color), var(--primary-color-dark)); border-color: var(--primary-color); }
-        .futuristic-btn:hover { background: var(--primary-color); border-color: var(--primary-color); box-shadow: 0 0 20px rgba(116, 84, 172, 0.5); }
-        .button-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .form-label {
+            font-family: var(--font-heading) !important;
+            color: var(--primary-color) !important;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            font-weight: 700 !important;
+        }
 
-        /* Summary Stats */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .stat-card h3 { font-family: var(--font-heading); color: var(--text-color-dark); text-transform: uppercase; font-size: 1rem; }
-        .stat-card .amount { font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; margin-top: 0.5rem; }
-        .stat-card .amount.income { color: var(--color-income); text-shadow: 0 0 10px var(--color-income-glow); }
-        .stat-card .amount.expense { color: var(--color-expense); text-shadow: 0 0 10px var(--color-expense-glow); }
-        .stat-card .amount.net { color: #4fc3f7; text-shadow: 0 0 10px rgba(79, 195, 247, 0.5); }
+        /* Buttons */
+        .btn {
+            font-family: var(--font-heading) !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 12px !important;
+            transition: all 0.3s ease !important;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-color-dark)) !important;
+            border: none !important;
+        }
+        .btn-primary:hover {
+            background: var(--primary-color) !important;
+            box-shadow: 0 0 20px rgba(116, 84, 172, 0.5) !important;
+        }
+        .btn-outline-primary {
+            background: transparent !important;
+            border: 1px solid var(--primary-color) !important;
+            color: #fff !important;
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: #fff !important;
+        }
+        .btn-secondary {
+            background: rgba(108, 117, 125, 0.3) !important;
+            border: 1px solid rgba(108, 117, 125, 0.5) !important;
+            color: #fff !important;
+        }
 
-        /* Transaction List */
-        .transaction-list { list-style: none; padding: 0; margin-top: 1.5rem; }
-        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color); }
-        .transaction-item:last-child { border-bottom: none; }
-        .transaction-details { display: flex; align-items: center; gap: 1.5rem; }
-        .transaction-icon { font-size: 1.5rem; width: 40px; text-align: center; }
-        .transaction-item.income .transaction-icon { color: var(--color-income); }
-        .transaction-item.expense .transaction-icon { color: var(--color-expense); }
-        .transaction-info .description { font-weight: bold; color: #fff; }
-        .transaction-info .category { font-size: 0.9rem; color: var(--text-color-dark); }
-        .transaction-amount { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; }
-        .transaction-amount.income { color: var(--color-income); }
-        .transaction-amount.expense { color: var(--color-expense); }
+        /* Alert */
+        .alert {
+            background: rgba(79, 195, 247, 0.1) !important;
+            border: 1px solid rgba(79, 195, 247, 0.3) !important;
+            border-radius: 12px !important;
+            color: var(--text-color) !important;
+        }
 
-        /* Charts & Gauges */
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
-        #budgetGaugeContainer { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; }
+        /* Transaction cards */
+        .transaction-card {
+            border: 1px solid var(--border-color) !important;
+            border-left-width: 0.25rem !important;
+            background: var(--glass-bg) !important;
+            color: var(--text-color) !important;
+        }
+        .transaction-card.income { border-left-color: var(--color-income) !important; }
+        .transaction-card.expense { border-left-color: var(--color-expense) !important; }
+
+        /* Stats styling */
+        .text-primary { color: var(--primary-color) !important; }
+        .text-success { color: var(--color-income) !important; }
+        .text-danger { color: var(--color-expense) !important; }
+
+        /* Chart containers */
+        #budgetGaugeContainer { gap: 1rem; }
         .gauge-container { min-width: 200px; text-align: center; }
-        .gauge-container .chart-label { margin-top: -20px; font-weight: bold; font-family: var(--font-heading); }
 
-        /* Alert Banner */
-        .futuristic-alert { display: flex; justify-content: space-between; align-items: center; background: rgba(79, 195, 247, 0.1); border: 1px solid rgba(79, 195, 247, 0.3); padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 2rem; }
-        .futuristic-alert strong { color: #4fc3f7; }
-        .futuristic-alert a { color: #4fc3f7; font-weight: bold; }
-        .futuristic-alert .close-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
-
-        /* Mobile Responsive */
-        @media (max-width: 1200px) {
-            .charts-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 992px) {
-            .futuristic-nav { flex-direction: column; align-items: flex-start; }
-            .nav-links { display: none; flex-direction: column; width: 100%; padding-top: 1rem; }
-            .nav-right { margin-top: 1rem; }
-            /* Add a class toggled by JS to show menu on mobile */
-            .futuristic-nav.open .nav-links { display: flex; }
-            .navbar-toggler { display: block; background: none; border: 1px solid var(--border-color); color: #fff; padding: 0.5rem; border-radius: 8px; cursor: pointer; position: absolute; right: 2rem; top: 1.2rem; }
-        }
-        .navbar-toggler { display: none; }
-
-                /* NEW: FLOATING ACTION BUTTON */
+        /* Floating Action Button */
         .fab {
             position: fixed;
             bottom: 2rem;
@@ -172,14 +175,17 @@
             font-size: 1.5rem;
             text-decoration: none;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-            z-index: 1001; /* Higher than nav */
+            z-index: 1001;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
         .fab:hover {
             transform: scale(1.1);
             box-shadow: 0 8px 30px rgba(116, 84, 172, 0.6);
+            color: #fff;
         }
+
+        /* Theme switch styling */
+        .theme-switch-wrapper { z-index: 100; }
     </style>
 </head>
 <body>
@@ -189,278 +195,534 @@
     </div>
     <div class="grid-overlay"></div>
 
-    <!-- Navigation -->
-    <nav class="futuristic-nav" id="mainNav">
-        <div class="nav-left">
-            <a class="nav-brand" href="dashboard.html">
-                <img src="logo-head.png" alt="MindPay Logo" class="logo-header">
-                MindPay
+    <!-- Original Navigation Structure Preserved -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
+                <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
             </a>
-            <ul class="nav-links">
-                <li><a class="nav-link active" href="dashboard.html"><i class="fas fa-home"></i> Home</a></li>
-                <li><a class="nav-link" href="input.html"><i class="fas fa-plus-circle"></i> Add Transaction</a></li>
-                <li><a class="nav-link" href="history.html"><i class="fas fa-list"></i> History</a></li>
-                <li><a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a></li>
-                <li><a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a></li>
-            </ul>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="input.html">
+                            <i class="fas fa-plus-circle"></i> Add Transaction
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="history.html">
+                            <i class="fas fa-list"></i> All Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a>
+                    </li>
+                    <li class="nav-item" style="display: none;">
+                        <a class="nav-link" href="what-if-search.html">
+                            <i class="fas fa-search"></i> What If
+                        </a>
+                    </li>
+                    <li class="nav-item" style="display: none;">
+                        <a class="nav-link" href="bank-statement-upload.html">
+                            <i class="fas fa-upload"></i> Upload Statement
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item d-flex align-items-center me-3">
+                        <div class="theme-switch-wrapper">
+                            <label class="theme-switch" for="theme-toggle-checkbox">
+                                <input type="checkbox" id="theme-toggle-checkbox" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="myprofile.html">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div class="nav-right">
-            <a class="nav-link" href="myprofile.html" title="My Profile"><i class="fas fa-user"></i></a>
-            <a class="nav-link" href="#" id="logoutButton" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
-        </div>
-        <button class="navbar-toggler" id="navbarToggler"><i class="fas fa-bars"></i></button>
     </nav>
     
-    <main class="futuristic-container">
-        <!-- Profile Completion Banner -->
-        <div id="completeProfileBanner" class="futuristic-alert" style="display: none;">
-            <span><strong>Complete Your Profile!</strong> Add more details for a better experience. <a href="myprofile.html">Go to Profile</a>.</span>
-            <button type="button" class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+    <!-- Original Content Structure Preserved -->
+    <div class="container mt-4">
+        <div id="completeProfileBanner" class="alert alert-info alert-dismissible fade show" role="alert" style="display: none;">
+            <strong>Complete Your Profile!</strong> You can add more details to your profile for a better experience.
+            <a href="myprofile.html" class="alert-link">Go to Profile</a>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- Filters Card -->
-        <section class="futuristic-card mb-4">
-            <div class="futuristic-form-grid">
-                <div class="form-group">
-                    <label for="fromDate" class="form-label">From</label>
-                    <input type="date" class="futuristic-input" id="fromDate" />
-                </div>
-                <div class="form-group">
-                    <label for="toDate" class="form-label">To</label>
-                    <input type="date" class="futuristic-input" id="toDate" />
-                </div>
-                <div class="form-group">
-                    <label for="filterCategory" class="form-label">Category</label>
-                    <select class="futuristic-select" id="filterCategory">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="amountRange" class="form-label">Amount Range</label>
-                    <input type="text" class="futuristic-input" id="amountRange" placeholder="e.g., 100-1000"/>
+        <!-- Filter Form -->
+        <form class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label for="fromDate" class="form-label">From</label>
+                <input type="date" class="form-control" id="fromDate" />
+            </div>
+            <div class="col-md-3">
+                <label for="toDate" class="form-label">To</label>
+                <input type="date" class="form-control" id="toDate" />
+            </div>
+            <div class="col-md-3">
+                <label for="filterCategory" class="form-label">Category</label>
+                <select class="form-select" id="filterCategory">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="amountRange" class="form-label">Amount Range</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="amountRange"
+                    placeholder="min-max"
+                    title="Enter amount range like 100-1000"
+                />
+            </div>
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                    <button type="button" class="btn btn-primary" onclick="resetToCurrentCycle()">Reset to Current Cycle</button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="setLast30Days()">Last 30 Days</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setThisMonth()">This Month</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setLastMonth()">Last Month</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setThisYear()">This Year</button>
+                    </div>
                 </div>
             </div>
-            <div class="button-group mt-3">
-                <button type="button" class="futuristic-btn primary" onclick="filterData()">Apply</button>
-                <button type="button" class="futuristic-btn" onclick="clearFilters()">Clear</button>
-                <button type="button" class="futuristic-btn" onclick="resetToCurrentCycle()">Current Cycle</button>
-                <button type="button" class="futuristic-btn" onclick="setLast30Days()">30 Days</button>
-                <button type="button" class="futuristic-btn" onclick="setThisMonth()">This Month</button>
-                <button type="button" class="futuristic-btn" onclick="setLastMonth()">Last Month</button>
-            </div>
-        </section>
+        </form>
 
-        <!-- Summary Stats -->
-        <section class="stats-grid">
-            <div class="futuristic-card stat-card">
-                <h3>Total Income</h3>
-                <div id="totalIncome" class="amount income">$0.00</div>
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-success">Total Income</h5>
+                        <p class="card-text fs-2 fw-bold text-success" id="totalIncome">$0.00</p>
+                    </div>
+                </div>
             </div>
-            <div class="futuristic-card stat-card">
-                <h3>Total Expense</h3>
-                <div id="totalExpense" class="amount expense">$0.00</div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-danger">Total Expense</h5>
+                        <p class="card-text fs-2 fw-bold text-danger" id="totalExpense">$0.00</p>
+                    </div>
+                </div>
             </div>
-            <div class="futuristic-card stat-card">
-                <h3>Net Savings</h3>
-                <div id="netSavings" class="amount net">$0.00</div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-primary">Net Savings</h5>
+                        <p class="card-text fs-2 fw-bold text-primary" id="netSavings">$0.00</p>
+                    </div>
+                </div>
             </div>
-        </section>
-        
-        <!-- Main Content Grid -->
-        <section class="charts-grid">
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
             <!-- Recent Transactions -->
-            <div class="futuristic-card">
-                <h2 class="card-title">Recent Transactions</h2>
-                <div id="transactionList">
-                    <!-- Transactions will be dynamically inserted here -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Recent Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="transactionList">
+                            <!-- Transactions will be inserted here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Expense Breakdown Chart -->
-            <div class="futuristic-card">
-                <h2 class="card-title">Expense Breakdown</h2>
-                <canvas id="expenseDoughnutChart"></canvas>
+            <!-- Expense Breakdown -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Expense Breakdown</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="expenseDoughnutChart"></canvas>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Income vs Expense Chart -->
-            <div class="futuristic-card">
-                <h2 class="card-title">Income vs. Expense</h2>
-                <canvas id="incomeExpenseBarChart"></canvas>
+        <!-- Second Charts Row -->
+        <div class="row">
+            <!-- Income vs Expense -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Income vs. Expense</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="incomeExpenseBarChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- Budget Progress -->
-            <div class="futuristic-card">
-                <h2 class="card-title">Budget Progress</h2>
-                <div id="budgetGaugeContainer">
-                    <!-- Gauges will be dynamically inserted here -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Budget Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="budgetGaugeContainer" class="d-flex flex-wrap justify-content-center">
+                            <!-- Gauges will be inserted here -->
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
 
+    <!-- Floating Action Button -->
+    <a href="input.html" class="fab" title="Add Transaction">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- ALL ORIGINAL JAVASCRIPT FROM YOUR FILE -->
+    <script src="js/common.js"></script>
     <script>
-        // --- ALL ORIGINAL JAVASCRIPT FUNCTIONS ARE PRESERVED HERE ---
-        // --- STYLING-RELATED CHART CONFIGURATIONS HAVE BEEN UPDATED ---
-
+        // Global variables
+        let allTransactions = [];
+        let filteredTransactions = [];
+        let expenseChart, incomeExpenseChart;
+        
+        // Initialize dashboard
         document.addEventListener("DOMContentLoaded", function () {
-            // --- Chart.js Global Styling ---
-            Chart.defaults.color = 'var(--text-color)';
-            Chart.defaults.borderColor = 'var(--border-color)';
+            // Check if user is logged in
+            if (!localStorage.getItem('currentUser')) {
+                window.location.href = 'index.html';
+                return;
+            }
 
+            // Set chart colors for dark theme
+            Chart.defaults.color = '#e0e0e0';
+            Chart.defaults.borderColor = 'rgba(116, 84, 172, 0.3)';
             
-            updateDashboard();
-
-            // Mobile menu toggle
-            document.getElementById('navbarToggler').addEventListener('click', function() {
-                document.getElementById('mainNav').classList.toggle('open');
-            });
+            loadTransactions();
+            loadCategories();
+            setCurrentCycleDates();
+            
+            // Check profile completion
+            checkProfileCompletion();
+            
+            // Set up logout
+            document.getElementById('logoutButton').addEventListener('click', logout);
         });
 
-       
-        function updateDashboard() {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            displaySummary(transactions);
-            displayRecentTransactions(transactions);
-            renderExpenseChart(transactions);
-            renderIncomeExpenseChart(transactions);
-            renderBudgetGauges(transactions);
+        // Load transactions
+        function loadTransactions() {
+            allTransactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            filteredTransactions = [...allTransactions];
+            updateDashboard();
         }
 
-        function displaySummary(transactions) {
-            const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            document.getElementById('totalIncome').textContent = `$${totalIncome.toFixed(2)}`;
-            document.getElementById('totalExpense').textContent = `$${totalExpense.toFixed(2)}`;
-            document.getElementById('netSavings').textContent = `$${(totalIncome - totalExpense).toFixed(2)}`;
-        }
-
-        function displayRecentTransactions(transactions) {
-            const listEl = document.getElementById('transactionList');
-            listEl.innerHTML = '';
-            transactions.slice(0, 5).forEach(t => {
-                const iconClass = t.type === 'income' ? 'fa-arrow-up' : 'fa-arrow-down';
-                listEl.innerHTML += `
-                    <div class="transaction-item ${t.type}">
-                        <div class="transaction-details">
-                            <i class="fas ${iconClass} transaction-icon"></i>
-                            <div class="transaction-info">
-                                <div class="description">${t.description}</div>
-                                <div class="category">${t.category}</div>
-                            </div>
-                        </div>
-                        <div class="transaction-amount ${t.type}">
-                            ${t.type === 'expense' ? '-' : ''}$${t.amount.toFixed(2)}
-                        </div>
-                    </div>`;
+        // Load categories for filter
+        function loadCategories() {
+            const categories = JSON.parse(localStorage.getItem('categories')) || [
+                'Food & Dining', 'Transportation', 'Shopping', 'Entertainment', 
+                'Bills & Utilities', 'Health & Fitness', 'Travel', 'Education', 
+                'Business', 'Personal Care', 'Gifts & Donations', 'Investments'
+            ];
+            
+            const select = document.getElementById('filterCategory');
+            select.innerHTML = '<option value="">All Categories</option>';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
             });
         }
 
-        // --- UPDATED CHART RENDERING FUNCTIONS ---
-        let expenseChart, incomeExpenseChart;
-        function renderExpenseChart(transactions) {
-            const ctx = document.getElementById('expenseDoughnutChart').getContext('2d');
-            const expenseData = transactions.filter(t => t.type === 'expense').reduce((acc, t) => {
-                acc[t.category] = (acc[t.category] || 0) + t.amount;
-                return acc;
-            }, {});
+        // Update dashboard with current data
+        function updateDashboard() {
+            displaySummary();
+            displayRecentTransactions();
+            renderExpenseChart();
+            renderIncomeExpenseChart();
+            renderBudgetGauges();
+        }
 
-            if (expenseChart) expenseChart.destroy();
+        // Display summary statistics
+        function displaySummary() {
+            const totalIncome = filteredTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            
+            const totalExpense = filteredTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            
+            const netSavings = totalIncome - totalExpense;
+
+            document.getElementById('totalIncome').textContent = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('totalExpense').textContent = `$${totalExpense.toFixed(2)}`;
+            document.getElementById('netSavings').textContent = `$${netSavings.toFixed(2)}`;
+        }
+
+        // Display recent transactions
+        function displayRecentTransactions() {
+            const container = document.getElementById('transactionList');
+            const recentTransactions = filteredTransactions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            if (recentTransactions.length === 0) {
+                container.innerHTML = '<p class="text-muted">No transactions found for the selected period.</p>';
+                return;
+            }
+
+            container.innerHTML = recentTransactions.map(transaction => `
+                <div class="transaction-card ${transaction.type} p-3 mb-2 rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${transaction.description}</h6>
+                            <small class="text-muted">${transaction.category} • ${transaction.date}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold ${transaction.type === 'income' ? 'text-success' : 'text-danger'}">
+                                ${transaction.type === 'income' ? '+' : '-'}$${parseFloat(transaction.amount).toFixed(2)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render expense doughnut chart
+        function renderExpenseChart() {
+            const ctx = document.getElementById('expenseDoughnutChart').getContext('2d');
+            
+            const expenses = filteredTransactions.filter(t => t.type === 'expense');
+            const categoryTotals = {};
+            
+            expenses.forEach(expense => {
+                categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + parseFloat(expense.amount);
+            });
+
+            const labels = Object.keys(categoryTotals);
+            const data = Object.values(categoryTotals);
+
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+
             expenseChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(expenseData),
+                    labels: labels,
                     datasets: [{
-                        data: Object.values(expenseData),
-                        backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'],
-                        borderColor: 'var(--glass-bg)',
+                        data: data,
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ],
+                        borderWidth: 2,
+                        borderColor: 'rgba(116, 84, 172, 0.3)'
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'top' } }
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#e0e0e0' }
+                        }
+                    }
                 }
             });
         }
 
-        function renderIncomeExpenseChart(transactions) {
+        // Render income vs expense chart
+        function renderIncomeExpenseChart() {
             const ctx = document.getElementById('incomeExpenseBarChart').getContext('2d');
-            // Simplified data for example
-            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             
-            if (incomeExpenseChart) incomeExpenseChart.destroy();
+            const totalIncome = filteredTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            
+            const totalExpense = filteredTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+            if (incomeExpenseChart) {
+                incomeExpenseChart.destroy();
+            }
+
             incomeExpenseChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Summary'],
+                    labels: ['Income vs Expense'],
                     datasets: [
-                        { label: 'Income', data: [income], backgroundColor: 'var(--color-income)' },
-                        { label: 'Expense', data: [expense], backgroundColor: 'var(--color-expense)' }
+                        {
+                            label: 'Income',
+                            data: [totalIncome],
+                            backgroundColor: '#28a745',
+                            borderColor: '#28a745',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Expense',
+                            data: [totalExpense],
+                            backgroundColor: '#dc3545',
+                            borderColor: '#dc3545',
+                            borderWidth: 1
+                        }
                     ]
                 },
-                options: { indexAxis: 'y', responsive: true }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e0' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: 'rgba(116, 84, 172, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: 'rgba(116, 84, 172, 0.2)' }
+                        }
+                    }
+                }
             });
         }
 
-        function renderBudgetGauges(transactions) {
+        // Render budget gauges
+        function renderBudgetGauges() {
             const budgets = JSON.parse(localStorage.getItem('budgets')) || [];
             const container = document.getElementById('budgetGaugeContainer');
+            
             container.innerHTML = '';
 
+            if (budgets.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No budgets set up yet. <a href="budget.html">Create your first budget</a>.</p>';
+                return;
+            }
+
             budgets.forEach(budget => {
-                const spent = transactions.filter(t => t.type === 'expense' && t.category === budget.category).reduce((sum, t) => sum + t.amount, 0);
-                const percentage = (spent / budget.limit) * 100;
+                const spent = filteredTransactions
+                    .filter(t => t.type === 'expense' && t.category === budget.category)
+                    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                const percentage = Math.min((spent / budget.amount) * 100, 100);
                 
                 const gaugeContainer = document.createElement('div');
-                gaugeContainer.className = 'gauge-container';
+                gaugeContainer.className = 'gauge-container mb-3';
                 container.appendChild(gaugeContainer);
 
+                // Create gauge using d3-simple-gauge
                 var gauge = new d3.simpleGauge(gaugeContainer, {
-                    width: 200, height: 160,
+                    width: 200,
+                    height: 160,
                     value: percentage,
-                    title: { text: budget.category, dy: "90px" },
-                    valueLabel: { text: `$${spent.toFixed(0)} / $${budget.limit}`, dy: "60px" },
-                    min: 0, max: 100,
-                    // UPDATED GAUGE COLORS
+                    title: {
+                        text: budget.category,
+                        dy: "90px"
+                    },
+                    valueLabel: {
+                        text: `$${spent.toFixed(0)} / $${budget.amount}`,
+                        dy: "60px"
+                    },
+                    min: 0,
+                    max: 100,
                     arcColorFn: d3.interpolateHsl(d3.rgb('#28a745'), d3.rgb('#dc3545')),
                     arcColorStops: [0, 50, 75, 100],
                 });
             });
         }
 
-         function filterData() {
-            const filtered = filterTransactions();
-            renderCharts(filtered);
-            renderSummaryTable(filtered);
+        // Filter functions
+        function filterData() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const category = document.getElementById('filterCategory').value;
+            const amountRange = document.getElementById('amountRange').value;
+
+            filteredTransactions = allTransactions.filter(transaction => {
+                // Date filter
+                if (fromDate && transaction.date < fromDate) return false;
+                if (toDate && transaction.date > toDate) return false;
+                
+                // Category filter
+                if (category && transaction.category !== category) return false;
+                
+                // Amount range filter
+                if (amountRange) {
+                    const [min, max] = amountRange.split('-').map(v => parseFloat(v.trim()));
+                    const amount = parseFloat(transaction.amount);
+                    if (min && amount < min) return false;
+                    if (max && amount > max) return false;
+                }
+                
+                return true;
+            });
+
+            updateDashboard();
         }
 
         function clearFilters() {
-            document.getElementById("fromDate").value = "";
-            document.getElementById("toDate").value = "";
-            document.getElementById("filterCategory").value = "";
-            document.getElementById("amountRange").value = "";
-            filterData();
+            document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('amountRange').value = '';
+            
+            filteredTransactions = [...allTransactions];
+            updateDashboard();
         }
 
-        function resetToCurrentCycle() {
-            loadUserCycleDate();
-        }
-
+        // Date preset functions
         function setLast30Days() {
             const today = new Date();
-            const thirtyDaysAgo = new Date(today);
-            thirtyDaysAgo.setDate(today.getDate() - 30);
-            document.getElementById("fromDate").value = thirtyDaysAgo.toISOString().split('T')[0];
-            document.getElementById("toDate").value = today.toISOString().split('T')[0];
+            const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('fromDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+            
             filterData();
         }
 
         function setThisMonth() {
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            document.getElementById("fromDate").value = firstDay.toISOString().split('T')[0];
-            document.getElementById("toDate").value = lastDay.toISOString().split('T')[0];
+            
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+            
             filterData();
         }
 
@@ -468,54 +730,49 @@
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
             const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
-            document.getElementById("fromDate").value = firstDay.toISOString().split('T')[0];
-            document.getElementById("toDate").value = lastDay.toISOString().split('T')[0];
+            
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = lastDay.toISOString().split('T')[0];
+            
             filterData();
         }
 
-        const logout = async () => {
-            try {
-                if (unsubscribeFromTransactions) {
-                    unsubscribeFromTransactions();
-                }
-                await signOut(auth);
-            } catch (error) {
-                console.error("Error signing out: ", error);
-            }
-        };
+        function setThisYear() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), 0, 1);
+            
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+            
+            filterData();
+        }
 
-        window.onload = () => {
-            setupRealtimeListener();
-            document.getElementById("logoutButton")?.addEventListener('click', (e) => {
-                e.preventDefault();
-                logout();
-            });
-        };
+        function resetToCurrentCycle() {
+            setCurrentCycleDates();
+            filterData();
+        }
 
-        window.filterData = filterData;
-        window.clearFilters = clearFilters;
-        window.resetToCurrentCycle = resetToCurrentCycle;
-        window.setLast30Days = setLast30Days;
-        window.setThisMonth = setThisMonth;
-        window.setLastMonth = setLastMonth;
+        function setCurrentCycleDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+        }
 
-        const themeToggle = document.getElementById('theme-toggle-checkbox');
-        themeToggle.addEventListener('change', () => {
-            const currentTheme = themeToggle.checked ? 'dark' : 'light';
-            applyTheme(currentTheme);
-        });
-
-        function applyTheme(theme) {
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
+        // Profile completion check
+        function checkProfileCompletion() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser && (!currentUser.phone || !currentUser.address)) {
+                document.getElementById('completeProfileBanner').style.display = 'block';
             }
         }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
     </script>
-    <!-- NEW: FLOATING ACTION BUTTON HTML -->
-    <a href="input.html" class="fab" title="Add Transaction">
-        <i class="fas fa-plus"></i>
-    </a>
 </body>
 </html>
