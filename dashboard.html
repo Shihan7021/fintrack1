@@ -507,7 +507,7 @@
             const budgetSnapshot = await getDocs(budgetsCol);
 
             if (budgetSnapshot.empty) {
-                budgetGaugeContainer.innerHTML = '<p class="text-muted" style="width: 100%; text-align: center;">No budgets to display.</p>';
+                budgetGaugeContainer.innerHTML = '<p class="text-muted" style="width: 100%; text-align: center;">No budgets to display.Create your first budget to get started</p> href="budget.html" class="btn btn-primary">Create Budget</a>';
                 return;
             }
 
