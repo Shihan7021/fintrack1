@@ -69,6 +69,9 @@
         </div>
     </nav>
 
+    <!-- Message Container -->
+    <div id="messageContainer" style="position: absolute; top: 70px; left: 30px; z-index: 9999; min-width: 250px;"></div>
+
     <div class="container mt-4">
         <div class="form-container">
             <h2 class="mb-4 text-center">Add Transaction</h2>
@@ -120,10 +123,8 @@
                     <button type="submit" class="btn btn-primary btn-lg">Add Transaction</button>
                 </div>
             </form>
-            
         </div>
     </div>
-
     <script type="module">
         import { getFirestore, collection, addDoc, doc, getDoc, writeBatch, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -225,7 +226,7 @@
             const isRecurring = document.getElementById("recurringCheck").checked;
 
             if (!currentUserId) {
-                alert("You must be logged in to add a transaction.");
+                showMessage("You must be logged in to add a transaction.", "error");
                 return;
             }
 
@@ -234,7 +235,7 @@
                 const instances = parseInt(document.getElementById("instances").value);
 
                 if (!instances || instances <= 0) {
-                    alert("Please enter a valid number of instances for recurring transaction.");
+                    showMessage("Please enter a valid number of instances for recurring transaction.", "error");
                     return;
                 }
 
@@ -267,13 +268,13 @@
 
                 try {
                     await batch.commit();
-                    alert(`Successfully added ${instances} recurring transactions!`);
+                    showMessage(`Successfully added ${instances} recurring transactions!`, "success");
                     transactionForm.reset();
                     document.getElementById('recurringOptions').style.display = 'none';
                     updateCategories();
                 } catch (e) {
                     console.error("Error adding recurring transactions: ", e);
-                    alert("Failed to add recurring transactions. Please try again.");
+                    showMessage("Failed to add recurring transactions. Please try again.", "error");
                 }
 
             } else {
@@ -286,15 +287,36 @@
                         comment,
                         isRecurring: false
                     });
-                    alert("Transaction added successfully!");
+                    showMessage("Transaction added successfully!", "success");
                     transactionForm.reset();
                     updateCategories();
                 } catch (e) {
                     console.error("Error adding document: ", e);
-                    alert("Failed to add transaction. Please try again.");
+                    showMessage("Failed to add transaction. Please try again.", "error");
                 }
             }
         });
+
+        // Message display function
+        function showMessage(text, type = "success") {
+            const container = document.getElementById("messageContainer");
+            container.innerHTML = `<div id="fadeMessage" style="
+                padding: 12px 20px;
+                border-radius: 6px;
+                font-weight: 500;
+                font-size: 1.1rem;
+                background: ${type === "success" ? "#e6f9ec" : "#ffeaea"};
+                color: ${type === "success" ? "#198754" : "#dc3545"};
+                box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+                opacity: 1;
+                transition: opacity 0.7s;
+            ">${text}</div>`;
+            setTimeout(() => {
+                const msg = document.getElementById("fadeMessage");
+                if (msg) msg.style.opacity = "0";
+                setTimeout(() => { container.innerHTML = ""; }, 700);
+            }, 3000);
+        }
 
         const logoutButton = document.getElementById("logoutButton");
         logoutButton.addEventListener('click', async (e) => {
