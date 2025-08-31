@@ -270,6 +270,17 @@ body {
   color: #fff;
 }
 
+.btn-outline-primary {
+  background-color: transparent;
+  color: #3C0775;
+}
+
+.btn-outline-primary:hover {
+  background-color: #2d0559;
+  border-color: #2d0559;
+  color: #fff;
+}
+
 .btn-warning {
   background-color: #7454AC;
   border-color: #7454AC;
