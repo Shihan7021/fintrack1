@@ -5,815 +5,176 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard - MindPay</title>
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="theme.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #3C0775 75%, #7454AC 100%);
-            min-height: 100vh;
-            color: #fff;
-            overflow-x: hidden;
-        }
-
-        /* Animated background particles */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(116, 84, 172, 0.3);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
-        .particle:nth-child(2) { width: 6px; height: 6px; left: 20%; animation-delay: 1s; }
-        .particle:nth-child(3) { width: 3px; height: 3px; left: 30%; animation-delay: 2s; }
-        .particle:nth-child(4) { width: 5px; height: 5px; left: 40%; animation-delay: 3s; }
-        .particle:nth-child(5) { width: 4px; height: 4px; left: 50%; animation-delay: 4s; }
-        .particle:nth-child(6) { width: 7px; height: 7px; left: 60%; animation-delay: 5s; }
-        .particle:nth-child(7) { width: 3px; height: 3px; left: 70%; animation-delay: 0.5s; }
-        .particle:nth-child(8) { width: 5px; height: 5px; left: 80%; animation-delay: 1.5s; }
-        .particle:nth-child(9) { width: 4px; height: 4px; left: 90%; animation-delay: 2.5s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-        }
-
-        /* Futuristic grid overlay */
-        .grid-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(116, 84, 172, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(116, 84, 172, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: 1;
-            animation: gridPulse 4s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        @keyframes gridPulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.1; }
-        }
-
-        /* Navigation */
-        .navbar {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(116, 84, 172, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar-brand {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 700;
-            color: #fff !important;
-            text-shadow: 0 0 10px rgba(116, 84, 172, 0.8);
-        }
-
-        .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            margin: 0 0.2rem;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: #fff !important;
-            background-color: rgba(116, 84, 172, 0.2);
-            text-shadow: 0 0 10px rgba(116, 84, 172, 0.8);
-            transform: translateY(-1px);
-        }
-
-        .navbar-nav .nav-link.active {
-            background-color: rgba(116, 84, 172, 0.3);
-            color: #fff !important;
-        }
-
-        /* Content wrapper */
-        .content-wrapper {
-            position: relative;
-            z-index: 10;
-            padding: 2rem 0;
-        }
-
-        /* Container styling */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        /* Alert styling */
-        .alert {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 12px;
-            color: #fff;
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* Filter form styling */
-        .filter-form {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .form-label {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 600;
-            color: #7454AC;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 8px;
-            color: #fff;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #7454AC;
-            box-shadow: 0 0 0 2px rgba(116, 84, 172, 0.2);
-            color: #fff;
-            outline: none;
-        }
-
-        .form-select option {
-            background: #1a1a2e;
-            color: #fff;
-        }
-
-        /* Futuristic buttons */
-        .btn {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3C0775, #7454AC);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(60, 7, 117, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(60, 7, 117, 0.4);
-            background: linear-gradient(135deg, #4a0a8a, #8a63d2);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(116, 84, 172, 0.5);
-            color: #7454AC;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(116, 84, 172, 0.2);
-            color: #fff;
-            border-color: #7454AC;
-        }
-
-        .btn-outline-primary {
-            background: transparent;
-            border: 1px solid #7454AC;
-            color: #7454AC;
-        }
-
-        .btn-outline-primary:hover {
-            background: #7454AC;
-            color: #fff;
-        }
-
-        /* Budget overview section */
-        .budget-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .budget-section h5 {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 10px rgba(116, 84, 172, 0.8);
-        }
-
-        #budgetGaugeContainer {
-            gap: 1rem;
-            padding: 1rem;
-        }
-
-        .gauge-container {
-            min-width: 200px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(116, 84, 172, 0.2);
-            border-radius: 12px;
-            padding: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .gauge-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(116, 84, 172, 0.3);
-            border-color: #7454AC;
-        }
-
-        /* Chart containers */
-        .chart-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .chart-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .chart-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(116, 84, 172, 0.2);
-            border-color: #7454AC;
-        }
-
-        .chart-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 20px;
-            height: 20px;
-            border-top: 2px solid #7454AC;
-            border-left: 2px solid #7454AC;
-            border-radius: 15px 0 0 0;
-        }
-
-        .chart-container::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 20px;
-            height: 20px;
-            border-bottom: 2px solid #7454AC;
-            border-right: 2px solid #7454AC;
-            border-radius: 0 0 15px 0;
-        }
-
-        /* Summary cards */
-        .summary-section {
-            margin-bottom: 2rem;
-        }
-
-        .summary-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(116, 84, 172, 0.3);
-            border-color: #7454AC;
-        }
-
-        .summary-card h5 {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 600;
-            color: #7454AC;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
-
-        .summary-card .h4 {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 700;
-            font-size: 2rem;
-            text-shadow: 0 0 15px rgba(116, 84, 172, 0.5);
-        }
-
-        .text-success {
-            color: #28a745 !important;
-            text-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
-        }
-
-        .text-danger {
-            color: #dc3545 !important;
-            text-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
-        }
-
-        /* Recent transactions */
-        .transactions-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(116, 84, 172, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-
-        .transactions-section h5 {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 10px rgba(116, 84, 172, 0.8);
-        }
-
         .transaction-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(116, 84, 172, 0.2);
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            position: relative;
+            border: 1px solid #dee2e6;
+            border-left-width: .25rem;
         }
-
-        .transaction-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 20px rgba(116, 84, 172, 0.2);
-            border-color: #7454AC;
-        }
-
         .transaction-card.income {
-            border-left: 4px solid #28a745;
-            box-shadow: 0 0 10px rgba(40, 167, 69, 0.1);
+            border-left-color: #198754;
         }
-
         .transaction-card.expense {
-            border-left: 4px solid #dc3545;
-            box-shadow: 0 0 10px rgba(220, 53, 69, 0.1);
+            border-left-color: #dc3545;
         }
-
-        .card-body {
-            padding: 1.5rem;
+        #budgetGaugeContainer {
+            gap: 1rem; /* space between gauges */
         }
-
-        .card-body h6 {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-body small {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* List group styling */
-        .list-group {
-            background: transparent;
-        }
-
-        .list-group-item {
-            background: transparent;
-            border: none;
-            padding: 0;
-        }
-
-        /* Theme toggle */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-        }
-
-        .theme-switch {
-            display: inline-block;
-            height: 24px;
-            position: relative;
-            width: 48px;
-        }
-
-        .theme-switch input {
-            display: none;
-        }
-
-        .slider {
-            background-color: rgba(255, 255, 255, 0.3);
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 24px;
-            border: 1px solid rgba(116, 84, 172, 0.5);
-        }
-
-        .slider:before {
-            background-color: #fff;
-            bottom: 2px;
-            content: "";
-            height: 18px;
-            left: 2px;
-            position: absolute;
-            transition: .4s;
-            width: 18px;
-            border-radius: 50%;
-            box-shadow: 0 0 5px rgba(116, 84, 172, 0.5);
-        }
-
-        input:checked + .slider {
-            background-color: #7454AC;
-            box-shadow: 0 0 10px rgba(116, 84, 172, 0.5);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        /* Floating action button */
-        .floating-action-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3C0775 0%, #7454AC 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 8px 25px rgba(60, 7, 117, 0.4);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            animation: fabPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes fabPulse {
-            0%, 100% { box-shadow: 0 8px 25px rgba(60, 7, 117, 0.4); }
-            50% { box-shadow: 0 8px 25px rgba(60, 7, 117, 0.6), 0 0 20px rgba(116, 84, 172, 0.4); }
-        }
-
-        .floating-action-btn:hover {
-            transform: scale(1.1) rotate(90deg);
-            box-shadow: 0 12px 35px rgba(60, 7, 117, 0.6);
-            color: white;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .chart-section {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .container {
-                padding: 0 1rem;
-            }
-
-            .filter-form {
-                padding: 1.5rem;
-            }
-
-            .floating-action-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 60px;
-                height: 60px;
-                font-size: 24px;
-            }
-
-            #budgetGaugeContainer {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .gauge-container {
-                min-width: 250px;
-            }
-        }
-
-        /* Dark mode overrides */
-        .dark-mode {
-            background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #1a1a2e 50%, #16213e 75%, #3C0775 100%);
-        }
-
-        .dark-mode .filter-form,
-        .dark-mode .budget-section,
-        .dark-mode .chart-container,
-        .dark-mode .summary-card,
-        .dark-mode .transactions-section,
-        .dark-mode .transaction-card {
-            background: rgba(0, 0, 0, 0.3);
-            border-color: rgba(116, 84, 172, 0.4);
-        }
-
-        .dark-mode .form-control,
-        .dark-mode .form-select {
-            background: rgba(0, 0, 0, 0.2);
-            border-color: rgba(116, 84, 172, 0.4);
-        }
-
-        /* Section titles */
-        .section-title {
-            font-family: 'Raleway', sans-serif;
-            font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 10px rgba(116, 84, 172, 0.8);
-            font-size: 1.2rem;
-        }
-
-        /* Chart canvas styling */
-        canvas {
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        /* Button group styling */
-        .btn-group .btn {
-            margin: 0;
-            border-radius: 0;
-        }
-
-        .btn-group .btn:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-
-        .btn-group .btn:last-child {
-            border-radius: 0 8px 8px 0;
-        }
-
-        /* Filter buttons container */
-        .filter-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        /* Responsive grid for summary cards */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .gauge-container {
+            min-width: 200px; /* ensure gauges are not too small */
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <!-- Animated background -->
-    <div class="particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
-    <div class="grid-overlay"></div>
-
-    <div class="content-wrapper">
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
-                    <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
-                    
-                </a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
+                <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
                 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        
-                        <li class="nav-item">
-                            <a class="nav-link active" href="dashboard.html">
-                                <i class="fas fa-home"></i> Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="input.html">
-                                <i class="fas fa-plus-circle"></i> Add Transaction
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="history.html">
-                                <i class="fas fa-list"></i> All Transactions
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a>
-                        </li>
-                        <li class="nav-item" style="display: none;">
-                            <a class="nav-link" href="what-if-search.html">
-                                <i class="fas fa-search"></i> What If
-                            </a>
-                        </li>
-                        <li class="nav-item" style="display: none;">
-                            <a class="nav-link" href="bank-statement-upload.html">
-                                <i class="fas fa-upload"></i> Upload Statement
-                            </a>
-                        </li>
-                    </ul>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
                     
-                    <ul class="navbar-nav">
-                        <li class="nav-item d-flex align-items-center me-3">
-                            <div class="theme-switch-wrapper">
-                                <label class="theme-switch" for="theme-toggle-checkbox">
-                                    <input type="checkbox" id="theme-toggle-checkbox" />
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="myprofile.html">
-                                <i class="fas fa-user"></i> My Profile
-                            </a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" id="logoutButton">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        
-        <div class="container mt-4">
-
-            <div id="completeProfileBanner" class="alert alert-info alert-dismissible fade show" role="alert" style="display: none;">
-                <strong>Complete Your Profile!</strong> You can add more details to your profile for a better experience.
-                <a href="myprofile.html" class="alert-link">Go to Profile</a>.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-
-            <!-- Filters Section -->
-            <div class="filter-form">
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <label for="fromDate" class="form-label">From</label>
-                        <input type="date" class="form-control" id="fromDate" />
-                    </div>
-                    <div class="col-md-3">
-                        <label for="toDate" class="form-label">To</label>
-                        <input type="date" class="form-control" id="toDate" />
-                    </div>
-                    <div class="col-md-3">
-                        <label for="filterCategory" class="form-label">Category</label>
-                        <select class="form-select" id="filterCategory">
-                            <option value="">All Categories</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="amountRange" class="form-label">Amount Range</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="amountRange"
-                            placeholder="min-max"
-                            title="Enter amount range like 100-1000"
-                        />
-                    </div>
-                    <div class="col-12">
-                        <div class="filter-buttons">
-                            <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
-                            <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-                            <button type="button" class="btn btn-primary" onclick="resetToCurrentCycle()">Reset to Current Cycle</button>
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-primary" onclick="setLast30Days()">Last 30 Days</button>
-                                <button type="button" class="btn btn-outline-primary" onclick="setThisMonth()">This Month</button>
-                                <button type="button" class="btn btn-outline-primary" onclick="setLastMonth()">Last Month</button>
-                            </div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="input.html">
+                            <i class="fas fa-plus-circle"></i> Add Transaction
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="history.html">
+                            <i class="fas fa-list"></i> All Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a>
+                    </li>
+                    <li class="nav-item" style="display: none;">
+                        <a class="nav-link" href="what-if-search.html">
+                            <i class="fas fa-search"></i> What If
+                        </a>
+                    </li>
+                    <li class="nav-item" style="display: none;">
+                        <a class="nav-link" href="bank-statement-upload.html">
+                            <i class="fas fa-upload"></i> Upload Statement
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item d-flex align-items-center me-3">
+                        <div class="theme-switch-wrapper">
+                            <label class="theme-switch" for="theme-toggle-checkbox">
+                                <input type="checkbox" id="theme-toggle-checkbox" />
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Budget Overview Section -->
-            <div class="budget-section">
-                <h5 class="section-title">Budgets Overview</h5>
-                <div id="budgetGaugeContainer" class="justify-content-center d-flex flex-row flex-nowrap overflow-auto pb-2">
-                </div>
-            </div>
-            
-            <!-- Charts Section -->
-            <div class="chart-section">
-                <div class="chart-container">
-                    <canvas id="incomeChart" aria-label="Income Chart" role="img"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="expenseChart" aria-label="Expense Chart" role="img"></canvas>
-                </div>
-            </div>
-            
-            <!-- Summary Section -->
-            <div class="summary-section">
-                <div class="summary-grid" id="summaryTable">
-                </div>
-            </div>
-
-            <!-- Recent Transactions Section -->
-            <div class="transactions-section">
-                <h5 class="section-title">Recent Transactions</h5>
-                <ul id="recentTransactions" class="list-group"></ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="myprofile.html">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
+    </nav>
+    
+    <div class="container mt-4">
+
+        <div id="completeProfileBanner" class="alert alert-info alert-dismissible fade show" role="alert" style="display: none;">
+            <strong>Complete Your Profile!</strong> You can add more details to your profile for a better experience.
+            <a href="myprofile.html" class="alert-link">Go to Profile</a>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <form class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label for="fromDate" class="form-label">From</label>
+                <input type="date" class="form-control" id="fromDate" />
+            </div>
+            <div class="col-md-3">
+                <label for="toDate" class="form-label">To</label>
+                <input type="date" class="form-control" id="toDate" />
+            </div>
+            <div class="col-md-3">
+                <label for="filterCategory" class="form-label">Category</label>
+                <select class="form-select" id="filterCategory">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="amountRange" class="form-label">Amount Range</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="amountRange"
+                    placeholder="min-max"
+                    title="Enter amount range like 100-1000"
+                />
+            </div>
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                    <button type="button" class="btn btn-primary" onclick="resetToCurrentCycle()">Reset to Current Cycle</button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="setLast30Days()">Last 30 Days</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setThisMonth()">This Month</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setLastMonth()">Last Month</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="justify-content-center mb-4">
+            <h5>Budgets Overview</h5>
+            <div id="budgetGaugeContainer" class="justify-content-center d-flex flex-row flex-nowrap overflow-auto pb-2">
+                </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <canvas id="incomeChart" aria-label="Income Chart" role="img"></canvas>
+            </div>
+            <div class="col-md-6 mb-4">
+                <canvas id="expenseChart" aria-label="Expense Chart" role="img"></canvas>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mb-4" id="summaryTable">
+            </div>
+
+        <div class="mt-5">
+            <h5>Recent Transactions</h5>
+            <ul id="recentTransactions" class="list-group"></ul>
+        </div>
     </div>
+
+  
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
@@ -922,13 +283,12 @@
                     checkUserProfileCompleteness();
                     
                     loadUserPreferences(user.uid).then(() => {
-                        const userTransactionsCollection = collection(db, "users", currentUserId, "transactions");
-                        unsubscribeFromTransactions = onSnapshot(query(userTransactionsCollection), (querySnapshot) => {
+                        const userTransactionsRef = collection(db, "users", currentUserId, "transactions");
+                        unsubscribeFromTransactions = onSnapshot(query(userTransactionsRef), (querySnapshot) => {
                             transactions = querySnapshot.docs.map(doc => ({
                                 id: doc.id,
                                 ...doc.data()
                             }));
-                            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
                             renderDashboard();
                         }, (error) => {
                             console.error("Error listening to user transactions: ", error);
@@ -1053,35 +413,9 @@
                         label: "Income",
                         data: incomeAmounts,
                         backgroundColor: generateRandomColors(incomeLabels.length),
-                        borderColor: '#ffffff',
-                        borderWidth: 2,
                     }],
                 },
-                options: { 
-                    responsive: true, 
-                    plugins: { 
-                        legend: { 
-                            position: "bottom",
-                            labels: {
-                                color: '#ffffff',
-                                font: {
-                                    family: 'Raleway',
-                                    size: 12
-                                }
-                            }
-                        }, 
-                        title: { 
-                            display: true, 
-                            text: "Income Breakdown",
-                            color: '#ffffff',
-                            font: {
-                                family: 'Raleway',
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        } 
-                    } 
-                },
+                options: { responsive: true, plugins: { legend: { position: "bottom" }, title: { display: true, text: "Income Breakdown" } } },
             });
             const expenseCtx = document.getElementById("expenseChart").getContext("2d");
             expenseChart = new Chart(expenseCtx, {
@@ -1092,35 +426,9 @@
                         label: "Expense",
                         data: expenseAmounts,
                         backgroundColor: generateRandomColors(expenseLabels.length),
-                        borderColor: '#ffffff',
-                        borderWidth: 2,
                     }],
                 },
-                options: { 
-                    responsive: true, 
-                    plugins: { 
-                        legend: { 
-                            position: "bottom",
-                            labels: {
-                                color: '#ffffff',
-                                font: {
-                                    family: 'Raleway',
-                                    size: 12
-                                }
-                            }
-                        }, 
-                        title: { 
-                            display: true, 
-                            text: "Expense Breakdown",
-                            color: '#ffffff',
-                            font: {
-                                family: 'Raleway',
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        } 
-                    } 
-                },
+                options: { responsive: true, plugins: { legend: { position: "bottom" }, title: { display: true, text: "Expense Breakdown" } } },
             });
         }
         
@@ -1135,17 +443,23 @@
             const balance = totalIncome - totalExpense;
 
             summaryDiv.innerHTML = `
-                <div class="summary-card">
-                    <h5>Total Income</h5>
-                    <p class="h4 text-success">${userCurrencySymbol}${formatAmount(totalIncome)}</p>
+                <div class="col-md-4 mb-3">
+                    <div class="summary-card">
+                        <h5>Total Income</h5>
+                        <p class="h4 text-success">${userCurrencySymbol}${formatAmount(totalIncome)}</p>
+                    </div>
                 </div>
-                <div class="summary-card">
-                    <h5>Total Expense</h5>
-                    <p class="h4 text-danger">${userCurrencySymbol}${formatAmount(totalExpense)}</p>
+                <div class="col-md-4 mb-3">
+                    <div class="summary-card">
+                        <h5>Total Expense</h5>
+                        <p class="h4 text-danger">${userCurrencySymbol}${formatAmount(totalExpense)}</p>
+                    </div>
                 </div>
-                <div class="summary-card">
-                    <h5>Balance</h5>
-                    <p class="h4 ${balance >= 0 ? 'text-success' : 'text-danger'}">${userCurrencySymbol}${formatAmount(balance)}</p>
+                <div class="col-md-4 mb-3">
+                    <div class="summary-card">
+                        <h5>Balance</h5>
+                        <p class="h4 ${balance >= 0 ? 'text-success' : 'text-danger'}">${userCurrencySymbol}${formatAmount(balance)}</p>
+                    </div>
                 </div>
             `;
         }
@@ -1159,7 +473,7 @@
                 const li = document.createElement("li");
                 li.className = "list-group-item p-0 mb-2 border-0";
                 li.innerHTML = `
-                    <div class="transaction-card ${t.type.toLowerCase()}">
+                    <div class="card transaction-card ${t.type.toLowerCase()}">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
@@ -1193,7 +507,7 @@
             const budgetSnapshot = await getDocs(budgetsCol);
 
             if (budgetSnapshot.empty) {
-                budgetGaugeContainer.innerHTML = '<p class="text-muted" style="width: 100%; text-align: center;">No budgets to display. Create your first budget to get started <a href="budget.html" class="btn btn-primary">Create Budget</a></p>';
+                budgetGaugeContainer.innerHTML = '<p class="text-muted" style="width: 100%; text-align: center;">No budgets to display.Create your first budget to get started</p> href="budget.html" class="btn btn-primary">Create Budget</a>';
                 return;
             }
 
@@ -1338,4 +652,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
