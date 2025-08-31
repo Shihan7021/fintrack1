@@ -402,30 +402,78 @@
                     foundDate = dateStr;
                 }
             }
-            
             // C. Extract Amount
             let foundAmount = 0;
-            // Matches numbers like 1,234.56 or 1234.56, looks for keywords like total, amount
-            const amountRegex = /(?:total|net|amount|balance|subtotal|rs|lkr|$|Rs|LKR|INR|EUR|USD|GBP|JPY)[\s:]*([\d,]+\.\d{2})/ig;
+
+            // Matches currency formats (handles Rs, LKR, INR, USD, etc.)
+            // - Looks for keywords like total, amount, balance, subtotal
+            // - Matches numbers like 1,234.56 / 1234.56 / 1,234 / 1234
+            // - Allows optional currency symbols before/after numbers
+            const amountRegex = new RegExp(
+                String.raw`(?:total|net|amount|balance|subtotal|grand\s*total|payable|cash\s*amount|bill\s*amount|rs\.?|lkr|inr|usd|eur|gbp|jpy|rm|aed)[\s:]*[\-]?\s*(?:[₹$€£¥]?\s*)?([\d]{1,3}(?:[,\s]\d{2,3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\b`,
+                "ig"
+            );
+
             let amountMatches;
             let maxAmount = 0;
 
             while ((amountMatches = amountRegex.exec(text)) !== null) {
-                const amount = parseFloat(amountMatches[1].replace(/,/g, ''));
-                if (amount > maxAmount) {
+                const raw = amountMatches[1].replace(/[, ]/g, "");
+                const amount = parseFloat(raw);
+                if (!isNaN(amount) && amount > maxAmount) {
                     maxAmount = amount;
                 }
             }
-            // Fallback: If no keyword is found, find the largest number on the receipt
+
+            // Fallback: If no keyword match, find the largest standalone number that looks like money
             if (maxAmount === 0) {
-                 const genericAmountRegex = /([\d,]+\.\d{2})/g;
-                 let genericMatches;
-                 while((genericMatches = genericAmountRegex.exec(text)) !== null) {
-                    const amount = parseFloat(genericMatches[0].replace(/,/g, ''));
-                    if (amount > maxAmount) maxAmount = amount;
-                 }
+                const genericAmountRegex = /(?:[₹$€£¥]?\s*)?(\d{1,3}(?:[,\s]\d{2,3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)/g;
+                let genericMatches;
+                while ((genericMatches = genericAmountRegex.exec(text)) !== null) {
+                    const raw = genericMatches[1].replace(/[, ]/g, "");
+                    const amount = parseFloat(raw);
+                    if (!isNaN(amount) && amount > maxAmount) {
+                        maxAmount = amount;
+                    }
+                }
             }
+
+            // Last fallback: detect written numbers (basic English word amounts like "One Thousand Five Hundred")
+            // For robust conversion, map words → numbers
+            if (maxAmount === 0) {
+                const numberWordsMap = {
+                    zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5,
+                    six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+                    eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
+                    sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+                    twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60,
+                    seventy: 70, eighty: 80, ninety: 90,
+                    hundred: 100, thousand: 1000, lakh: 100000, million: 1000000
+                };
+
+                const wordsRegex = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|lakh|million)\b/ig;
+                if (wordsRegex.test(text)) {
+                    const words = text.toLowerCase().match(wordsRegex) || [];
+                    let total = 0, temp = 0;
+                    for (let word of words) {
+                        const val = numberWordsMap[word];
+                        if (val === 100 && temp > 0) {
+                            temp *= 100;
+                        } else if ((val === 1000 || val === 100000 || val === 1000000) && temp > 0) {
+                            temp *= val;
+                            total += temp;
+                            temp = 0;
+                        } else {
+                            temp += val;
+                        }
+                    }
+                    total += temp;
+                    if (total > maxAmount) maxAmount = total;
+                }
+            }
+
             foundAmount = maxAmount;
+
 
             fillFormWithExtractedData(foundCategory, foundDate, foundAmount, text);
         };
