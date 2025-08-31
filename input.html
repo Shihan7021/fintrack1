@@ -389,19 +389,93 @@
 
             // B. Extract Date
             let foundDate = null;
-            // Matches YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY
-            const dateRegex = /(\d{4}-\d{2}-\d{2})|(\d{2}[-\/]\d{2}[-\/]\d{4})/;
+
+            // Covers multiple formats:
+            // - YYYY-MM-DD
+            // - DD/MM/YYYY, MM/DD/YYYY, DD-MM-YYYY, MM-DD-YYYY
+            // - DD/MM/YY, MM/DD/YY
+            // - DD.MM.YYYY or DD.MM.YY
+            // - DD Mon YYYY (e.g. 12 Jan 2023)
+            // - Mon DD, YYYY (e.g. Jan 12, 2023)
+            // - MM/DD or DD/MM (no year, fallback current year)
+            const dateRegex = new RegExp(
+            String.raw`(\d{4}[-/\.]\d{2}[-/\.]\d{2})|(\d{2}[-/\.]\d{2}[-/\.]\d{4})|(\d{2}[-/\.]\d{2}[-/\.]\d{2})|(\d{1,2}[-/\.]\d{1,2})|(\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*[\s,]*\d{2,4})|((?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s*\d{2,4})`,
+            "i"
+            );
+
             const dateMatch = text.match(dateRegex);
+
             if (dateMatch) {
-                // Normalize date to YYYY-MM-DD
-                const dateStr = dateMatch[0].replace(/\//g, '-');
-                const parts = dateStr.split('-');
-                if (parts[2].length === 4) { // DD-MM-YYYY
-                    foundDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                } else { // YYYY-MM-DD
+                let dateStr = dateMatch[0].trim().replace(/\./g, '-').replace(/\//g, '-').replace(/,/g, '');
+                let parts, day, month, year;
+
+                // Case 1: YYYY-MM-DD
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
                     foundDate = dateStr;
+
+                // Case 2: DD-MM-YYYY or MM-DD-YYYY
+                } else if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+                    parts = dateStr.split('-');
+                    // Assume first part is day if >12
+                    if (parseInt(parts[0], 10) > 12) {
+                        day = parts[0];
+                        month = parts[1];
+                    } else {
+                        // Ambiguous: default to DD-MM-YYYY
+                        day = parts[0];
+                        month = parts[1];
+                    }
+                    year = parts[2];
+                    foundDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+                // Case 3: DD-MM-YY or MM-DD-YY
+                } else if (/^\d{2}-\d{2}-\d{2}$/.test(dateStr)) {
+                    parts = dateStr.split('-');
+                    day = parts[0];
+                    month = parts[1];
+                    year = parseInt(parts[2], 10);
+                    year += year < 50 ? 2000 : 1900; // guess century
+                    foundDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+                // Case 4: MM-DD or DD-MM (no year, assume current year)
+                } else if (/^\d{1,2}-\d{1,2}$/.test(dateStr)) {
+                    parts = dateStr.split('-');
+                    day = parts[0];
+                    month = parts[1];
+                    year = new Date().getFullYear();
+                    foundDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+                // Case 5: Text month formats (e.g. 12 Jan 2023, Jan 12 23)
+                } else {
+                    const monthMap = {
+                        jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+                        jul: "07", aug: "08", sep: "09", sept: "09", oct: "10", nov: "11", dec: "12"
+                    };
+
+                    const textDateRegex = /(\d{1,2})\s+([a-z]+)\s+(\d{2,4})/i;
+                    const textDateAltRegex = /([a-z]+)\s+(\d{1,2})\s+(\d{2,4})/i;
+
+                    let match1 = dateStr.match(textDateRegex);
+                    let match2 = dateStr.match(textDateAltRegex);
+
+                    if (match1) {
+                        day = match1[1];
+                        month = monthMap[match1[2].substring(0,3).toLowerCase()] || "01";
+                        year = match1[3].length === 2 ? 
+                            (parseInt(match1[3],10) < 50 ? 2000+parseInt(match1[3],10) : 1900+parseInt(match1[3],10)) 
+                            : match1[3];
+                        foundDate = `${year}-${month}-${day.padStart(2, '0')}`;
+                    } else if (match2) {
+                        month = monthMap[match2[1].substring(0,3).toLowerCase()] || "01";
+                        day = match2[2];
+                        year = match2[3].length === 2 ? 
+                            (parseInt(match2[3],10) < 50 ? 2000+parseInt(match2[3],10) : 1900+parseInt(match2[3],10)) 
+                            : match2[3];
+                        foundDate = `${year}-${month}-${day.padStart(2, '0')}`;
+                    }
                 }
             }
+
             // C. Extract Amount
             let foundAmount = 0;
 
