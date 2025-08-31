@@ -9,72 +9,81 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="theme.css" />
+  <style>
+    #scanner-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      z-index: 1055; /* Higher than Bootstrap modal */
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #video-preview {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      border-radius: 8px;
+    }
+    #scanner-controls {
+      margin-top: 15px;
+    }
+    #ocr-loader {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      z-index: 1060;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <!-- Header Menu Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container-fluid">
-            <!-- Logo and Brand -->
             <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
                 <img src="logo-head.png" alt="FinSight Logo" class="logo-header">
             </a>
-            
-            <!-- Mobile Toggle Button -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
-            <!-- Menu Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.html">
-                            <i class="fas fa-home"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="input.html">
-                            <i class="fas fa-plus-circle"></i> Add Transaction
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="history.html">
-                            <i class="fas fa-list"></i> All Transactions
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="input.html"><i class="fas fa-plus-circle"></i> Add Transaction</a></li>
+                    <li class="nav-item"><a class="nav-link" href="history.html"><i class="fas fa-list"></i> All Transactions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="budget.html"><i class="fas fa-chart-pie"></i> Budget</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analyze.html"><i class="fas fa-chart-line"></i> Analyze</a></li>
                 </ul>
-                
-                <!-- Right Side Menu -->
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="myprofile.html">
-                            <i class="fas fa-user"></i> My Profile
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="logoutButton">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="myprofile.html"><i class="fas fa-user"></i> My Profile</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Message Container -->
     <div id="messageContainer" style="position: absolute; top: 70px; left: 30px; z-index: 9999; min-width: 250px;"></div>
 
     <div class="container mt-4">
         <div class="form-container">
-            <h2 class="mb-4 text-center">Add Transaction</h2>
+            <div class="d-flex justify-content-center align-items-center mb-4">
+                <h2 class="text-center m-0">Add Transaction</h2>
+                <button id="scanReceiptBtn" class="btn btn-outline-primary ms-3">
+                    <i class="fas fa-camera"></i> Scan
+                </button>
+            </div>
+
             <form id="transactionForm">
                 <div class="mb-3">
                     <label for="type" class="form-label">Type</label>
@@ -105,18 +114,8 @@
                 </div>
                 <div id="recurringOptions" style="display: none;">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="frequency" class="form-label">Frequency</label>
-                            <select class="form-select" id="frequency">
-                                <option value="Daily">Daily</option>
-                                <option value="Weekly">Weekly</option>
-                                <option value="Monthly" selected>Monthly</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="instances" class="form-label">Instances</label>
-                            <input type="number" class="form-control" id="instances" min="1">
-                        </div>
+                        <div class="col-md-6 mb-3"><label for="frequency" class="form-label">Frequency</label><select class="form-select" id="frequency"><option value="Daily">Daily</option><option value="Weekly">Weekly</option><option value="Monthly" selected>Monthly</option></select></div>
+                        <div class="col-md-6 mb-3"><label for="instances" class="form-label">Instances</label><input type="number" class="form-control" id="instances" min="1"></div>
                     </div>
                 </div>
                 <div class="d-grid mt-4">
@@ -125,17 +124,36 @@
             </form>
         </div>
     </div>
+    
+    <div id="scanner-container">
+        <video id="video-preview" playsinline></video>
+        <canvas id="canvas-capture" style="display: none;"></canvas>
+        <div id="scanner-controls">
+            <button id="captureBtn" class="btn btn-success btn-lg me-2"><i class="fas fa-camera"></i> Capture</button>
+            <button id="closeScannerBtn" class="btn btn-danger btn-lg"><i class="fas fa-times"></i> Close</button>
+        </div>
+    </div>
+
+    <div id="ocr-loader" style="display: none;">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p id="ocr-status" class="mt-3 text-primary fw-bold">Scanning receipt...</p>
+    </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
     <script type="module">
         import { getFirestore, collection, addDoc, doc, getDoc, writeBatch, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { auth, db } from "./firebase-config.js";
 
         let currentUserId = null;
+        let videoStream = null;
 
-        // Default categories
+        // --- EXISTING CODE ---
         const defaultIncomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
         const defaultExpenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
-
         let userIncomeCategories = defaultIncomeCategories;
         let userExpenseCategories = defaultExpenseCategories;
 
@@ -144,7 +162,7 @@
                 currentUserId = user.uid;
                 await loadUserCategories(user.uid);
                 updateCategories();
-                await autofillLastTransactionDate(user.uid); // Added this line
+                await autofillLastTransactionDate(user.uid);
             } else {
                 window.location.href = "index.html";
             }
@@ -158,30 +176,20 @@
                     userIncomeCategories = userData.selectedIncomeCategories || defaultIncomeCategories;
                     userExpenseCategories = userData.selectedExpenseCategories || defaultExpenseCategories;
                 }
-            } catch (error) {
-                console.error("Error loading user categories:", error);
-            }
+            } catch (error) { console.error("Error loading user categories:", error); }
         }
-        // Autofill date with last transaction date
+
         async function autofillLastTransactionDate(userId) {
             try {
                 const transactionsRef = collection(db, "users", userId, "transactions");
                 const q = query(transactionsRef, orderBy("date", "desc"), limit(1));
                 const querySnapshot = await getDocs(q);
                 let lastDate = null;
-                querySnapshot.forEach((doc) => {
-                    lastDate = doc.data().date;
-                });
+                querySnapshot.forEach((doc) => { lastDate = doc.data().date; });
                 const dateInput = document.getElementById("date");
-                if (lastDate) {
-                    dateInput.value = lastDate;
-                } else {
-                    // If no previous transaction, set to today
-                    dateInput.value = new Date().toISOString().split('T')[0];
-                }
+                dateInput.value = lastDate || new Date().toISOString().split('T')[0];
             } catch (error) {
                 console.error("Error fetching last transaction date:", error);
-                // Fallback to today
                 document.getElementById("date").value = new Date().toISOString().split('T')[0];
             }
         }
@@ -190,7 +198,6 @@
             const type = document.getElementById("type").value;
             const categorySelect = document.getElementById("category");
             categorySelect.innerHTML = "";
-            
             const categories = type === "Income" ? userIncomeCategories : userExpenseCategories;
             categories.forEach(category => {
                 const option = document.createElement("option");
@@ -200,24 +207,16 @@
             });
         };
 
-        window.onload = () => {
-            updateCategories();
-        };
-
+        window.onload = () => { updateCategories(); };
         document.getElementById("type").addEventListener("change", updateCategories);
 
         document.getElementById('recurringCheck').addEventListener('change', function() {
-            const recurringOptions = document.getElementById('recurringOptions');
-            if (this.checked) {
-                recurringOptions.style.display = 'block';
-            } else {
-                recurringOptions.style.display = 'none';
-            }
+            document.getElementById('recurringOptions').style.display = this.checked ? 'block' : 'none';
         });
 
         const transactionForm = document.getElementById("transactionForm");
         transactionForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
+             e.preventDefault();
             const type = document.getElementById("type").value;
             const category = document.getElementById("category").value;
             const amount = document.getElementById("amount").value;
@@ -233,39 +232,21 @@
             if (isRecurring) {
                 const frequency = document.getElementById("frequency").value;
                 const instances = parseInt(document.getElementById("instances").value);
-
                 if (!instances || instances <= 0) {
                     showMessage("Please enter a valid number of instances for recurring transaction.", "error");
                     return;
                 }
-
                 const batch = writeBatch(db);
-                const recurringId = doc(collection(db, "users")).id; // Generate a unique ID for the series
-
+                const recurringId = doc(collection(db, "users")).id;
                 for (let i = 0; i < instances; i++) {
                     const transactionDate = new Date(date);
-                    if (frequency === 'Daily') {
-                        transactionDate.setDate(transactionDate.getDate() + i);
-                    } else if (frequency === 'Weekly') {
-                        transactionDate.setDate(transactionDate.getDate() + (i * 7));
-                    } else if (frequency === 'Monthly') {
-                        transactionDate.setMonth(transactionDate.getMonth() + i);
-                    }
-
+                    if (frequency === 'Daily') transactionDate.setDate(transactionDate.getDate() + i);
+                    else if (frequency === 'Weekly') transactionDate.setDate(transactionDate.getDate() + (i * 7));
+                    else if (frequency === 'Monthly') transactionDate.setMonth(transactionDate.getMonth() + i);
+                    
                     const transactionRef = doc(collection(db, "users", currentUserId, "transactions"));
-                    batch.set(transactionRef, {
-                        type,
-                        category,
-                        amount: parseFloat(amount),
-                        date: transactionDate.toISOString().split('T')[0],
-                        comment,
-                        isRecurring: true,
-                        recurringId,
-                        frequency,
-                        instances
-                    });
+                    batch.set(transactionRef, { type, category, amount: parseFloat(amount), date: transactionDate.toISOString().split('T')[0], comment, isRecurring: true, recurringId, frequency, instances });
                 }
-
                 try {
                     await batch.commit();
                     showMessage(`Successfully added ${instances} recurring transactions!`, "success");
@@ -276,17 +257,9 @@
                     console.error("Error adding recurring transactions: ", e);
                     showMessage("Failed to add recurring transactions. Please try again.", "error");
                 }
-
             } else {
                 try {
-                    await addDoc(collection(db, "users", currentUserId, "transactions"), {
-                        type,
-                        category,
-                        amount: parseFloat(amount),
-                        date,
-                        comment,
-                        isRecurring: false
-                    });
+                    await addDoc(collection(db, "users", currentUserId, "transactions"), { type, category, amount: parseFloat(amount), date, comment, isRecurring: false });
                     showMessage("Transaction added successfully!", "success");
                     transactionForm.reset();
                     updateCategories();
@@ -296,21 +269,10 @@
                 }
             }
         });
-
-        // Message display function
+        
         function showMessage(text, type = "success") {
             const container = document.getElementById("messageContainer");
-            container.innerHTML = `<div id="fadeMessage" style="
-                padding: 12px 20px;
-                border-radius: 6px;
-                font-weight: 500;
-                font-size: 1.1rem;
-                background: ${type === "success" ? "#e6f9ec" : "#ffeaea"};
-                color: ${type === "success" ? "#198754" : "#dc3545"};
-                box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-                opacity: 1;
-                transition: opacity 0.7s;
-            ">${text}</div>`;
+            container.innerHTML = `<div id="fadeMessage" style="padding:12px 20px; border-radius:6px; font-weight:500; font-size:1.1rem; background:${type === "success" ? "#e6f9ec" : "#ffeaea"}; color:${type === "success" ? "#198754" : "#dc3545"}; box-shadow:0 2px 8px rgba(0,0,0,0.07); opacity:1; transition:opacity 0.7s;">${text}</div>`;
             setTimeout(() => {
                 const msg = document.getElementById("fadeMessage");
                 if (msg) msg.style.opacity = "0";
@@ -321,13 +283,170 @@
         const logoutButton = document.getElementById("logoutButton");
         logoutButton.addEventListener('click', async (e) => {
             e.preventDefault();
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Error signing out: ", error);
-                alert("Failed to log out. Please try again.");
-            }
+            try { await signOut(auth); } 
+            catch (error) { console.error("Error signing out: ", error); alert("Failed to log out. Please try again."); }
         });
+        
+        // --- NEW SCANNER FUNCTIONALITY ---
+
+        const scanButton = document.getElementById('scanReceiptBtn');
+        const scannerContainer = document.getElementById('scanner-container');
+        const video = document.getElementById('video-preview');
+        const captureBtn = document.getElementById('captureBtn');
+        const closeScannerBtn = document.getElementById('closeScannerBtn');
+        const canvas = document.getElementById('canvas-capture');
+        const loader = document.getElementById('ocr-loader');
+        const ocrStatus = document.getElementById('ocr-status');
+
+        // 1. Open Camera View
+        const openCamera = async () => {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } // Prefer the rear camera
+                });
+                video.srcObject = videoStream;
+                video.play();
+                scannerContainer.style.display = 'flex';
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                showMessage("Could not access camera. Please check permissions.", "error");
+            }
+        };
+
+        // 2. Close Camera and Stop Stream
+        const closeCamera = () => {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+            scannerContainer.style.display = 'none';
+        };
+
+        // 3. Capture Image from Video
+        const captureImage = () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            closeCamera();
+            scanImageFromCanvas();
+        };
+
+        // 4. Scan the Captured Image using Tesseract
+        const scanImageFromCanvas = async () => {
+            loader.style.display = 'flex';
+            try {
+                const { data: { text } } = await Tesseract.recognize(
+                    canvas,
+                    'eng',
+                    {
+                        logger: m => {
+                           ocrStatus.textContent = `${m.status} (${(m.progress * 100).toFixed(0)}%)`;
+                        }
+                    }
+                );
+                extractDataFromText(text);
+            } catch (err) {
+                console.error("OCR Error:", err);
+                showMessage("Failed to scan receipt. Please try again.", "error");
+            } finally {
+                loader.style.display = 'none';
+                ocrStatus.textContent = 'Scanning receipt...'; // Reset status
+            }
+        };
+        
+        // 5. Extract Data from OCR Text (The "Brain")
+        const extractDataFromText = (text) => {
+            console.log("OCR Text:", text); // For debugging
+            const lowerCaseText = text.toLowerCase();
+            
+            // A. Extract Category
+            const categoryKeywords = {
+                "Transport": ["pickme", "hire", "travel", "uber", "taxi", "bus", "train"],
+                "Food": ["food", "eat", "restaurant", "cafe", "pizza", "kottu", "keells", "cargills", "glomark", "supermarket"],
+                "Utilities": ["bill", "electricity", "water", "internet", "dialog", "mobitel"],
+                "Health": ["pharmacy", "hospital", "clinic", "doctor"],
+                "Clothing": ["clothing", "fashion", "nolimit", "odel"]
+            };
+
+            let foundCategory = null;
+            for (const category in categoryKeywords) {
+                if (categoryKeywords[category].some(keyword => lowerCaseText.includes(keyword))) {
+                    foundCategory = category;
+                    break;
+                }
+            }
+
+            // B. Extract Date
+            let foundDate = null;
+            // Matches YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY
+            const dateRegex = /(\d{4}-\d{2}-\d{2})|(\d{2}[-\/]\d{2}[-\/]\d{4})/;
+            const dateMatch = text.match(dateRegex);
+            if (dateMatch) {
+                // Normalize date to YYYY-MM-DD
+                const dateStr = dateMatch[0].replace(/\//g, '-');
+                const parts = dateStr.split('-');
+                if (parts[2].length === 4) { // DD-MM-YYYY
+                    foundDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                } else { // YYYY-MM-DD
+                    foundDate = dateStr;
+                }
+            }
+            
+            // C. Extract Amount
+            let foundAmount = 0;
+            // Matches numbers like 1,234.56 or 1234.56, looks for keywords like total, amount
+            const amountRegex = /(?:total|amount|balance|subtotal|rs|lkr)[\s:]*([\d,]+\.\d{2})/ig;
+            let amountMatches;
+            let maxAmount = 0;
+
+            while ((amountMatches = amountRegex.exec(text)) !== null) {
+                const amount = parseFloat(amountMatches[1].replace(/,/g, ''));
+                if (amount > maxAmount) {
+                    maxAmount = amount;
+                }
+            }
+            // Fallback: If no keyword is found, find the largest number on the receipt
+            if (maxAmount === 0) {
+                 const genericAmountRegex = /([\d,]+\.\d{2})/g;
+                 let genericMatches;
+                 while((genericMatches = genericAmountRegex.exec(text)) !== null) {
+                    const amount = parseFloat(genericMatches[0].replace(/,/g, ''));
+                    if (amount > maxAmount) maxAmount = amount;
+                 }
+            }
+            foundAmount = maxAmount;
+
+            fillFormWithExtractedData(foundCategory, foundDate, foundAmount, text);
+        };
+        
+        // 6. Fill the Form
+        const fillFormWithExtractedData = (category, date, amount, rawText) => {
+            if (category) {
+                // Check if the category exists in the dropdown
+                const categorySelect = document.getElementById('category');
+                const categoryExists = [...categorySelect.options].some(opt => opt.value === category);
+                if (categoryExists) {
+                    categorySelect.value = category;
+                }
+            }
+            if (date) {
+                document.getElementById('date').value = date;
+            }
+            if (amount > 0) {
+                document.getElementById('amount').value = amount.toFixed(2);
+            }
+
+            // Put the rest of the text in the comment for user reference
+            const commentField = document.getElementById('comment');
+            commentField.value = `[Scanned Receipt] \n${rawText.substring(0, 100)}...`;
+
+            showMessage("Receipt scanned! Please review the details.", "success");
+        };
+
+        // Add Event Listeners
+        scanButton.addEventListener('click', openCamera);
+        closeScannerBtn.addEventListener('click', closeCamera);
+        captureBtn.addEventListener('click', captureImage);
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
