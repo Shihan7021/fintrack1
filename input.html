@@ -360,11 +360,23 @@
             
             // A. Extract Category
             const categoryKeywords = {
-                "Transport": ["pickme", "hire", "travel", "uber", "taxi", "bus", "train"],
-                "Food": ["food", "eat", "restaurant", "cafe", "pizza", "kottu", "keells", "cargills", "glomark", "supermarket"],
-                "Utilities": ["bill", "electricity", "water", "internet", "dialog", "mobitel"],
-                "Health": ["pharmacy","chemists", "hospital", "clinic", "doctor"],
-                "Clothing": ["clothing", "fashion", "nolimit", "odel"]
+                "Transport": ["pickme","uber", "hire", "travel", "uber", "taxi", "bus", "train", "cab", "transport", "rental", "ride", "fare", "ticket"],
+                "Food": ["food", "pickme food","uber eats","eat", "restaurant", "cafe", "pizza", "kottu", "meal", "dine", "burger", "coffee", "tea", "breakfast", "lunch", "dinner"],
+                "Utilities": ["bill", "electricity", "water", "internet", "dialog", "mobitel", "airtel", "utility", "power", "phone", "broadband", "gas", "gas bill", "electricity bill", "water bill", "internet bill", "dialog bill", "mobitel bill", "airtel bill", "broadband bill", "gas bill", "power bill", "phone bill"],
+                "Health": ["pharmacy","chemists", "hospital", "clinic", "doctor", "medicine", "medication", "health", "dental", "optical", "surgery", "wellness", "physiotherapy"],
+                "Clothing": ["clothing", "fashion", "nolimit", "odel", "apparel", "shoes", "wear", "garments", "dress", "outfit", "jeans", "t-shirt", "sneakers"],
+                "Fuel": ["filling", "station", "petrol", "gasoline", "gas", "diesel", "service", "fuel", "oil"],
+                "Entertainment": ["movie", "cinema", "netflix", "spotify", "concert", "game", "theater", "entertainment", "show", "event", "amusement", "recreation"],
+                "Household": ["furniture", "appliance", "home", "decor", "ikea", "laundry","keells", "cargills", "glomark", "supermarket", "grocery"],
+                "Cash Withdraw": ["atm", "withdraw", "cash", "money", "bank", "transfer", "payment", "withdrawal", "deposit", "transfer", "cheque", "cheque deposit", "cheque withdrawal", "cheque payment", "cheque transfer"],
+                "Loans": ["loan", "bank", "finance", "interest","debt", "emi", "mortgage", "credit"],
+                "Savings": ["savings", "deposit", "fixed deposit", "recurring deposit", "fd", "rd", "investment"],
+                "Salary": ["salary", "payroll", "income", "employer"],
+                "Gift": ["gift", "present", "donation", "charity", "donation", "charity", "gift", "present", "donation", "charity", "donation", "charity"],
+                "Bonus": ["bonus", "incentive", "reward"],
+                "Interest": ["interest", "dividend", "investment", "returns", "dividends"],
+                "Business Income": ["business", "freelance", "contract", "client"],
+                "Others": ["others", "miscellaneous", "various", "misc", "other" ]
             };
 
             let foundCategory = null;
@@ -394,7 +406,7 @@
             // C. Extract Amount
             let foundAmount = 0;
             // Matches numbers like 1,234.56 or 1234.56, looks for keywords like total, amount
-            const amountRegex = /(?:total|net|amount|balance|subtotal|rs|lkr)[\s:]*([\d,]+\.\d{2})/ig;
+            const amountRegex = /(?:total|net|amount|balance|subtotal|rs|lkr|$|Rs|LKR|INR|EUR|USD|GBP|JPY)[\s:]*([\d,]+\.\d{2})/ig;
             let amountMatches;
             let maxAmount = 0;
 
