@@ -363,7 +363,7 @@
                 "Transport": ["pickme", "hire", "travel", "uber", "taxi", "bus", "train"],
                 "Food": ["food", "eat", "restaurant", "cafe", "pizza", "kottu", "keells", "cargills", "glomark", "supermarket"],
                 "Utilities": ["bill", "electricity", "water", "internet", "dialog", "mobitel"],
-                "Health": ["pharmacy", "hospital", "clinic", "doctor"],
+                "Health": ["pharmacy","chemists", "hospital", "clinic", "doctor"],
                 "Clothing": ["clothing", "fashion", "nolimit", "odel"]
             };
 
@@ -394,7 +394,7 @@
             // C. Extract Amount
             let foundAmount = 0;
             // Matches numbers like 1,234.56 or 1234.56, looks for keywords like total, amount
-            const amountRegex = /(?:total|amount|balance|subtotal|rs|lkr)[\s:]*([\d,]+\.\d{2})/ig;
+            const amountRegex = /(?:total|net|amount|balance|subtotal|rs|lkr)[\s:]*([\d,]+\.\d{2})/ig;
             let amountMatches;
             let maxAmount = 0;
 
