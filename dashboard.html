@@ -571,7 +571,8 @@
         function renderFavorites(transactions) {
             const favoritesContainer = document.getElementById('favoritesContainer');
             if (!favoritesContainer) return;
-            const favorites = transactions.filter(t => t.isFavorite);
+            // Fix: Some Firestore records may store isFavorite as string "true" or boolean true
+            const favorites = transactions.filter(t => t.isFavorite === true || t.isFavorite === "true");
             if (favorites.length === 0) {
                 favoritesContainer.innerHTML = `<div class="text-muted" style="padding: 12px;">No favorites yet.</div>`;
                 return;
