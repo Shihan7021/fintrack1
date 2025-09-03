@@ -108,9 +108,15 @@
                     <label for="comment" class="form-label">Comment</label>
                     <textarea class="form-control" id="comment" rows="2"></textarea>
                 </div>
-                <div class="mb-3 form-check">
+                <div class="mb-3 form-check d-flex align-items-center">
                     <input type="checkbox" class="form-check-input" id="recurringCheck">
-                    <label class="form-check-label" for="recurringCheck">Recurring Transaction</label>
+                    <label class="form-check-label me-3" for="recurringCheck">Recurring Transaction</label>
+                    <!-- Add to Favorite Checkbox -->
+                    <input type="checkbox" class="btn-check" id="favoriteCheck" autocomplete="off" style="display:none;">
+                    <label id="favoriteLabel" class="ms-2" for="favoriteCheck" style="cursor:pointer;">
+                        <i id="favoriteIcon" class="fa-regular fa-heart" style="font-size:1.3rem; border:1.5px solid #222; border-radius:50%; padding:2px; color:#222; transition:color 0.2s, border-color 0.2s;"></i>
+                    </label>
+                    <span class="ms-1" style="font-size:0.98rem;">Add to Favorite</span>
                 </div>
                 <div id="recurringOptions" style="display: none;">
                     <div class="row">
@@ -223,6 +229,7 @@
             const date = document.getElementById("date").value;
             const comment = document.getElementById("comment").value;
             const isRecurring = document.getElementById("recurringCheck").checked;
+            const isFavorite = favoriteCheck.checked;
 
             if (!currentUserId) {
                 showMessage("You must be logged in to add a transaction.", "error");
@@ -245,7 +252,7 @@
                     else if (frequency === 'Monthly') transactionDate.setMonth(transactionDate.getMonth() + i);
                     
                     const transactionRef = doc(collection(db, "users", currentUserId, "transactions"));
-                    batch.set(transactionRef, { type, category, amount: parseFloat(amount), date: transactionDate.toISOString().split('T')[0], comment, isRecurring: true, recurringId, frequency, instances });
+                    batch.set(transactionRef, { type, category, amount: parseFloat(amount), date: transactionDate.toISOString().split('T')[0], comment, isRecurring: true, recurringId, frequency, instances, isFavorite });
                 }
                 try {
                     await batch.commit();
@@ -259,7 +266,16 @@
                 }
             } else {
                 try {
-                    await addDoc(collection(db, "users", currentUserId, "transactions"), { type, category, amount: parseFloat(amount), date, comment, isRecurring: false });
+                    await addDoc(collection(db, "users", currentUserId, "transactions"), { type, category, amount: parseFloat(amount), date, comment, isRecurring: false, isFavorite });
+                    // Save to DB if favorite
+                    if (isFavorite) {
+                        await addDoc(collection(db, 'users', currentUserId, 'favorites'), {
+                            amount,
+                            category,
+                            type,
+                            date: new Date().toISOString().split('T')[0]
+                        });
+                    }
                     showMessage("Transaction added successfully!", "success");
                     transactionForm.reset();
                     updateCategories();
@@ -581,6 +597,32 @@
         closeScannerBtn.addEventListener('click', closeCamera);
         captureBtn.addEventListener('click', captureImage);
 
+        // Favorite checkbox logic
+        const favoriteCheck = document.getElementById('favoriteCheck');
+        const favoriteIcon = document.getElementById('favoriteIcon');
+        const favoriteLabel = document.getElementById('favoriteLabel');
+
+        favoriteLabel.addEventListener('click', () => {
+            favoriteCheck.checked = !favoriteCheck.checked;
+            updateFavoriteIcon();
+        });
+
+        function updateFavoriteIcon() {
+            if (favoriteCheck.checked) {
+                favoriteIcon.classList.remove('fa-regular');
+                favoriteIcon.classList.add('fa-solid');
+                favoriteIcon.style.color = '#a259e6'; // purple
+                favoriteIcon.style.borderColor = '#a259e6';
+            } else {
+                favoriteIcon.classList.remove('fa-solid');
+                favoriteIcon.classList.add('fa-regular');
+                favoriteIcon.style.color = '#222';
+                favoriteIcon.style.borderColor = '#222';
+            }
+        }
+
+        // Initialize icon on load
+        updateFavoriteIcon();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
