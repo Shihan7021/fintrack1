@@ -571,8 +571,15 @@
         function renderFavorites(transactions) {
             const favoritesContainer = document.getElementById('favoritesContainer');
             if (!favoritesContainer) return;
-            // Fix: Some Firestore records may store isFavorite as string "true" or boolean true
-            const favorites = transactions.filter(t => t.isFavorite === true || t.isFavorite === "true");
+
+            // Fix: handle boolean, string, and number types for isFavorite
+            const favorites = transactions.filter(t => {
+                if (typeof t.isFavorite === "boolean") return t.isFavorite;
+                if (typeof t.isFavorite === "string") return t.isFavorite.toLowerCase() === "true" || t.isFavorite === "1";
+                if (typeof t.isFavorite === "number") return t.isFavorite === 1;
+                return false;
+            });
+
             if (favorites.length === 0) {
                 favoritesContainer.innerHTML = `<div class="text-muted" style="padding: 12px;">No favorites yet.</div>`;
                 return;
