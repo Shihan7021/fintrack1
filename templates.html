@@ -118,36 +118,37 @@
 
         const renderTemplateCard = (docId, data) => {
             const isIncome = data.type === 'Income';
-            const url = `input.html?type=${encodeURIComponent(data.type)}&category=${encodeURIComponent(data.category)}&amount=${encodeURIComponent(data.amount)}`;
-            
+            // MODIFICATION: Removed the <a> tag and added data attributes to the card itself.
             const cardHtml = `
                 <div class="col-md-6 col-lg-4" id="template-${docId}">
-                    <a href="${url}" class="text-decoration-none" style="color: inherit;">
-                        <div class="card template-card shadow-sm h-100">
-                            <div class="card-body">
-                                <span class="badge ${isIncome ? 'bg-success' : 'bg-danger'} mb-2">${data.type}</span>
-                                <h5 class="card-title">${data.category}</h5>
-                                <p class="card-text text-muted mb-1">Date: ${data.date}</p>
-                                <p class="card-text h4">LKR ${parseFloat(data.amount).toFixed(2)}</p>
-                            </div>
-                            <div class="card-footer bg-white border-0 text-end">
-                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${docId}">
-                                    <i class="fas fa-trash-alt me-1"></i> Delete
-                                </button>
-                            </div>
+                    <div class="card template-card shadow-sm h-100" 
+                         style="cursor: pointer;"
+                         data-type="${data.type}" 
+                         data-category="${data.category}" 
+                         data-amount="${data.amount}">
+                        <div class="card-body">
+                            <span class="badge ${isIncome ? 'bg-success' : 'bg-danger'} mb-2">${data.type}</span>
+                            <h5 class="card-title">${data.category}</h5>
+                            <p class="card-text text-muted mb-1">Date: ${data.date}</p>
+                            <p class="card-text h4">LKR ${parseFloat(data.amount).toFixed(2)}</p>
                         </div>
-                    </a>
+                        <div class="card-footer bg-white border-0 text-end">
+                            <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${docId}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
             templatesContainer.innerHTML += cardHtml;
         };
         
-        // Event Delegation for delete buttons
+        // MODIFICATION: Updated event listener to handle both card clicks and delete clicks.
         templatesContainer.addEventListener('click', async (e) => {
             const deleteButton = e.target.closest('.delete-btn');
+            
             if (deleteButton) {
-                e.preventDefault(); // Stop the link from being followed
-
+                // Handle delete button click
                 const docId = deleteButton.dataset.id;
                 
                 if (!currentUserId || !docId) return;
@@ -163,18 +164,29 @@
                         cardElement.style.opacity = '0';
                         setTimeout(() => {
                             cardElement.remove();
-                            // After animation, check if container is empty and show message if so.
                             if (templatesContainer.childElementCount === 0) {
                                 fetchTemplates(currentUserId);
                             }
                         }, 500);
-
 
                         showMessage("Template deleted successfully!", "success");
 
                     } catch (error) {
                         console.error("Error deleting template:", error);
                         showMessage("Failed to delete template.", "error");
+                    }
+                }
+            } else {
+                // Handle click on the card itself for navigation
+                const card = e.target.closest('.template-card');
+                if (card) {
+                    const type = card.dataset.type;
+                    const category = card.dataset.category;
+                    const amount = card.dataset.amount;
+
+                    if (type && category && amount) {
+                        const url = `input.html?type=${encodeURIComponent(type)}&category=${encodeURIComponent(category)}&amount=${encodeURIComponent(amount)}`;
+                        window.location.href = url;
                     }
                 }
             }
