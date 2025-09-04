@@ -181,15 +181,11 @@
 
         async function autofillLastTransactionDate(userId) {
             try {
-                const transactionsRef = collection(db, "users", userId, "transactions");
-                const q = query(transactionsRef, orderBy("date", "desc"), limit(1));
-                const querySnapshot = await getDocs(q);
-                let lastDate = null;
-                querySnapshot.forEach((doc) => { lastDate = doc.data().date; });
+                // Always fill today's date, not last transaction date
                 const dateInput = document.getElementById("date");
-                dateInput.value = lastDate || new Date().toISOString().split('T')[0];
+                dateInput.value = new Date().toISOString().split('T')[0];
             } catch (error) {
-                console.error("Error fetching last transaction date:", error);
+                console.error("Error setting today's date:", error);
                 document.getElementById("date").value = new Date().toISOString().split('T')[0];
             }
         }
