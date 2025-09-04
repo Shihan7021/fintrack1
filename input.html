@@ -108,9 +108,16 @@
                     <label for="comment" class="form-label">Comment</label>
                     <textarea class="form-control" id="comment" rows="2"></textarea>
                 </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="recurringCheck">
-                    <label class="form-check-label" for="recurringCheck">Recurring Transaction</label>
+                
+                <div class="d-flex justify-content-start mb-3">
+                    <div class="form-check me-4">
+                        <input type="checkbox" class="form-check-input" id="recurringCheck">
+                        <label class="form-check-label" for="recurringCheck">Recurring Transaction</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="saveTemplateCheck">
+                        <label class="form-check-label" for="saveTemplateCheck">Save as Template</label>
+                    </div>
                 </div>
                 <div id="recurringOptions" style="display: none;">
                     <div class="row">
@@ -219,6 +226,9 @@
             const date = document.getElementById("date").value;
             const comment = document.getElementById("comment").value;
             const isRecurring = document.getElementById("recurringCheck").checked;
+            
+            // MODIFICATION: Get the state of the new 'Save as Template' checkbox
+            const isTemplate = document.getElementById("saveTemplateCheck").checked;
 
             if (!currentUserId) {
                 showMessage("You must be logged in to add a transaction.", "error");
@@ -241,7 +251,20 @@
                     else if (frequency === 'Monthly') transactionDate.setMonth(transactionDate.getMonth() + i);
                     
                     const transactionRef = doc(collection(db, "users", currentUserId, "transactions"));
-                    batch.set(transactionRef, { type, category, amount: parseFloat(amount), date: transactionDate.toISOString().split('T')[0], comment, isRecurring: true, recurringId, frequency, instances });
+                    
+                    // MODIFICATION: Add the isTemplate field to the transaction object
+                    batch.set(transactionRef, { 
+                        type, 
+                        category, 
+                        amount: parseFloat(amount), 
+                        date: transactionDate.toISOString().split('T')[0], 
+                        comment, 
+                        isRecurring: true, 
+                        recurringId, 
+                        frequency, 
+                        instances,
+                        isTemplate: isTemplate // Add template tag
+                    });
                 }
                 try {
                     await batch.commit();
@@ -255,7 +278,16 @@
                 }
             } else {
                 try {
-                    await addDoc(collection(db, "users", currentUserId, "transactions"), { type, category, amount: parseFloat(amount), date, comment, isRecurring: false });
+                    // MODIFICATION: Add the isTemplate field to the transaction object
+                    await addDoc(collection(db, "users", currentUserId, "transactions"), { 
+                        type, 
+                        category, 
+                        amount: parseFloat(amount), 
+                        date, 
+                        comment, 
+                        isRecurring: false,
+                        isTemplate: isTemplate // Add template tag
+                    });
                     showMessage("Transaction added successfully!", "success");
                     transactionForm.reset();
                     updateCategories();
