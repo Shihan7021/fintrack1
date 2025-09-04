@@ -245,7 +245,7 @@
                     else if (frequency === 'Monthly') transactionDate.setMonth(transactionDate.getMonth() + i);
                     
                     const transactionRef = doc(collection(db, "users", currentUserId, "transactions"));
-                    batch.set(transactionRef, { type, category, amount: parseFloat(amount), date: transactionDate.toISOString().split('T')[0], comment, isRecurring: true, recurringId, frequency, instances, isFavorite });
+                    batch.set(transactionRef, { type, category, amount: parseFloat(amount), date: transactionDate.toISOString().split('T')[0], comment, isRecurring: true, recurringId, frequency, instances });
                 }
                 try {
                     await batch.commit();
@@ -259,16 +259,7 @@
                 }
             } else {
                 try {
-                    await addDoc(collection(db, "users", currentUserId, "transactions"), { type, category, amount: parseFloat(amount), date, comment, isRecurring: false, isFavorite });
-                    // Save to DB if favorite
-                    if (isFavorite) {
-                        await addDoc(collection(db, 'users', currentUserId, 'favorites'), {
-                            amount,
-                            category,
-                            type,
-                            date: new Date().toISOString().split('T')[0]
-                        });
-                    }
+                    await addDoc(collection(db, "users", currentUserId, "transactions"), { type, category, amount: parseFloat(amount), date, comment, isRecurring: false });
                     showMessage("Transaction added successfully!", "success");
                     transactionForm.reset();
                     updateCategories();
@@ -590,32 +581,6 @@
         closeScannerBtn.addEventListener('click', closeCamera);
         captureBtn.addEventListener('click', captureImage);
 
-        // Favorite checkbox logic
-        const favoriteCheck = document.getElementById('favoriteCheck');
-        const favoriteIcon = document.getElementById('favoriteIcon');
-        const favoriteLabel = document.getElementById('favoriteLabel');
-
-        favoriteLabel.addEventListener('click', () => {
-            favoriteCheck.checked = !favoriteCheck.checked;
-            updateFavoriteIcon();
-        });
-
-        function updateFavoriteIcon() {
-            if (favoriteCheck.checked) {
-                favoriteIcon.classList.remove('fa-regular');
-                favoriteIcon.classList.add('fa-solid');
-                favoriteIcon.style.color = '#a259e6'; // purple
-                favoriteIcon.style.borderColor = '#a259e6';
-            } else {
-                favoriteIcon.classList.remove('fa-solid');
-                favoriteIcon.classList.add('fa-regular');
-                favoriteIcon.style.color = '#222';
-                favoriteIcon.style.borderColor = '#222';
-            }
-        }
-
-        // Initialize icon on load
-        updateFavoriteIcon();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

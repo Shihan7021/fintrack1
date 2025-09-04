@@ -560,37 +560,6 @@
             });
         }
 
-        function renderFavorites(transactions) {
-            const favoritesContainer = document.getElementById('favoritesContainer');
-            if (!favoritesContainer) return;
-            const favorites = transactions.filter(t => t.isFavorite);
-            if (favorites.length === 0) {
-                favoritesContainer.innerHTML = `<div class="text-muted" style="padding: 12px;">No favorites yet.</div>`;
-                return;
-            }
-            favoritesContainer.innerHTML = '';
-            favorites.forEach(fav => {
-                const card = document.createElement('div');
-                card.className = 'card mb-2';
-                card.style.cursor = 'pointer';
-                card.innerHTML = `
-                    <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold">${fav.category}</span>
-                        <span class="text-primary">${parseFloat(fav.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
-                    </div>
-                `;
-                card.onclick = () => {
-                    const params = new URLSearchParams({
-                        category: fav.category,
-                        amount: fav.amount,
-                        type: fav.type
-                    });
-                    window.location.href = `input.html?${params.toString()}`;
-                };
-                favoritesContainer.appendChild(card);
-            });
-        }
-
         function renderDashboard() {
             const filtered = filterTransactions();
             populateCategoryFilter();
