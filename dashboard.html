@@ -154,17 +154,9 @@
         <div style="font-family: 'Roboto', sans-serif;"  class="justify-content-center mb-4">
             <h5>Budgets Overview</h5>
             <div id="budgetGaugeContainer" class="justify-content-center d-flex flex-row flex-nowrap overflow-auto pb-2">
-            </div>
+                </div>
         </div>
         
-        <!-- Favourites Section -->
-        <div class="mb-4">
-            <h5>Favourites</h5>
-            <div id="favoritesContainer" style="max-height: 220px; overflow-y: auto;">
-                <!-- Favorite cards will be injected here -->
-            </div>
-        </div>
-
         <div class="row">
             <div class="col-md-6 mb-4">
                 <canvas id="incomeChart" aria-label="Income Chart" role="img"></canvas>
@@ -571,48 +563,27 @@
         function renderFavorites(transactions) {
             const favoritesContainer = document.getElementById('favoritesContainer');
             if (!favoritesContainer) return;
-
-            // Defensive: check for undefined/null, and support both direct and nested isFavorite
-            const favorites = transactions.filter(t => {
-                // Try direct property
-                if (typeof t.isFavorite !== "undefined" && t.isFavorite !== null) {
-                    if (typeof t.isFavorite === "boolean") return t.isFavorite;
-                    if (typeof t.isFavorite === "string") return t.isFavorite.toLowerCase() === "true" || t.isFavorite === "1";
-                    if (typeof t.isFavorite === "number") return t.isFavorite === 1;
-                }
-                // Try nested property (if transaction data is nested)
-                if (t.data && typeof t.data.isFavorite !== "undefined" && t.data.isFavorite !== null) {
-                    if (typeof t.data.isFavorite === "boolean") return t.data.isFavorite;
-                    if (typeof t.data.isFavorite === "string") return t.data.isFavorite.toLowerCase() === "true" || t.data.isFavorite === "1";
-                    if (typeof t.data.isFavorite === "number") return t.data.isFavorite === 1;
-                }
-                return false;
-            });
-
+            const favorites = transactions.filter(t => t.isFavorite);
             if (favorites.length === 0) {
                 favoritesContainer.innerHTML = `<div class="text-muted" style="padding: 12px;">No favorites yet.</div>`;
                 return;
             }
             favoritesContainer.innerHTML = '';
             favorites.forEach(fav => {
-                // Use direct or nested data for category/amount/type
-                const category = fav.category || (fav.data && fav.data.category) || '';
-                const amount = fav.amount || (fav.data && fav.data.amount) || '';
-                const type = fav.type || (fav.data && fav.data.type) || '';
                 const card = document.createElement('div');
                 card.className = 'card mb-2';
                 card.style.cursor = 'pointer';
                 card.innerHTML = `
                     <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold">${category}</span>
-                        <span class="text-primary">${parseFloat(amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                        <span class="fw-bold">${fav.category}</span>
+                        <span class="text-primary">${parseFloat(fav.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
                     </div>
                 `;
                 card.onclick = () => {
                     const params = new URLSearchParams({
-                        category,
-                        amount,
-                        type
+                        category: fav.category,
+                        amount: fav.amount,
+                        type: fav.type
                     });
                     window.location.href = `input.html?${params.toString()}`;
                 };
@@ -626,7 +597,6 @@
             if (currentUserId) {
                 loadAndRenderBudgets(currentUserId, transactions);
             }
-            renderFavorites(transactions); // <-- Add this line
             renderCharts(filtered);
             renderSummaryTable(filtered);
             renderRecentTransactions();
@@ -719,4 +689,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
