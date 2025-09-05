@@ -158,12 +158,37 @@
 
         let currentUserId = null;
         let videoStream = null;
-
-        // --- EXISTING CODE ---
+        
         const defaultIncomeCategories = ["Salary", "Gift", "Bonus", "Interest", "Business Income", "Others"];
         const defaultExpenseCategories = ["Food", "Transport", "Utilities", "Cash Withdraw", "Health", "Loans", "Clothing", "Household", "Savings", "Entertainment", "Others"];
         let userIncomeCategories = defaultIncomeCategories;
         let userExpenseCategories = defaultExpenseCategories;
+
+        // --- MODIFICATION START ---
+        // This function reads URL parameters and fills the form.
+        const prefillFromTemplate = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const type = urlParams.get('type');
+            const category = urlParams.get('category');
+            const amount = urlParams.get('amount');
+
+            if (type && category && amount) {
+                document.getElementById('type').value = type;
+                
+                // We must update the categories *after* setting the type to load the correct list.
+                updateCategories(); 
+                
+                document.getElementById('category').value = category;
+                document.getElementById('amount').value = parseFloat(amount).toFixed(2);
+
+                showMessage("Loaded data from template.", "success");
+
+                // Clean the URL to prevent re-populating on refresh.
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        };
+        // --- MODIFICATION END ---
+
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -171,6 +196,7 @@
                 await loadUserCategories(user.uid);
                 updateCategories();
                 await autofillLastTransactionDate(user.uid);
+                prefillFromTemplate(); // Call the new function after everything is loaded.
             } else {
                 window.location.href = "index.html";
             }
@@ -189,7 +215,6 @@
 
         async function autofillLastTransactionDate(userId) {
             try {
-                // Always fill today's date, not last transaction date
                 const dateInput = document.getElementById("date");
                 dateInput.value = new Date().toISOString().split('T')[0];
             } catch (error) {
@@ -227,8 +252,6 @@
             const date = document.getElementById("date").value;
             const comment = document.getElementById("comment").value;
             const isRecurring = document.getElementById("recurringCheck").checked;
-            
-            // MODIFICATION: Get the state of the new 'Save as Template' checkbox
             const isTemplate = document.getElementById("saveTemplateCheck").checked;
 
             if (!currentUserId) {
@@ -253,7 +276,6 @@
                     
                     const transactionRef = doc(collection(db, "users", currentUserId, "transactions"));
                     
-                    // MODIFICATION: Add the isTemplate field to the transaction object
                     batch.set(transactionRef, { 
                         type, 
                         category, 
@@ -264,7 +286,7 @@
                         recurringId, 
                         frequency, 
                         instances,
-                        isTemplate: isTemplate // Add template tag
+                        isTemplate: isTemplate
                     });
                 }
                 try {
@@ -279,7 +301,6 @@
                 }
             } else {
                 try {
-                    // MODIFICATION: Add the isTemplate field to the transaction object
                     await addDoc(collection(db, "users", currentUserId, "transactions"), { 
                         type, 
                         category, 
@@ -287,7 +308,7 @@
                         date, 
                         comment, 
                         isRecurring: false,
-                        isTemplate: isTemplate // Add template tag
+                        isTemplate: isTemplate
                     });
                     showMessage("Transaction added successfully!", "success");
                     transactionForm.reset();
@@ -316,8 +337,6 @@
             catch (error) { console.error("Error signing out: ", error); alert("Failed to log out. Please try again."); }
         });
         
-        // --- NEW SCANNER FUNCTIONALITY ---
-
         const scanButton = document.getElementById('scanReceiptBtn');
         const scannerContainer = document.getElementById('scanner-container');
         const video = document.getElementById('video-preview');
@@ -327,11 +346,10 @@
         const loader = document.getElementById('ocr-loader');
         const ocrStatus = document.getElementById('ocr-status');
 
-        // 1. Open Camera View
         const openCamera = async () => {
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } // Prefer the rear camera
+                    video: { facingMode: 'environment' }
                 });
                 video.srcObject = videoStream;
                 video.play();
@@ -342,7 +360,6 @@
             }
         };
 
-        // 2. Close Camera and Stop Stream
         const closeCamera = () => {
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
@@ -350,7 +367,6 @@
             scannerContainer.style.display = 'none';
         };
 
-        // 3. Capture Image from Video
         const captureImage = () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -359,7 +375,6 @@
             scanImageFromCanvas();
         };
 
-        // 4. Scan the Captured Image using Tesseract
         const scanImageFromCanvas = async () => {
             loader.style.display = 'flex';
             try {
@@ -378,16 +393,14 @@
                 showMessage("Failed to scan receipt. Please try again.", "error");
             } finally {
                 loader.style.display = 'none';
-                ocrStatus.textContent = 'Scanning receipt...'; // Reset status
+                ocrStatus.textContent = 'Scanning receipt...';
             }
         };
         
-        // 5. Extract Data from OCR Text (The "Brain")
         const extractDataFromText = (text) => {
-            console.log("OCR Text:", text); // For debugging
+            console.log("OCR Text:", text);
             const lowerCaseText = text.toLowerCase();
             
-            // A. Extract Category
             const categoryKeywords = {
                 "Transport": ["pickme","uber", "hire", "travel", "uber", "taxi", "bus", "train", "cab", "transport", "rental", "ride", "fare", "ticket"],
                 "Food": ["food", "pickme food","uber eats","eat", "restaurant", "cafe", "pizza", "kottu", "meal", "dine", "burger", "coffee", "tea", "breakfast", "lunch", "dinner"],
@@ -416,17 +429,7 @@
                 }
             }
 
-            // B. Extract Date
             let foundDate = null;
-
-            // Covers multiple formats:
-            // - YYYY-MM-DD
-            // - DD/MM/YYYY, MM/DD/YYYY, DD-MM-YYYY, MM-DD-YYYY
-            // - DD/MM/YY, MM/DD/YY
-            // - DD.MM.YYYY or DD.MM.YY
-            // - DD Mon YYYY (e.g. 12 Jan 2023)
-            // - Mon DD, YYYY (e.g. Jan 12, 2023)
-            // - MM/DD or DD/MM (no year, fallback current year)
             const dateRegex = new RegExp(
             String.raw`(\d{4}[-/\.]\d{2}[-/\.]\d{2})|(\d{2}[-/\.]\d{2}[-/\.]\d{4})|(\d{2}[-/\.]\d{2}[-/\.]\d{2})|(\d{1,2}[-/\.]\d{1,2})|(\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*[\s,]*\d{2,4})|((?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s*\d{2,4})`,
             "i"
@@ -438,35 +441,28 @@
                 let dateStr = dateMatch[0].trim().replace(/\./g, '-').replace(/\//g, '-').replace(/,/g, '');
                 let parts, day, month, year;
 
-                // Case 1: YYYY-MM-DD
                 if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
                     foundDate = dateStr;
 
-                // Case 2: DD-MM-YYYY or MM-DD-YYYY
                 } else if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
                     parts = dateStr.split('-');
-                    // Assume first part is day if >12
                     if (parseInt(parts[0], 10) > 12) {
                         day = parts[0];
                         month = parts[1];
                     } else {
-                        // Ambiguous: default to DD-MM-YYYY
                         day = parts[0];
                         month = parts[1];
                     }
                     year = parts[2];
                     foundDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-
-                // Case 3: DD-MM-YY or MM-DD-YY
                 } else if (/^\d{2}-\d{2}-\d{2}$/.test(dateStr)) {
                     parts = dateStr.split('-');
                     day = parts[0];
                     month = parts[1];
                     year = parseInt(parts[2], 10);
-                    year += year < 50 ? 2000 : 1900; // guess century
+                    year += year < 50 ? 2000 : 1900;
                     foundDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 
-                // Case 4: MM-DD or DD-MM (no year, assume current year)
                 } else if (/^\d{1,2}-\d{1,2}$/.test(dateStr)) {
                     parts = dateStr.split('-');
                     day = parts[0];
@@ -474,7 +470,6 @@
                     year = new Date().getFullYear();
                     foundDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 
-                // Case 5: Text month formats (e.g. 12 Jan 2023, Jan 12 23)
                 } else {
                     const monthMap = {
                         jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
@@ -504,14 +499,8 @@
                     }
                 }
             }
-
-            // C. Extract Amount
             let foundAmount = 0;
 
-            // Matches currency formats (handles Rs, LKR, INR, USD, etc.)
-            // - Looks for keywords like total, amount, balance, subtotal
-            // - Matches numbers like 1,234.56 / 1234.56 / 1,234 / 1234
-            // - Allows optional currency symbols before/after numbers
             const amountRegex = new RegExp(
                 String.raw`(?:total|net|amount|balance|subtotal|grand\s*total|payable|cash\s*amount|bill\s*amount|rs\.?|lkr|inr|usd|eur|gbp|jpy|rm|aed)[\s:]*[\-]?\s*(?:[₹$€£¥]?\s*)?([\d]{1,3}(?:[,\s]\d{2,3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\b`,
                 "ig"
@@ -528,7 +517,6 @@
                 }
             }
 
-            // Fallback: If no keyword match, find the largest standalone number that looks like money
             if (maxAmount === 0) {
                 const genericAmountRegex = /(?:[₹$€£¥]?\s*)?(\d{1,3}(?:[,\s]\d{2,3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)/g;
                 let genericMatches;
@@ -541,8 +529,6 @@
                 }
             }
 
-            // Last fallback: detect written numbers (basic English word amounts like "One Thousand Five Hundred")
-            // For robust conversion, map words → numbers
             if (maxAmount === 0) {
                 const numberWordsMap = {
                     zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5,
@@ -581,10 +567,8 @@
             fillFormWithExtractedData(foundCategory, foundDate, foundAmount, text);
         };
         
-        // 6. Fill the Form
         const fillFormWithExtractedData = (category, date, amount, rawText) => {
             if (category) {
-                // Check if the category exists in the dropdown
                 const categorySelect = document.getElementById('category');
                 const categoryExists = [...categorySelect.options].some(opt => opt.value === category);
                 if (categoryExists) {
@@ -598,14 +582,12 @@
                 document.getElementById('amount').value = amount.toFixed(2);
             }
 
-            // Put the rest of the text in the comment for user reference
             const commentField = document.getElementById('comment');
             commentField.value = `[Scanned Receipt] \n${rawText.substring(0, 100)}...`;
 
             showMessage("Receipt scanned! Please review the details.", "success");
         };
 
-        // Add Event Listeners
         scanButton.addEventListener('click', openCamera);
         closeScannerBtn.addEventListener('click', closeCamera);
         captureBtn.addEventListener('click', captureImage);
@@ -614,3 +596,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
