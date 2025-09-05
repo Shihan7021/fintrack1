@@ -555,3 +555,30 @@ body.login-theme .btn-reset-password:hover {
     margin: 20px 0;
     display: inline-block;}
 .contant_box_404{ margin-top:-50px;}
+
+
+.btn-outline-danger {
+    color: #3c0775;
+    border-color: #3c0775;
+}
+
+.btn-outline-danger:hover {
+color: #fff;
+background-color: #7454ac;
+border-color: #7454ac;
+
+
+}
+
+.btn-outline-danger:active {
+color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+.bg-danger
+ {
+  opacity: 1;
+  background-color: #3c0775 !important;
+}
