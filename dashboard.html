@@ -191,11 +191,29 @@
                 <div class="d-flex flex-wrap gap-2 align-items-center">
                     <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
                     <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-                    <button type="button" class="btn btn-primary" onclick="resetToCurrentCycle()">Reset to Current Cycle</button>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary" onclick="setLast30Days()">Last 30 Days</button>
-                        <button type="button" class="btn btn-outline-primary" onclick="setThisMonth()">This Month</button>
-                        <button type="button" class="btn btn-outline-primary" onclick="setLastMonth()">Last Month</button>
+                    
+                    <!-- Filter Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="filterDropdown" style="min-width: 280px;">
+                            <h6 class="dropdown-header">Quick Date Filters</h6>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="resetToCurrentCycle(); closeDropdown()">
+                                    <i class="fas fa-sync me-1"></i> Reset to Current Cycle
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setLast30Days(); closeDropdown()">
+                                    <i class="fas fa-calendar-day me-1"></i> Last 30 Days
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setThisMonth(); closeDropdown()">
+                                    <i class="fas fa-calendar-week me-1"></i> This Month
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setLastMonth(); closeDropdown()">
+                                    <i class="fas fa-calendar-alt me-1"></i> Last Month
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -749,6 +767,14 @@
         window.setLast30Days = setLast30Days;
         window.setThisMonth = setThisMonth;
         window.setLastMonth = setLastMonth;
+
+        // Function to close the dropdown after selection
+        window.closeDropdown = function() {
+            const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('filterDropdown'));
+            if (dropdown) {
+                dropdown.hide();
+            }
+        };
 
         const themeToggle = document.getElementById('theme-toggle-checkbox');
         themeToggle.addEventListener('change', () => {
