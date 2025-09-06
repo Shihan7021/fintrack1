@@ -73,6 +73,66 @@
         .expense-card {
             background: linear-gradient(135deg, #7f6a9a, #4c2b88);
         }
+
+        .filter-container {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            margin-bottom: 2rem;
+        }
+
+        .filter-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background-color: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            border-bottom: 1px solid #dee2e6;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .filter-toggle:hover {
+            background-color: #e9ecef;
+        }
+
+        .filter-toggle .line {
+            height: 24px;
+            width: 2px;
+            background-color: #ced4da;
+        }
+
+        .filter-toggle .arrow-icon {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Style for when the pane is open */
+        .filter-toggle.open .arrow-icon {
+            transform: rotate(180deg);
+        }
+        
+        .filter-toggle.open {
+             border-bottom: 1px solid #dee2e6;
+        }
+        
+        .filter-toggle:not(.open) {
+            border-bottom: none;
+        }
+
+        .filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            padding: 0 1.5rem; /* Add padding here for spacing */
+        }
+        
+        .filter-content-inner {
+            padding-top: 1.5rem; /* Inner padding for top spacing */
+            padding-bottom: 1.5rem; /* Inner padding for bottom spacing */
+        }
         /* --- END: CSS for Dashboard Template Component --- */
 
     </style>
@@ -161,63 +221,78 @@
             <a href="myprofile.html" class="alert-link">Go to Profile</a>.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-
-        <form style="font-family: 'Roboto', sans-serif;" class="row g-3 mb-4">
-            <div class="col-md-3">
-                <label for="fromDate" class="form-label">From</label>
-                <input type="date" class="form-control" id="fromDate" />
-            </div>
-            <div class="col-md-3">
-                <label for="toDate" class="form-label">To</label>
-                <input type="date" class="form-control" id="toDate" />
-            </div>
-            <div class="col-md-3">
-                <label for="filterCategory" class="form-label">Category</label>
-                <select class="form-select" id="filterCategory">
-                    <option value="">All Categories</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="amountRange" class="form-label">Amount Range</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="amountRange"
-                    placeholder="min-max"
-                    title="Enter amount range like 100-1000"
-                />
-            </div>
-            <div style="font-family: 'Roboto', sans-serif;" class="col-12">
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
-                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-                    
-                    <!-- Filter Dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-filter me-1"></i> Filter
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="filterDropdown" style="min-width: 280px;">
-                            <h6 class="dropdown-header">Quick Date Filters</h6>
-                            <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="resetToCurrentCycle(); closeDropdown()">
-                                    <i class="fas fa-sync me-1"></i> Reset to Current Cycle
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setLast30Days(); closeDropdown()">
-                                    <i class="fas fa-calendar-day me-1"></i> Last 30 Days
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setThisMonth(); closeDropdown()">
-                                    <i class="fas fa-calendar-week me-1"></i> This Month
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setLastMonth(); closeDropdown()">
-                                    <i class="fas fa-calendar-alt me-1"></i> Last Month
-                                </button>
+        <!-- Collapsible Filter Section -->
+        <div class="filter-container">
+            <!-- This is the clickable toggle button -->
+            <button class="filter-toggle" id="filterToggleButton">
+                <span class="line"></span>
+                <i class="fas fa-chevron-down arrow-icon"></i>
+                <span class="line"></span>
+            </button>
+            
+            <!-- This div contains your form and will be shown/hidden -->
+            <div class="filter-content" id="filterContent">
+                <div class="filter-content-inner">
+                    <form style="font-family: 'Roboto', sans-serif;" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="fromDate" class="form-label">From</label>
+                            <input type="date" class="form-control" id="fromDate" />
+                        </div>
+                        <div class="col-md-3">
+                            <label for="toDate" class="form-label">To</label>
+                            <input type="date" class="form-control" id="toDate" />
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterCategory" class="form-label">Category</label>
+                            <select class="form-select" id="filterCategory">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="amountRange" class="form-label">Amount Range</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="amountRange"
+                                placeholder="min-max"
+                                title="Enter amount range like 100-1000"
+                            />
+                        </div>
+                        <div style="font-family: 'Roboto', sans-serif;" class="col-12">
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
+                                <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                                
+                                <!-- Filter Dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="filterDropdown" style="min-width: 280px;">
+                                        <h6 class="dropdown-header">Quick Date Filters</h6>
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="resetToCurrentCycle(); closeDropdown()">
+                                                <i class="fas fa-sync me-1"></i> Reset to Current Cycle
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="setLast30Days(); closeDropdown()">
+                                                <i class="fas fa-calendar-day me-1"></i> Last 30 Days
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="setThisMonth(); closeDropdown()">
+                                                <i class="fas fa-calendar-week me-1"></i> This Month
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="setLastMonth(); closeDropdown()">
+                                                <i class="fas fa-calendar-alt me-1"></i> Last Month
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
-        </form>
+        </div>
+        <!-- End of Collapsible Filter Section -->
 
         <div style="font-family: 'Roboto', sans-serif;"  class="justify-content-center mb-4">
             <h5>Budgets Overview</h5>
@@ -787,6 +862,31 @@
                 document.body.classList.add('dark-mode');
             } else {
                 document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // JavaScript to toggle the filter pane
+        const toggleButton = document.getElementById('filterToggleButton');
+        const filterContent = document.getElementById('filterContent');
+        const filterDropdown = new bootstrap.Dropdown(document.getElementById('filterDropdown'));
+
+
+        toggleButton.addEventListener('click', () => {
+            // Toggle the 'open' class for styling the button (e.g., rotating the arrow)
+            toggleButton.classList.toggle('open');
+            
+            // Check if the content is currently shown or hidden
+            if (filterContent.style.maxHeight) {
+                // If it has a maxHeight, it's open, so close it
+                filterContent.style.maxHeight = null;
+            } else {
+                // If it's closed, open it by setting maxHeight to its scrollHeight
+                filterContent.style.maxHeight = filterContent.scrollHeight + "px";
+            }
+        });
+        function closeDropdown() {
+             if (filterDropdown) {
+                filterDropdown.hide();
             }
         }
     </script>
