@@ -223,17 +223,14 @@
         </div>
         <!-- Collapsible Filter Section -->
         <div class="filter-container">
-            <!-- This is the clickable toggle button -->
             <button class="filter-toggle" id="filterToggleButton">
                 <span class="line"></span>
                 <i class="fas fa-chevron-down arrow-icon"></i>
                 <span class="line"></span>
             </button>
-            
-            <!-- This div contains your form and will be shown/hidden -->
             <div class="filter-content" id="filterContent">
                 <div class="filter-content-inner">
-                    <form style="font-family: 'Roboto', sans-serif;" class="row g-3 mb-4">
+                    <form class="row g-3">
                         <div class="col-md-3">
                             <label for="fromDate" class="form-label">From</label>
                             <input type="date" class="form-control" id="fromDate" />
@@ -250,15 +247,9 @@
                         </div>
                         <div class="col-md-3">
                             <label for="amountRange" class="form-label">Amount Range</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="amountRange"
-                                placeholder="min-max"
-                                title="Enter amount range like 100-1000"
-                            />
+                            <input type="text" class="form-control" id="amountRange" placeholder="min-max" title="Enter amount range like 100-1000"/>
                         </div>
-                        <div style="font-family: 'Roboto', sans-serif;" class="col-12">
+                        <div class="col-12">
                             <div class="d-flex flex-wrap gap-2 align-items-center">
                                 <button type="button" class="btn btn-primary" onclick="filterData()">Apply Filters</button>
                                 <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
@@ -275,6 +266,7 @@
             </div>
         </div>
         <!-- End of Collapsible Filter Section -->
+
 
         <div style="font-family: 'Roboto', sans-serif;"  class="justify-content-center mb-4">
             <h5>Budgets Overview</h5>
@@ -847,11 +839,10 @@
             }
         }
 
-        // JavaScript to toggle the filter pane
+
+        // --- Corrected JavaScript for the filter pane ---
         const toggleButton = document.getElementById('filterToggleButton');
         const filterContent = document.getElementById('filterContent');
-        const filterDropdown = new bootstrap.Dropdown(document.getElementById('filterDropdown'));
-
 
         toggleButton.addEventListener('click', () => {
             // Toggle the 'open' class for styling the button (e.g., rotating the arrow)
@@ -866,11 +857,7 @@
                 filterContent.style.maxHeight = filterContent.scrollHeight + "px";
             }
         });
-        function closeDropdown() {
-             if (filterDropdown) {
-                filterDropdown.hide();
-            }
-        }
+        
     </script>
 </body>
 </html>
